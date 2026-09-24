@@ -1,4 +1,5 @@
 name: Live UI QA
+# verify deployed 0826
 # manual production verification after v11
 
 on:
