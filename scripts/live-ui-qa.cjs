@@ -123,10 +123,13 @@ async function main(){
     check('card-on-delivery control enabled',await cardInput.isEnabled());
     check('card-on-delivery option visible',await cardInput.locator('xpath=..').isVisible());
 
-    await page.locator('input[name="orderType"][value="delivery"]').check();
+    const deliveryRadio=page.locator('input[name="orderType"][value="delivery"]'),pickupRadio=page.locator('input[name="orderType"][value="pickup"]');
+    await deliveryRadio.locator('xpath=..').click();
+    check('delivery radio selected',await deliveryRadio.isChecked());
     check('delivery address appears',await page.locator('#addressField').isVisible());
     check('delivery address required',await page.locator('#addressField textarea').getAttribute('required')!==null);
-    await page.locator('input[name="orderType"][value="pickup"]').check();
+    await pickupRadio.locator('xpath=..').click();
+    check('pickup radio selected',await pickupRadio.isChecked());
     check('pickup hides delivery address',!(await page.locator('#addressField').isVisible()));
 
     await page.screenshot({path:out+'/desktop-checkout.png',fullPage:false});
