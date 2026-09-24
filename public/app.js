@@ -33,7 +33,7 @@ function cat(id){return state.data?.categories.find(c=>c.id===id)||{}}
 function totals(type=null){const sub=Object.entries(state.cart).reduce((sum,[id,q])=>{const p=product(id);return sum+(p?+p.price*(+q||0):0)},0);const orderType=type||document.querySelector('input[name="orderType"]:checked')?.value||'pickup';const fee=orderType==='delivery'?+(state.data?.settings?.deliveryFee||0):0;return{sub,fee,total:sub+fee}}
 const PRODUCT_PLACEHOLDER='/assets/product-placeholder.svg';
 function setImage(img,src,fallback='🦐'){if(!img)return;img.onerror=()=>{img.onerror=null;img.src=PRODUCT_PLACEHOLDER};img.src=src}
-function remoteImg(src,alt='',lazy=true){return `<img ${lazy?'loading="lazy" ':''}src="${PRODUCT_PLACEHOLDER}" data-remote-src="${esc(src||'')}" alt="${esc(alt)}">`}
+function remoteImg(src,alt='',lazy=true){const u=String(src||'');if(u.startsWith('/'))return `<img ${lazy?'loading="lazy" ':''}src="${esc(u)}" alt="${esc(alt)}">`;return `<img ${lazy?'loading="lazy" ':''}src="${PRODUCT_PLACEHOLDER}" data-remote-src="${esc(u)}" alt="${esc(alt)}">`}
 function hydrateRemoteImages(root=document){root.querySelectorAll('img[data-remote-src]').forEach(img=>{const src=img.dataset.remoteSrc;img.removeAttribute('data-remote-src');if(!src)return;const probe=new Image();probe.onload=()=>{img.src=src};probe.onerror=()=>{};probe.src=src})}
 function open(sel){$('#overlay').classList.remove('hidden');$(sel).classList.remove('hidden');document.body.classList.add('lock')}
 function closeAll(){['#overlay','#cartDrawer','#checkoutModal','#trackModal','#successModal','#productModal'].forEach(s=>$(s)?.classList.add('hidden'));document.body.classList.remove('lock')}
@@ -47,13 +47,22 @@ function applyLanguage(){
 }
 let heroPhotoIndex=0,heroPhotoTimer=null,heroTouchX=null;
 function heroPhotos(st){
- const googlePhoto=st.mapsPhotoUrl||'';
- return[
-  {src:st.storefrontImage||'/assets/storefront.svg',ar:'واجهة مطعم زعانف الروبيان',en:'Shrimp Fins storefront'},
-  {src:st.officialPromoImage||st.heroImage||'/assets/shrimp-fins-promo.webp',ar:'منيو وهوية زعانف الروبيان',en:'Shrimp Fins menu & identity'},
-  ...(googlePhoto?[{src:googlePhoto,ar:'صورة من موقع المطعم على خرائط Google',en:'Photo from the restaurant Google Maps listing'}]:[])
- ].filter((x,i,a)=>x.src&&a.findIndex(y=>y.src===x.src)===i);
+ const configured=Array.isArray(st.heroPhotos)?st.heroPhotos.filter(p=>p&&p.src):[];
+ const fallback=[
+  {src:st.storefrontImage||'/assets/storefront.svg',ar:'واجهة مطعم زعانف الروبيان',en:'Shrimp Fins storefront',source:'OWNER'},
+  {src:st.officialPromoImage||st.heroImage||'/assets/shrimp-fins-promo.webp',ar:'هوية زعانف الروبيان',en:'Shrimp Fins identity',source:'OWNER'}
+ ];
+ const googlePhoto=st.mapsPhotoUrl?[{src:st.mapsPhotoUrl,ar:'صورة من موقع المطعم',en:'Restaurant location photo',source:'PUBLIC_LISTING'}]:[];
+ return[...(configured.length?configured:fallback),...googlePhoto].filter((x,i,a)=>x.src&&a.findIndex(y=>y.src===x.src)===i);
 }
+function photoOrigin(p){
+ const src=String(p?.image_source||'');
+ if(src==='OWNER_EXCEL')return{cls:'owner',ar:'صورة المطعم',en:'Restaurant photo'};
+ if(src==='ADMIN_UPLOAD')return{cls:'owner',ar:'صورة المطعم',en:'Restaurant photo'};
+ if(src==='CUSTOM')return{cls:'custom',ar:'صورة مخصصة',en:'Custom photo'};
+ return{cls:'illustrative',ar:'صورة توضيحية',en:'Illustrative photo'};
+}
+function photoBadge(p){const o=photoOrigin(p);return `<span class="photo-origin ${o.cls}">${state.lang==='ar'?o.ar:o.en}</span>`}
 function showHeroPhoto(index,manual=false){
  if(!state.data)return;const st=state.data.settings||{},photos=heroPhotos(st);if(!photos.length)return;
  heroPhotoIndex=(index+photos.length)%photos.length;const p=photos[heroPhotoIndex],img=$('#heroFoodImage');
@@ -102,7 +111,7 @@ function renderSettings(){
 }
 function renderOffers(){
  if(!state.data)return;const arr=state.data.offers||[];
- $('#offersGrid').innerHTML=arr.map(o=>`<article class="offer-card">${remoteImg(o.image||state.data.settings?.heroImage||'',txt(o,'title_ar','title_en'))}<span class="offer-price">${money(o.price)}</span><div class="offer-copy"><h3>${esc(txt(o,'title_ar','title_en'))}</h3><p>${esc(txt(o,'description_ar','description_en')||'')}</p></div></article>`).join('');hydrateRemoteImages($('#offersGrid'));
+ $('#offersGrid').innerHTML=arr.map(o=>`<article class="offer-card ${photoOrigin(o).cls}-photo">${remoteImg(o.image||state.data.settings?.heroImage||'',txt(o,'title_ar','title_en'))}<span class="offer-price">${money(o.price)}</span>${photoBadge(o)}<div class="offer-copy"><h3>${esc(txt(o,'title_ar','title_en'))}</h3><p>${esc(txt(o,'description_ar','description_en')||'')}</p></div></article>`).join('');hydrateRemoteImages($('#offersGrid'));
 }
 function renderCategories(){
  if(!state.data)return;const all={id:'all',name_ar:'الكل',name_en:'All',icon:'✨'},arr=[all,...state.data.categories];
@@ -119,8 +128,8 @@ function productPrice(p){if(p.orderable===false)return state.lang==='ar'?(p.pric
 function calorieTag(p){return p.calories==null?'':`<span class="calorie-badge">🔥 ${esc(p.calories)} <small>${state.lang==='ar'?'سعرة':'cal'}</small></span>`}
 function renderProducts(){
  if(!state.data)return;const arr=filteredProducts();$('#resultCount').textContent=arr.length+' '+tr('items');$('#noProducts').classList.toggle('hidden',!!arr.length);
- $('#products').innerHTML=arr.map(p=>{const c=cat(p.category_id||p.categoryId),image=p.image||'',canOrder=p.orderable!==false;return `<article class="product-card ${canOrder?'':'market-card'}">
- <div class="product-image" data-view="${esc(p.id)}">${image?remoteImg(image,txt(p,'name_ar','name_en')):`<div class="img-fallback">${esc(c.icon||'🍽️')}</div>`}${p.featured?`<span class="featured-badge">★ ${state.lang==='ar'?'مميز':'Featured'}</span>`:''}${calorieTag(p)}</div>
+ $('#products').innerHTML=arr.map(p=>{const c=cat(p.category_id||p.categoryId),image=p.image||'',canOrder=p.orderable!==false,origin=photoOrigin(p);return `<article class="product-card ${canOrder?'':'market-card'} ${origin.cls}-photo">
+ <div class="product-image" data-view="${esc(p.id)}">${image?remoteImg(image,txt(p,'name_ar','name_en')):`<div class="img-fallback">${esc(c.icon||'🍽️')}</div>`}${p.featured?`<span class="featured-badge">★ ${state.lang==='ar'?'مميز':'Featured'}</span>`:''}${image?photoBadge(p):''}${calorieTag(p)}</div>
  <div class="product-body"><span class="product-cat">${esc(txt(c,'name_ar','name_en'))}</span><h3>${esc(txt(p,'name_ar','name_en'))}</h3><p class="product-desc">${esc(txt(p,'description_ar','description_en'))}</p>
  <div class="product-footer"><div class="price"><b class="${canOrder?'':'market-price'}">${esc(productPrice(p))}</b>${canOrder?`<small>/ ${esc(txt(p,'unit_ar','unit_en'))}</small>`:''}</div>${canOrder?`<button class="add-btn" aria-label="${tr('add')}" data-add="${esc(p.id)}">+</button>`:`<button class="call-btn" data-view="${esc(p.id)}">☎</button>`}</div><button class="view-btn" data-view="${esc(p.id)}">${tr('view')}</button></div></article>`}).join('');
  $$('[data-add]').forEach(b=>b.onclick=e=>{e.stopPropagation();addToCart(b.dataset.add)});
@@ -129,7 +138,7 @@ function renderProducts(){
 }
 function showProduct(id){
  const p=product(id);if(!p)return;const c=cat(p.category_id||p.categoryId),canOrder=p.orderable!==false;
- $('#productModalBody').innerHTML=`<div class="product-detail"><div class="product-detail-image">${p.image?remoteImg(p.image,txt(p,'name_ar','name_en'),false):`<div class="img-fallback">${esc(c.icon||'🍽️')}</div>`}</div><div class="product-detail-copy"><span class="kicker">${esc(txt(c,'name_ar','name_en'))}</span><h2>${esc(txt(p,'name_ar','name_en'))}</h2>${p.calories!=null?`<div class="detail-calories">🔥 ${esc(p.calories)} ${state.lang==='ar'?'سعرة حرارية':'calories'}</div>`:''}<p>${esc(txt(p,'description_ar','description_en'))}</p><div class="price"><b>${esc(productPrice(p))}</b>${canOrder?`<small>/ ${esc(txt(p,'unit_ar','unit_en'))}</small>`:''}</div>${canOrder?`<button class="checkout add-detail" data-detail-add="${esc(p.id)}">${tr('add')}</button>`:`<a class="checkout market-contact" href="tel:${esc(state.data.settings?.phone||'0541064143')}">${state.lang==='ar'?'اتصل لمعرفة سعر اليوم':'Call for today’s price'}</a>`}</div></div>`;
+ $('#productModalBody').innerHTML=`<div class="product-detail"><div class="product-detail-image">${p.image?remoteImg(p.image,txt(p,'name_ar','name_en'),false):`<div class="img-fallback">${esc(c.icon||'🍽️')}</div>`}</div><div class="product-detail-copy"><span class="kicker">${esc(txt(c,'name_ar','name_en'))}</span><h2>${esc(txt(p,'name_ar','name_en'))}</h2>${p.image?photoBadge(p):''}${p.calories!=null?`<div class="detail-calories">🔥 ${esc(p.calories)} ${state.lang==='ar'?'سعرة حرارية':'calories'}</div>`:''}<p>${esc(txt(p,'description_ar','description_en'))}</p><div class="price"><b>${esc(productPrice(p))}</b>${canOrder?`<small>/ ${esc(txt(p,'unit_ar','unit_en'))}</small>`:''}</div>${canOrder?`<button class="checkout add-detail" data-detail-add="${esc(p.id)}">${tr('add')}</button>`:`<a class="checkout market-contact" href="tel:${esc(state.data.settings?.phone||'0541064143')}">${state.lang==='ar'?'اتصل لمعرفة سعر اليوم':'Call for today’s price'}</a>`}</div></div>`;
  hydrateRemoteImages($('#productModalBody'));
  const add=$('[data-detail-add]');if(add)add.onclick=()=>{addToCart(id);closeAll();open('#cartDrawer')};open('#productModal');
 }
@@ -178,7 +187,7 @@ $$('input[name="orderType"]').forEach(x=>x.onchange=updateCheckoutTotal);$('#che
 $('#trackForm').onsubmit=async e=>{e.preventDefault();try{await trackOrder($('#trackToken').value,$('#trackPhone').value)}catch(err){toast(err.message,true)}};
 $('#trackNow').onclick=()=>{const o=state.lastOrder;if(!o)return;closeAll();open('#trackModal');$('#trackToken').value=o.trackingToken;$('#trackPhone').value=o.phone;$('#trackForm').requestSubmit()};
 $('#offerPrev').onclick=()=>$('#offersGrid').scrollBy({left:-320,behavior:'smooth'});$('#offerNext').onclick=()=>$('#offersGrid').scrollBy({left:320,behavior:'smooth'});
-if('serviceWorker'in navigator)window.addEventListener('load',async()=>{try{if('caches'in window){const ks=await caches.keys();await Promise.all(ks.filter(k=>k.startsWith('shrimp-fins-')&&k!=='shrimp-fins-v12').map(k=>caches.delete(k)))}await navigator.serviceWorker.register('/sw.js?v=12',{updateViaCache:'none'})}catch{}});
+if('serviceWorker'in navigator)window.addEventListener('load',async()=>{try{if('caches'in window){const ks=await caches.keys();await Promise.all(ks.filter(k=>k.startsWith('shrimp-fins-')&&k!=='shrimp-fins-v13').map(k=>caches.delete(k)))}await navigator.serviceWorker.register('/sw.js?v=13',{updateViaCache:'none'})}catch{}});
 state.lastOrder=JSON.parse(localStorage.getItem('sf_last_order')||'null');
 initHeroPhotos();
 load();
