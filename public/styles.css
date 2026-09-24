@@ -281,3 +281,23 @@ html,body{width:100%;max-width:100%;overflow-x:hidden}
   .hero,.section,.contact-section,.workflow,footer{max-width:100%;overflow-x:hidden}
   .drawer,.modal{max-width:100vw}
 }
+
+
+/* === Real restaurant photo presentation === */
+.hero-photo-frame{position:relative;overflow:hidden}
+.hero-photo-frame>img{transition:opacity .28s ease,transform .55s ease}
+.hero-photo-frame>img.changing{opacity:.35;transform:scale(1.015)}
+.hero-photo-controls{position:absolute;z-index:6;bottom:18px;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:999px;background:rgba(2,29,49,.72);backdrop-filter:blur(8px)}
+.hero-photo-controls>button{width:31px;height:31px;border:0;border-radius:50%;background:rgba(255,255,255,.94);color:var(--navy);font-size:21px;line-height:1;cursor:pointer}
+.hero-photo-dots{display:flex;gap:5px;align-items:center}
+.hero-photo-dots button{width:7px;height:7px;padding:0;border:0;border-radius:50%;background:rgba(255,255,255,.45);cursor:pointer}
+.hero-photo-dots button.active{width:19px;border-radius:999px;background:#fff}
+.photo-source-note{margin:10px 4px 0;color:#6e7b84;font-size:10px;line-height:1.5}
+.restaurant-facts{grid-template-columns:repeat(2,minmax(0,1fr))}
+.fact-card{min-height:78px}
+@media(max-width:760px){
+ .hero-photo-controls{bottom:12px}
+ .hero-photo-frame figcaption{padding-bottom:54px}
+ .photo-source-note{font-size:9px;padding-inline:3px}
+ .restaurant-facts{grid-template-columns:1fr}
+}
