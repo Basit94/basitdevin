@@ -9,6 +9,7 @@ permissions:
   contents: read
 
 jobs:
+  # post-image-fallback production verification
   # verified production recheck after 82b8
   # post-deploy live verification v11
   # production recheck after deployment
