@@ -5,7 +5,14 @@ const pool=new Pool({connectionString:process.env.DATABASE_URL,ssl:String(proces
 const SECRET=process.env.JWT_SECRET;if(!SECRET||SECRET.length<32) throw Error('JWT_SECRET must be 32+ chars');
 function b64u(s){return Buffer.from(s.replace(/-/g,'+').replace(/_/g,'/')+'==','base64')}
 async function verifyPassword(password,hash){
- if(String(hash).startsWith('scrypt
+ if(String(hash).startsWith('scrypt:')){
+  const parts=String(hash).split(':');
+  const n=Number(parts[1]),r=Number(parts[2]),p=Number(parts[3]),salt=b64u(parts[4]),expected=b64u(parts[5]);
+  const out=await new Promise((resolve,reject)=>crypto.scrypt(String(password),salt,32,{N:n,r,p,maxmem:64*1024*1024},(e,k)=>e?reject(e):resolve(k)));
+  return out.length===expected.length&&crypto.timingSafeEqual(out,expected);
+ }
+ return bcrypt.compare(String(password),hash);
+}
 app.use(helmet({contentSecurityPolicy:{directives:{defaultSrc:["'self'"],styleSrc:["'self'","'unsafe-inline'",'https://fonts.googleapis.com'],fontSrc:["'self'",'https://fonts.gstatic.com'],imgSrc:["'self'",'data:','https:'],scriptSrc:["'self'"],connectSrc:["'self'"]}}}));app.use(compression());app.use(cookieParser());app.use(express.json({limit:'300kb'}));
 const orderLimit=rateLimit({windowMs:600000,limit:40}),loginLimit=rateLimit({windowMs:900000,limit:12});
 const cats=[['shellfish','القشريات والطواجن','Seafood & Casseroles','🦐'],['meals','الوجبات والولائم','Meals & Platters','🍽️'],['rice','الأرز والمكرونة','Rice & Pasta','🍚'],['starters','المقبلات والشوربة','Starters & Soup','🥣'],['drinks','المشروبات والحلى','Drinks & Desserts','🥤']];
