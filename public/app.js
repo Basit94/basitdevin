@@ -40,10 +40,10 @@ function renderSettings(){
  setText('#addressText',state.lang==='ar'?(st.addressAr||''):(st.addressEn||''));
  const phone=st.phone||'0541064143';setText('#phoneText',phone);setHref('#callBtn','tel:'+phone);
  const wa=String(st.whatsapp||'966541064143').replace(/\D/g,'');setHref('#waBtn','https://wa.me/'+wa);setHref('#waHero','https://wa.me/'+wa);
- const mapUrl=st.mapUrl||('https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(st.mapQuery||st.addressAr||st.addressEn||'Shrimp Fins Riyadh'));setHref('#mapBtn',mapUrl);setHref('#bannerMapBtn',mapUrl);setHref('#googleRatingLink',mapUrl);
+ const mapUrl=st.mapUrl||('https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(st.mapQuery||st.addressAr||st.addressEn||'Shrimp Fins Riyadh'));setHref('#mapBtn',mapUrl);setHref('#mapBtnSecondary',mapUrl);setHref('#bannerMapBtn',mapUrl);setHref('#googleRatingLink',mapUrl);
  setText('#hoursText',state.lang==='ar'?(st.openingHoursAr||''):(st.openingHoursEn||''));
  setText('#googleRating',st.googleRating?Number(st.googleRating).toFixed(1)+' ★':'4.8 ★');setText('#googleReviews',(st.googleReviewCount||'')+(state.lang==='ar'?' تقييم على Google':' Google reviews'));
- setText('#serviceModes',state.lang==='ar'?(st.serviceModesAr||'توصيل • سفري • تناول داخل المطعم'):(st.serviceModesEn||'Delivery • Takeaway • Dine-in'));
+ const modes=state.lang==='ar'?(st.serviceModesAr||'توصيل • سفري • تناول داخل المطعم'):(st.serviceModesEn||'Delivery • Takeaway • Dine-in');setText('#serviceModes',modes);setText('#serviceModesContact',modes);
  setText('#amenitiesText',state.lang==='ar'?(st.amenitiesAr||'مناسب للعائلات • مواقف مجانية'):(st.amenitiesEn||'Family-friendly • Free parking'));
  const physical=restaurantOpenNow();setText('#physicalOpenStatus',physical.text);const openIcon=$('#openNowIcon');if(openIcon)openIcon.textContent=physical.open?'🟢':'🕒';
  const badge=$('#orderBadge');if(badge){badge.classList.toggle('closed',st.acceptingOrders===false);const span=badge.querySelector('span');if(span)span.textContent=st.acceptingOrders===false?tr('closed'):tr('open')}
@@ -120,10 +120,11 @@ function renderTracking(o){
  $('#trackResult').innerHTML=`<div class="track-card"><span class="status-pill">${statusLabel(o.status)}</span><h3>${esc(o.orderNumber)}</h3><p>${tr('total')}: <b>${money(o.total)}</b></p>${o.estimatedMinutes?`<p>${tr('estimated')}: <b>${o.estimatedMinutes} ${tr('minutes')}</b></p>`:''}${o.statusNote?`<p>${esc(o.statusNote)}</p>`:''}<div class="timeline">${timeline}</div></div>`;
 }
 async function load(){
+ $('#loadError')?.classList.add('hidden');$('#loading')?.classList.remove('hide');
  try{const r=await fetch('/api/public',{headers:{accept:'application/json'},cache:'no-store'});if(!r.ok)throw Error('Menu unavailable');state.data=await r.json();applyLanguage();renderCart();const qs=new URLSearchParams(location.search);if(qs.get('track')){open('#trackModal');$('#trackToken').value=qs.get('track');$('#trackPhone').value=qs.get('phone')||'';if(qs.get('phone'))$('#trackForm').requestSubmit()}}
- catch(e){toast(e.message,true)}finally{setTimeout(()=>$('#loading')?.classList.add('hide'),250)}
+ catch(e){toast(e.message,true);$('#loadError')?.classList.remove('hidden')}finally{setTimeout(()=>$('#loading')?.classList.add('hide'),180)}
 }
-$('#langBtn').onclick=()=>{state.lang=state.lang==='ar'?'en':'ar';localStorage.setItem('sf_lang',state.lang);applyLanguage()};
+$('#langBtn').onclick=()=>{state.lang=state.lang==='ar'?'en':'ar';localStorage.setItem('sf_lang',state.lang);applyLanguage()};if($('#retryBtn'))$('#retryBtn').onclick=load;
 $('#searchInput').oninput=e=>{state.search=e.target.value;renderProducts()};
 $('#cartBtn').onclick=()=>open('#cartDrawer');$('#floatingCart').onclick=()=>open('#cartDrawer');$('#trackBtn').onclick=()=>open('#trackModal');if($('#mobileCartBtn'))$('#mobileCartBtn').onclick=()=>open('#cartDrawer');if($('#mobileTrackBtn'))$('#mobileTrackBtn').onclick=()=>open('#trackModal');
 $$('[data-close]').forEach(x=>x.onclick=closeAll);document.addEventListener('keydown',e=>{if(e.key==='Escape')closeAll()});
@@ -132,6 +133,6 @@ $$('input[name="orderType"]').forEach(x=>x.onchange=updateCheckoutTotal);$('#che
 $('#trackForm').onsubmit=async e=>{e.preventDefault();try{await trackOrder($('#trackToken').value,$('#trackPhone').value)}catch(err){toast(err.message,true)}};
 $('#trackNow').onclick=()=>{const o=state.lastOrder;if(!o)return;closeAll();open('#trackModal');$('#trackToken').value=o.trackingToken;$('#trackPhone').value=o.phone;$('#trackForm').requestSubmit()};
 $('#offerPrev').onclick=()=>$('#offersGrid').scrollBy({left:-320,behavior:'smooth'});$('#offerNext').onclick=()=>$('#offersGrid').scrollBy({left:320,behavior:'smooth'});
-if('serviceWorker'in navigator)window.addEventListener('load',async()=>{try{if('caches'in window){const ks=await caches.keys();await Promise.all(ks.filter(k=>k.startsWith('shrimp-fins-')&&k!=='shrimp-fins-v7').map(k=>caches.delete(k)))}await navigator.serviceWorker.register('/sw.js?v=7',{updateViaCache:'none'})}catch{}});
+if('serviceWorker'in navigator)window.addEventListener('load',async()=>{try{if('caches'in window){const ks=await caches.keys();await Promise.all(ks.filter(k=>k.startsWith('shrimp-fins-')&&k!=='shrimp-fins-v8').map(k=>caches.delete(k)))}await navigator.serviceWorker.register('/sw.js?v=8',{updateViaCache:'none'})}catch{}});
 state.lastOrder=JSON.parse(localStorage.getItem('sf_last_order')||'null');
 load();
