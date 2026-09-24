@@ -26,7 +26,7 @@ function applyLanguage(){
  renderSettings();renderOffers();renderCategories();renderProducts();renderCart();
 }
 function renderSettings(){
- if(!state.data)return;const s=state.data.settings||{};
+ if(!state.data)return;const s=state.data.settings||{};const pc=(state.data.products||[]).length,oc=(state.data.offers||[]).length;if($('#menuCount'))$('#menuCount').textContent=pc+'+';if($('#heroMenuCount'))$('#heroMenuCount').textContent=pc+'+';if($('#offersCount'))$('#offersCount').textContent=oc;
  $('#heroMessage').textContent=state.lang==='ar'?(s.heroMessageAr||tr('orderNow')):(s.heroMessageEn||'Premium fresh seafood, prepared to order');
  $('#heroSub').textContent=state.lang==='ar'?'اختر وجبتك وأرسل الطلب. المطعم يراجع الطلب ويؤكده قبل التحضير.':'Choose your meal and send the order. The restaurant reviews and confirms it before preparation.';
  $('#restaurantName').textContent=state.lang==='ar'?(s.restaurantNameAr||'زعانف الروبيان'):(s.restaurantNameEn||'Shrimp Fins');
