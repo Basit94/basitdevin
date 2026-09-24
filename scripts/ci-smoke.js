@@ -14,7 +14,10 @@ function orderQty(product,minimum){return Math.max(1,Math.ceil(Number(minimum||0
 async function main(){
  server=spawn(process.execPath,['server.js'],{env,stdio:'inherit'});await wait();
 
- let x=await call('/api/health');check('health',x.r.status===200&&x.body.ok);
+ let x=await call('/api/health');check('health',x.r.status===200&&x.body.ok&&x.body.build,JSON.stringify(x.body));
+ x=await call('/api/version');check('version endpoint',x.r.status===200&&x.body.build&&x.body.node,JSON.stringify(x.body));
+ x=await call('/api/does-not-exist');check('unknown API is JSON 404',x.r.status===404&&x.body.error==='API endpoint not found'&&x.body.requestId,String(x.r.status));
+ x=await call('/api/orders',{method:'POST',headers:{'content-type':'application/json'},body:'{"broken":'});check('malformed JSON handled',x.r.status===400&&x.body.requestId,String(x.r.status));
  x=await call('/');check('customer HTML',x.r.status===200&&x.body.includes('Shrimp Fins')&&x.body.includes('heroFoodImage'));
  x=await call('/admin');check('admin HTML',x.r.status===200&&x.body.includes('Restaurant Control')&&x.body.includes('sCashOnDelivery')&&x.body.includes('sCardOnDelivery'));
  x=await call('/manifest.webmanifest');check('PWA manifest',x.r.status===200&&((typeof x.body==='object'&&x.body?.name?.includes('Shrimp Fins'))||String(x.body).includes('Shrimp Fins')));
@@ -39,8 +42,10 @@ async function main(){
  x=await call('/api/orders',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({customerName:'X',phone:'1',items:[]})});check('bad order validation',x.r.status===400,String(x.r.status));
 
  const prod=orderableProduct(pub),qty=orderQty(prod,pub.settings.minimumOrder);
- x=await call('/api/orders',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({customerName:'QA COD',phone:'0555555555',orderType:'pickup',notes:'QA COD',paymentMethod:'cod',items:[{productId:prod.id,qty}]})});
+ const codKey='qa-'+crypto.randomUUID(),codPayload={customerName:'QA COD',phone:'0555555555',orderType:'pickup',notes:'QA COD',paymentMethod:'cod',clientRequestId:codKey,items:[{productId:prod.id,qty}]};
+ x=await call('/api/orders',{method:'POST',headers:{'content-type':'application/json','idempotency-key':codKey},body:JSON.stringify(codPayload)});
  check('create COD pickup order',x.r.status===201&&x.body.order.status==='PENDING',String(x.r.status));const codOrder=x.body.order;
+ x=await call('/api/orders',{method:'POST',headers:{'content-type':'application/json','idempotency-key':codKey},body:JSON.stringify(codPayload)});check('idempotent checkout retry',x.r.status===200&&x.body.reused===true&&x.body.order.orderNumber===codOrder.orderNumber,String(x.r.status));
  x=await call('/api/orders/track/'+encodeURIComponent(codOrder.trackingToken)+'?phone=55555555');check('track COD order',x.r.status===200&&x.body.order.orderNumber===codOrder.orderNumber);
 
  x=await call('/api/orders',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({customerName:'QA CARD',phone:'0555555566',orderType:'delivery',address:'Riyadh QA Address',notes:'QA CARD',paymentMethod:'card_on_delivery',items:[{productId:prod.id,qty}]})});
@@ -50,6 +55,7 @@ async function main(){
  const market=pub.products.find(p=>p.orderable===false);
  if(market){x=await call('/api/orders',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({customerName:'QA Market',phone:'0555555577',orderType:'pickup',paymentMethod:'cod',items:[{productId:market.id,qty:1}]})});check('reject market-price online order',x.r.status===409,String(x.r.status))}
 
+ x=await call('/api/admin/me');check('unauthenticated admin blocked',x.r.status===401,String(x.r.status));
  x=await call('/api/admin/login',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({email,password:credential})});check('admin login',x.r.status===200&&x.body.ok);cookie=(x.r.headers.get('set-cookie')||'').split(';')[0];check('auth cookie',cookie.startsWith('sf_admin='));
  x=await call('/api/admin/me');check('admin session',x.r.status===200&&x.body.admin.email===email);
  x=await call('/api/admin/dashboard');check('dashboard',x.r.status===200&&Number(x.body.products)>=pub.products.length&&Number(x.body.pending)>=2,JSON.stringify({allProducts:x.body.products,publicProducts:pub.products.length,pending:x.body.pending}));
