@@ -1,0 +1,13 @@
+{
+  "name": "زعانف الروبيان | Shrimp Fins",
+  "short_name": "Shrimp Fins",
+  "description": "مطعم زعانف الروبيان - Seafood ordering in Riyadh",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#fff8f2",
+  "theme_color": "#072f4f",
+  "lang": "ar",
+  "dir": "rtl",
+  "icons": []
+}
