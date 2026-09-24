@@ -70,7 +70,7 @@ function renderSettings(){
 }
 function renderOffers(){
  if(!state.data)return;const arr=state.data.offers||[];
- $('#offersGrid').innerHTML=arr.map(o=>`<article class="offer-card"><img loading="lazy" src="${esc(o.image||state.data.settings?.heroImage||'')}" alt="${esc(txt(o,'title_ar','title_en'))}"><span class="offer-price">${money(o.price)}</span><div class="offer-copy"><h3>${esc(txt(o,'title_ar','title_en'))}</h3><p>${esc(txt(o,'description_ar','description_en')||'')}</p></div></article>`).join('');$('#offersGrid img').forEach(img=>img.onerror=()=>{img.parentElement?.classList.add('image-error');img.remove()});
+ $('#offersGrid').innerHTML=arr.map(o=>`<article class="offer-card"><img loading="lazy" src="${esc(o.image||state.data.settings?.heroImage||'')}" alt="${esc(txt(o,'title_ar','title_en'))}"><span class="offer-price">${money(o.price)}</span><div class="offer-copy"><h3>${esc(txt(o,'title_ar','title_en'))}</h3><p>${esc(txt(o,'description_ar','description_en')||'')}</p></div></article>`).join('');$$('#offersGrid img').forEach(img=>img.onerror=()=>{img.parentElement?.classList.add('image-error');img.remove()});
 }
 function renderCategories(){
  if(!state.data)return;const all={id:'all',name_ar:'الكل',name_en:'All',icon:'✨'},arr=[all,...state.data.categories];
