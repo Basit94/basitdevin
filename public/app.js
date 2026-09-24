@@ -110,7 +110,8 @@ function renderCart(){
  const entries=Object.entries(state.cart);const count=cartQty();$('#cartCount').textContent=count;$('#floatingCount').textContent=count;if($('#mobileCartCount'))$('#mobileCartCount').textContent=count;$('#floatingCart').classList.toggle('hidden',count===0);
  const t=totals();$('#floatingTotal').textContent=money(t.sub);
  $('#cartEmpty').classList.toggle('hidden',entries.length>0);$('#cartTotals').classList.toggle('hidden',entries.length===0);
- $('#cartItems').innerHTML=entries.map(([id,q])=>{const p=product(id);return `<div class="cart-row">${p.image?`<img src="${esc(p.image)}" alt="">`:`<div class="img-fallback">🦐</div>`}<div><h4>${esc(txt(p,'name_ar','name_en'))}</h4><small>${money(p.price)}</small></div><div class="qty"><button data-minus="${id}">−</button><b>${q}</b><button data-plus="${id}">+</button></div></div>`}).join('');
+ $('#cartItems').innerHTML=entries.map(([id,q])=>{const p=product(id);return `<div class="cart-row">${p.image?remoteImg(p.image,'',false):`<div class="img-fallback">🦐</div>`}<div><h4>${esc(txt(p,'name_ar','name_en'))}</h4><small>${money(p.price)}</small></div><div class="qty"><button data-minus="${id}">−</button><b>${q}</b><button data-plus="${id}">+</button></div></div>`}).join('');
+ hydrateRemoteImages($('#cartItems'));
  $$('[data-minus]').forEach(b=>b.onclick=()=>{state.cart[b.dataset.minus]--;if(state.cart[b.dataset.minus]<=0)delete state.cart[b.dataset.minus];saveCart()});
  $$('[data-plus]').forEach(b=>b.onclick=()=>{state.cart[b.dataset.plus]++;saveCart()});
  $('#subTotal').textContent=money(t.sub);$('#deliveryFee').textContent='—';$('#grandTotal').textContent=money(t.sub);$('#checkoutTotal').textContent=money(t.total);
