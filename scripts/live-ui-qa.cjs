@@ -117,8 +117,11 @@ async function main(){
     check('cart has item',await page.locator('#cartItems .cart-row').count()===1);
     await page.locator('#checkoutBtn').click();
     check('checkout modal opens',await page.locator('#checkoutModal').isVisible());
-    check('cash payment available',await page.locator('input[name="paymentMethod"][value="cod"]').isVisible());
-    check('card-on-delivery available',await page.locator('input[name="paymentMethod"][value="card_on_delivery"]').isVisible());
+    const codInput=page.locator('input[name="paymentMethod"][value="cod"]'),cardInput=page.locator('input[name="paymentMethod"][value="card_on_delivery"]');
+    check('cash payment control enabled',await codInput.isEnabled());
+    check('cash payment option visible',await codInput.locator('xpath=..').isVisible());
+    check('card-on-delivery control enabled',await cardInput.isEnabled());
+    check('card-on-delivery option visible',await cardInput.locator('xpath=..').isVisible());
 
     await page.locator('input[name="orderType"][value="delivery"]').check();
     check('delivery address appears',await page.locator('#addressField').isVisible());
