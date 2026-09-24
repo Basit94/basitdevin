@@ -6,6 +6,18 @@ ar:{offers:'العروض',menu:'المنيو',gallery:'الصور',contact:'تو
 en:{offers:'Offers',menu:'Menu',gallery:'Gallery',contact:'Contact',track:'Track',orderNow:'Order Now',fresh:'Fresh daily',restaurantConfirm:'Restaurant confirmation',pickupDelivery:'Pickup or delivery',menuItems:'menu items',items:'Items',confirmation:'order confirmation',callUs:'Call us',todayOffers:'Shrimp Fins Offers',offerSub:'Special sharing and family platter offers',chooseMeal:'Choose your meal',menuSub:'Browse the full menu and add items to your cart easily.',noResults:'No results found',photoNote:'Some dish photos are illustrative until the restaurant adds the real photo for each item.',galleryTitle:'Shrimp Fins',gallerySub:'Official restaurant identity and storefront images.',realStore:'Real Shrimp Fins storefront',howWorks:'How ordering works',howWorksSub:'Your order is only confirmed after restaurant approval.',step1:'Choose items',step2:'Send order',step3:'Restaurant confirms',step4:'Prepare & receive',directions:'Directions',hours:'Opening hours',serviceOptions:'Service options',visitorInfo:'Visit information',todayStatus:'Today',footer:'Every order requires restaurant confirmation before preparation.',cartTitle:'Your cart',emptyCart:'Your cart is empty',subtotal:'Subtotal',deliveryFee:'Delivery',total:'Total',checkout:'Continue to checkout',checkoutTitle:'Order details',checkoutNote:'The order reaches the restaurant as pending confirmation.',pickup:'Pickup',delivery:'Delivery',name:'Name',phone:'Mobile',address:'Delivery address',notes:'Notes',payment:'Payment method',cod:'Cash on Delivery / Pickup',cardOnDelivery:'Card on Delivery / Pickup',officialPromo:'Shrimp Fins official restaurant image',amountDue:'Total',placeOrder:'Send order to restaurant',terms:'The order is pending restaurant approval and is not instantly confirmed.',trackOrder:'Track order',showStatus:'Show status',orderSent:'Order sent',waitingConfirm:'Your order is waiting for restaurant confirmation.',orderNumber:'Order number',trackNow:'Track now',done:'Done',all:'All',add:'Add',view:'View details',minimum:'Minimum order',open:'Accepting orders now',closed:'Orders temporarily paused',added:'Added to cart',unavailable:'This item is currently unavailable',orderFailed:'Could not place order',loading:'Sending...',pending:'Pending confirmation',confirmed:'Confirmed',preparing:'Preparing',ready:'Ready',completed:'Completed',rejected:'Rejected',cancelled:'Cancelled',estimated:'Estimated time',minutes:'minutes',orderType:'Order type',copy:'Copy tracking link',copied:'Tracking link copied'}
 };
 const tr=k=>I18N[state.lang][k]||k;
+let lastClientErrorKey='',lastClientErrorAt=0;
+function reportClientError(kind,message,stack=''){
+ try{
+  const key=kind+'|'+String(message).slice(0,300),now=Date.now();
+  if(key===lastClientErrorKey&&now-lastClientErrorAt<30000)return;
+  lastClientErrorKey=key;lastClientErrorAt=now;
+  navigator.sendBeacon?.('/api/client-errors',new Blob([JSON.stringify({kind,message:String(message||'').slice(0,500),stack:String(stack||'').slice(0,2000),path:location.pathname,href:location.href,userAgent:navigator.userAgent})],{type:'application/json'}))
+  ||fetch('/api/client-errors',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({kind,message:String(message||'').slice(0,500),stack:String(stack||'').slice(0,2000),path:location.pathname,href:location.href,userAgent:navigator.userAgent}),keepalive:true}).catch(()=>{});
+ }catch{}
+}
+window.addEventListener('error',e=>reportClientError('window_error',e.message,e.error?.stack||''));
+window.addEventListener('unhandledrejection',e=>reportClientError('unhandled_rejection',e.reason?.message||String(e.reason||''),e.reason?.stack||''));
 const txt=(o,a,e)=>state.lang==='ar'?(o?.[a]||o?.[e]||''):(o?.[e]||o?.[a]||'');
 const money=n=>new Intl.NumberFormat(state.lang==='ar'?'ar-SA':'en-US',{minimumFractionDigits:0,maximumFractionDigits:2}).format(+n||0)+' SAR';
 function restaurantOpenNow(){
@@ -122,7 +134,7 @@ function renderTracking(o){
 async function load(){
  $('#loadError')?.classList.add('hidden');$('#loading')?.classList.remove('hide');
  try{const r=await fetch('/api/public',{headers:{accept:'application/json'},cache:'no-store'});if(!r.ok)throw Error('Menu unavailable');state.data=await r.json();applyLanguage();renderCart();const qs=new URLSearchParams(location.search);if(qs.get('track')){open('#trackModal');$('#trackToken').value=qs.get('track');$('#trackPhone').value=qs.get('phone')||'';if(qs.get('phone'))$('#trackForm').requestSubmit()}}
- catch(e){toast(e.message,true);$('#loadError')?.classList.remove('hidden')}finally{setTimeout(()=>$('#loading')?.classList.add('hide'),180)}
+ catch(e){console.error('MENU_LOAD_FAILED',e);reportClientError('menu_load_failed',e?.message||String(e),e?.stack||'');toast(e.message,true);$('#loadError')?.classList.remove('hidden')}finally{setTimeout(()=>$('#loading')?.classList.add('hide'),180)}
 }
 $('#langBtn').onclick=()=>{state.lang=state.lang==='ar'?'en':'ar';localStorage.setItem('sf_lang',state.lang);applyLanguage()};if($('#retryBtn'))$('#retryBtn').onclick=load;
 $('#searchInput').oninput=e=>{state.search=e.target.value;renderProducts()};
@@ -133,6 +145,6 @@ $$('input[name="orderType"]').forEach(x=>x.onchange=updateCheckoutTotal);$('#che
 $('#trackForm').onsubmit=async e=>{e.preventDefault();try{await trackOrder($('#trackToken').value,$('#trackPhone').value)}catch(err){toast(err.message,true)}};
 $('#trackNow').onclick=()=>{const o=state.lastOrder;if(!o)return;closeAll();open('#trackModal');$('#trackToken').value=o.trackingToken;$('#trackPhone').value=o.phone;$('#trackForm').requestSubmit()};
 $('#offerPrev').onclick=()=>$('#offersGrid').scrollBy({left:-320,behavior:'smooth'});$('#offerNext').onclick=()=>$('#offersGrid').scrollBy({left:320,behavior:'smooth'});
-if('serviceWorker'in navigator)window.addEventListener('load',async()=>{try{if('caches'in window){const ks=await caches.keys();await Promise.all(ks.filter(k=>k.startsWith('shrimp-fins-')&&k!=='shrimp-fins-v9').map(k=>caches.delete(k)))}await navigator.serviceWorker.register('/sw.js?v=9',{updateViaCache:'none'})}catch{}});
+if('serviceWorker'in navigator)window.addEventListener('load',async()=>{try{if('caches'in window){const ks=await caches.keys();await Promise.all(ks.filter(k=>k.startsWith('shrimp-fins-')&&k!=='shrimp-fins-v10').map(k=>caches.delete(k)))}await navigator.serviceWorker.register('/sw.js?v=10',{updateViaCache:'none'})}catch{}});
 state.lastOrder=JSON.parse(localStorage.getItem('sf_last_order')||'null');
 load();
