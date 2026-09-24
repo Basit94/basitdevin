@@ -89,6 +89,22 @@ const menuImagePools={
 starters:[4989069,10563268,6419753],soup:[18510254,23627792,14856117],rice2:[15362105,8423376,37215009],pasta:[33323283],casseroles:[6262224,17600198,6046671],shellfish2:[39035466,36720618,4869328,9328460,566343],platters:[8352805,32668760,30749023,566345],sandwiches:[6046671,30749023,39035466],meals2:[6046671,19106459,31235406,25004921,17010947],drinks2:[4113632,8880742,15624409],juices:[12222086,7656388,4871113,8215113],desserts:[116725,34468155],fish:[17010947,25004921]
 };
 function menuImage(cat,i){const a=menuImagePools[cat]||[8352805];return px(a[i%a.length],900,650)}
+const excelRealImages={
+ m001:'/assets/menu-real/m001.webp',m002:'/assets/menu-real/m002.webp',m003:'/assets/menu-real/m003.webp',m004:'/assets/menu-real/m004.webp',
+ m006:'/assets/menu-real/m006.webp',m007:'/assets/menu-real/m007.webp',m008:'/assets/menu-real/m008.webp',m009:'/assets/menu-real/m009.webp',
+ m010:'/assets/menu-real/m010.webp',m011:'/assets/menu-real/m011.webp',m013:'/assets/menu-real/m013.webp',m014:'/assets/menu-real/m014.webp',
+ m015:'/assets/menu-real/m015.webp',m016:'/assets/menu-real/m016.webp',m017:'/assets/menu-real/m017.webp',m018:'/assets/menu-real/m018.webp',
+ m019:'/assets/menu-real/m019.webp',m020:'/assets/menu-real/m020.webp',m021:'/assets/menu-real/m021.webp',m022:'/assets/menu-real/m022.webp',
+ m023:'/assets/menu-real/m023.webp',m024:'/assets/menu-real/m024.webp',m025:'/assets/menu-real/m025.webp',m027:'/assets/menu-real/m027.webp',
+ m028:'/assets/menu-real/m028.webp',m029:'/assets/menu-real/m029.webp',m030:'/assets/menu-real/m030.webp',m031:'/assets/menu-real/m031.webp',
+ m035:'/assets/menu-real/m035.webp',m036:'/assets/menu-real/m036.webp',m037:'/assets/menu-real/m037.webp',m038:'/assets/menu-real/m038.webp',
+ m039:'/assets/menu-real/m039.webp',m040:'/assets/menu-real/m040.webp',m041:'/assets/menu-real/m041.webp',m043:'/assets/menu-real/m043.webp',
+ m044:'/assets/menu-real/m044.webp',m045:'/assets/menu-real/m045.webp',m046:'/assets/menu-real/m046.webp',m047:'/assets/menu-real/m047.webp',
+ m048:'/assets/menu-real/m048.webp',m049:'/assets/menu-real/m049.webp',m050:'/assets/menu-real/m050.webp',m051:'/assets/menu-real/m051.webp',
+ m057:'/assets/menu-real/m057.webp',m058:'/assets/menu-real/m058.webp',m059:'/assets/menu-real/m059.webp',m060:'/assets/menu-real/m060.webp',
+ m061:'/assets/menu-real/m061.webp',m062:'/assets/menu-real/m062.webp'
+};
+const excelRealOfferImages={o001:excelRealImages.m036,o002:excelRealImages.m037,o003:excelRealImages.m038,o007:excelRealImages.m035,o008:excelRealImages.m039};
 
 async function init(){await pool.query(`
 CREATE TABLE IF NOT EXISTS settings(id int primary key,data jsonb not null);
@@ -110,6 +126,7 @@ ALTER TABLE products ADD COLUMN IF NOT EXISTS calories int;
 ALTER TABLE products ADD COLUMN IF NOT EXISTS orderable boolean NOT NULL DEFAULT true;
 ALTER TABLE products ADD COLUMN IF NOT EXISTS price_note_ar text NOT NULL DEFAULT '';
 ALTER TABLE products ADD COLUMN IF NOT EXISTS price_note_en text NOT NULL DEFAULT '';
+ALTER TABLE products ADD COLUMN IF NOT EXISTS image_source text NOT NULL DEFAULT 'ILLUSTRATIVE';
 ALTER TABLE offers ADD COLUMN IF NOT EXISTS description_ar text NOT NULL DEFAULT '';
 ALTER TABLE offers ADD COLUMN IF NOT EXISTS description_en text NOT NULL DEFAULT '';
 ALTER TABLE offers ADD COLUMN IF NOT EXISTS image text NOT NULL DEFAULT '';
@@ -117,6 +134,7 @@ ALTER TABLE offers ADD COLUMN IF NOT EXISTS starts_at timestamptz;
 ALTER TABLE offers ADD COLUMN IF NOT EXISTS ends_at timestamptz;
 ALTER TABLE offers ADD COLUMN IF NOT EXISTS created_at timestamptz NOT NULL DEFAULT now();
 ALTER TABLE offers ADD COLUMN IF NOT EXISTS updated_at timestamptz NOT NULL DEFAULT now();
+ALTER TABLE offers ADD COLUMN IF NOT EXISTS image_source text NOT NULL DEFAULT 'ILLUSTRATIVE';
 ALTER TABLE categories ADD COLUMN IF NOT EXISTS created_at timestamptz NOT NULL DEFAULT now();
 ALTER TABLE categories ADD COLUMN IF NOT EXISTS updated_at timestamptz NOT NULL DEFAULT now();
 ALTER TABLE admins ADD COLUMN IF NOT EXISTS role text NOT NULL DEFAULT 'ADMIN';
@@ -178,6 +196,40 @@ if(st.menuRevision!=='excel-2026-09-v5'){
     await client.query('COMMIT');
   }catch(e){await client.query('ROLLBACK').catch(()=>{});throw e}finally{client.release()}
 }
+if(st.photoRevision!=='owner-excel-photos-2026-09-25-v1'){
+  const client=await pool.connect();
+  try{
+    await client.query('BEGIN');
+    for(const [id,url] of Object.entries(excelRealImages)){
+      await client.query(`UPDATE products SET image=$1,image_source='OWNER_EXCEL',updated_at=NOW()
+        WHERE id=$2 AND COALESCE(image,'') NOT LIKE '/api/images/%'`,[url,id]);
+    }
+    await client.query(`UPDATE products SET image_source='ILLUSTRATIVE',updated_at=NOW()
+      WHERE available=TRUE AND id NOT IN (SELECT unnest($1::text[])) AND COALESCE(image,'') NOT LIKE '/api/images/%'`,[Object.keys(excelRealImages)]);
+    await client.query(`UPDATE products SET image_source='ADMIN_UPLOAD',updated_at=NOW() WHERE image LIKE '/api/images/%'`);
+    for(const [id,url] of Object.entries(excelRealOfferImages)){
+      await client.query(`UPDATE offers SET image=$1,image_source='OWNER_EXCEL',updated_at=NOW()
+        WHERE id=$2 AND COALESCE(image,'') NOT LIKE '/api/images/%'`,[url,id]);
+    }
+    await client.query(`UPDATE offers SET image_source='ILLUSTRATIVE',updated_at=NOW()
+      WHERE active=TRUE AND id NOT IN (SELECT unnest($1::text[])) AND COALESCE(image,'') NOT LIKE '/api/images/%'`,[Object.keys(excelRealOfferImages)]);
+    await client.query(`UPDATE offers SET image_source='ADMIN_UPLOAD',updated_at=NOW() WHERE image LIKE '/api/images/%'`);
+    st.photoRevision='owner-excel-photos-2026-09-25-v1';
+    st.realMenuPhotoCount=Object.keys(excelRealImages).length;
+    st.heroPhotos=[
+      {src:'/assets/storefront.svg',ar:'واجهة مطعم زعانف الروبيان',en:'Shrimp Fins storefront',source:'OWNER'},
+      {src:'/assets/menu-real/m035.webp',ar:'صحن المزاجنجية من ملف المطعم',en:'Mazagangia platter from the restaurant file',source:'OWNER_EXCEL'},
+      {src:'/assets/menu-real/m038.webp',ar:'صينية العريس من ملف المطعم',en:'Al Arees tray from the restaurant file',source:'OWNER_EXCEL'},
+      {src:'/assets/menu-real/m031.webp',ar:'استكوزا مشوي من ملف المطعم',en:'Grilled lobster from the restaurant file',source:'OWNER_EXCEL'},
+      {src:'/assets/menu-real/m037.webp',ar:'صينية الكيف الحلو من ملف المطعم',en:'Al Kaif tray from the restaurant file',source:'OWNER_EXCEL'},
+      {src:'/assets/menu-real/m039.webp',ar:'صينية الدنيس بالبطاطس من ملف المطعم',en:'Sea bream & potato tray from the restaurant file',source:'OWNER_EXCEL'},
+      {src:'/assets/shrimp-fins-promo.webp',ar:'الهوية الرسمية لزعانف الروبيان',en:'Official Shrimp Fins artwork',source:'OWNER'}
+    ];
+    st.imageCredit='Real menu photos are extracted from the restaurant Excel supplied by the owner. Illustrative photos are used only for items without an owner photo.';
+    await client.query('UPDATE settings SET data=$1 WHERE id=1',[st]);
+    await client.query('COMMIT');
+  }catch(e){await client.query('ROLLBACK').catch(()=>{});throw e}finally{client.release()}
+}
 st={restaurantNameAr:'زعانف الروبيان',restaurantNameEn:'Shrimp Fins',phone:'0541064143',whatsapp:'966541064143',addressAr:'شارع حسان بن ثابت، حي النسيم الغربي، الرياض 14232',addressEn:'Hassan Ibn Thabet, An Nasim Al Gharbi, Riyadh 14232, Saudi Arabia',deliveryFee:10,minimumOrder:30,acceptingOrders:true,currency:'SAR',heroMessageAr:'أشهى المأكولات البحرية الطازجة في مكان واحد',heroMessageEn:'Premium fresh seafood, prepared to order',openingHoursAr:'يومياً 12:00 ظهراً – 12:00 منتصف الليل',openingHoursEn:'Daily 12:00 PM – 12:00 AM',mapQuery:'24.7358191,46.8310771',mapUrl:'https://www.google.com/maps/search/?api=1&query=24.7358191,46.8310771',googleRating:4.8,googleReviewCount:251,serviceModesAr:'توصيل • سفري • تناول داخل المطعم',serviceModesEn:'Delivery • Takeaway • Dine-in',amenitiesAr:'مناسب للعائلات • مواقف مجانية • يقبل البطاقات والدفع بالجوال',amenitiesEn:'Family-friendly • Free parking • Cards & NFC payments',googleInfoCheckedAt:'2026-09-24',heroImage:'/assets/shrimp-fins-promo.webp',storefrontImage:'/assets/storefront.svg',cashOnDelivery:true,cardOnDelivery:true,imageCredit:'Licensed Pexels stock photography is used where real restaurant dish photos are not yet available.',...st};
 if(st.infoRevision!=='google-maps-2026-09-24-v1'){Object.assign(st,{addressAr:'شارع حسان بن ثابت، حي النسيم الغربي، الرياض 14232',addressEn:'Hassan Ibn Thabet, An Nasim Al Gharbi, Riyadh 14232, Saudi Arabia',openingHoursAr:'يومياً 12:00 ظهراً – 12:00 منتصف الليل',openingHoursEn:'Daily 12:00 PM – 12:00 AM',mapQuery:'24.7358191,46.8310771',mapUrl:'https://www.google.com/maps/search/?api=1&query=24.7358191,46.8310771',googleRating:4.8,googleReviewCount:251,serviceModesAr:'توصيل • سفري • تناول داخل المطعم',serviceModesEn:'Delivery • Takeaway • Dine-in',amenitiesAr:'مناسب للعائلات • مواقف مجانية • يقبل البطاقات والدفع بالجوال',amenitiesEn:'Family-friendly • Free parking • Cards & NFC payments',googleInfoCheckedAt:'2026-09-24',heroImage:'/assets/shrimp-fins-promo.webp',storefrontImage:'/assets/storefront.svg',cashOnDelivery:true,infoRevision:'google-maps-2026-09-24-v1'});}
 await pool.query('update settings set data=$1 where id=1',[st]);}
@@ -211,11 +263,12 @@ async function startupSelfTest(){
     (select count(*) from offers where active=true and coalesce(image,'')<>'') offer_images,
     (select count(*) from categories where active=true) categories,
     (select count(*) from products where available=true and calories is not null) calories_populated,
-    (select count(*) from products where available=true and orderable=false) market_price_items`)).rows[0];
+    (select count(*) from products where available=true and orderable=false) market_price_items,
+    (select count(*) from products where available=true and image_source='OWNER_EXCEL') owner_excel_photos`)).rows[0];
   const st=(await pool.query('select data from settings where id=1')).rows[0]?.data||{};
-  if(+stats.products<menuProducts.length||+stats.product_images<menuProducts.length||+stats.offers<8||+stats.offer_images<8||+stats.calories_populated<40||+stats.market_price_items<1)throw Error('Menu completeness self-test failed: '+JSON.stringify(stats));
+  if(+stats.products<menuProducts.length||+stats.product_images<menuProducts.length||+stats.offers<8||+stats.offer_images<8||+stats.calories_populated<40||+stats.market_price_items<1||+stats.owner_excel_photos<50)throw Error('Menu completeness self-test failed: '+JSON.stringify(stats));
   if(st.phone!=='0541064143'||!st.whatsapp||!st.restaurantNameAr||!st.addressAr||st.heroImage!=='/assets/shrimp-fins-promo.webp'||st.storefrontImage!=='/assets/storefront.svg'||st.cashOnDelivery!==true||st.infoRevision!=='google-maps-2026-09-24-v1'||st.googleRating!==4.8||!st.mapUrl||!st.openingHoursAr)throw Error('Restaurant settings self-test failed');
-  console.log('STARTUP_QA_PASS '+JSON.stringify({products:+stats.products,productImages:+stats.product_images,offers:+stats.offers,offerImages:+stats.offer_images,categories:+stats.categories,caloriesPopulated:+stats.calories_populated,marketPriceItems:+stats.market_price_items,phone:st.phone,menuRevision:st.menuRevision,infoRevision:st.infoRevision,openingHours:st.openingHoursEn,googleRating:st.googleRating,transactionRollback:true,orderWorkflow:true,frontendDom:true,promoAsset:true,storefrontAsset:true,cashOnDelivery:true}));
+  console.log('STARTUP_QA_PASS '+JSON.stringify({products:+stats.products,productImages:+stats.product_images,offers:+stats.offers,offerImages:+stats.offer_images,categories:+stats.categories,caloriesPopulated:+stats.calories_populated,marketPriceItems:+stats.market_price_items,ownerExcelPhotos:+stats.owner_excel_photos,phone:st.phone,menuRevision:st.menuRevision,infoRevision:st.infoRevision,openingHours:st.openingHoursEn,googleRating:st.googleRating,transactionRollback:true,orderWorkflow:true,frontendDom:true,promoAsset:true,storefrontAsset:true,cashOnDelivery:true}));
  }catch(e){try{await c.query('ROLLBACK')}catch{}throw e}finally{c.release()}
 }
 async function startupHttpSelfTest(){
@@ -292,7 +345,22 @@ app.use('/api/admin',(req,res,next)=>{
 });
 app.get('/api/admin/audit',async(req,res)=>{const limit=Math.max(1,Math.min(200,Number(req.query.limit)||100));const rows=(await pool.query('select id,actor,action,path,status,request_id,created_at from audit_log order by id desc limit $1',[limit])).rows;res.json({audit:rows})});
 app.get('/api/admin/events',(req,res)=>{res.set({'Content-Type':'text/event-stream','Cache-Control':'no-cache','Connection':'keep-alive'});res.flushHeaders?.();sseClients.add(res);res.write('event: ready\ndata: {}\n\n');req.on('close',()=>sseClients.delete(res))});
-app.get('/api/admin/dashboard',async(req,res)=>{let [today,pending,pc,oc,recent,month,top]=await Promise.all([pool.query("select count(*) c,coalesce(sum(case when status='COMPLETED' then total else 0 end),0) sales from orders where created_at::date=current_date"),pool.query("select count(*) c from orders where status='PENDING'"),pool.query('select count(*) c from products'),pool.query("select count(*) c from offers where active=true"),pool.query('select * from orders order by created_at desc limit 12'),pool.query("select coalesce(sum(total),0) sales from orders where status='COMPLETED' and date_trunc('month',created_at)=date_trunc('month',current_date)"),pool.query("select name_en,name_ar,sum(qty)::int qty,sum(total)::numeric(12,2) revenue from order_items group by name_en,name_ar order by qty desc limit 8")]);res.json({todayOrders:+today.rows[0].c,todaySales:+today.rows[0].sales,pending:+pending.rows[0].c,products:+pc.rows[0].c,offers:+oc.rows[0].c,monthSales:+month.rows[0].sales,recent:recent.rows,topItems:top.rows})});
+app.get('/api/admin/dashboard',async(req,res)=>{
+ let [today,pending,pc,oc,recent,month,top,statuses,mix,week,photos]=await Promise.all([
+  pool.query("select count(*) c,coalesce(sum(case when status='COMPLETED' then total else 0 end),0) sales from orders where created_at::date=current_date"),
+  pool.query("select count(*) c from orders where status='PENDING'"),
+  pool.query('select count(*) c from products'),
+  pool.query("select count(*) c from offers where active=true"),
+  pool.query('select * from orders order by created_at desc limit 12'),
+  pool.query("select coalesce(sum(total),0) sales from orders where status='COMPLETED' and date_trunc('month',created_at)=date_trunc('month',current_date)"),
+  pool.query("select name_en,name_ar,sum(qty)::int qty,sum(total)::numeric(12,2) revenue from order_items group by name_en,name_ar order by qty desc limit 8"),
+  pool.query("select status,count(*)::int c from orders where created_at::date=current_date group by status"),
+  pool.query("select order_type,payment,count(*)::int c from orders where created_at::date=current_date group by order_type,payment"),
+  pool.query("select count(*)::int orders,coalesce(sum(case when status='COMPLETED' then total else 0 end),0)::numeric(12,2) sales from orders where created_at>=current_date-interval '6 days'"),
+  pool.query("select count(*) filter(where image_source='OWNER_EXCEL')::int real_products,count(*) filter(where image_source='ILLUSTRATIVE')::int illustrative_products from products where available=true")
+ ]);
+ res.json({todayOrders:+today.rows[0].c,todaySales:+today.rows[0].sales,pending:+pending.rows[0].c,products:+pc.rows[0].c,offers:+oc.rows[0].c,monthSales:+month.rows[0].sales,recent:recent.rows,topItems:top.rows,todayStatuses:statuses.rows,todayMix:mix.rows,weekOrders:+week.rows[0].orders,weekSales:+week.rows[0].sales,photoCoverage:photos.rows[0]});
+});
 app.get('/api/admin/orders',async(req,res)=>{let args=[],where=[];if(req.query.status){args.push(String(req.query.status));where.push('status=$'+args.length)}if(req.query.q){args.push('%'+String(req.query.q).slice(0,100)+'%');where.push('(order_no ilike $'+args.length+' or customer_name ilike $'+args.length+' or phone ilike $'+args.length+')')}let r=await pool.query('select * from orders '+(where.length?'where '+where.join(' and '):'')+' order by created_at desc limit 500',args);res.json({orders:r.rows})});
 app.get('/api/admin/orders/:id',async(req,res)=>{let o=(await pool.query('select * from orders where id=$1',[req.params.id])).rows[0];if(!o)return res.status(404).json({error:'Order not found'});let [items,h]=await Promise.all([pool.query('select * from order_items where order_id=$1 order by id',[o.id]),pool.query('select * from order_history where order_id=$1 order by id',[o.id])]);res.json({order:o,items:items.rows,history:h.rows})});
 app.patch('/api/admin/orders/:id/status',async(req,res,nextFn)=>{const client=await pool.connect();try{await client.query('BEGIN');let current=(await client.query('select * from orders where id=$1 for update',[req.params.id])).rows[0];if(!current){await client.query('ROLLBACK');return res.status(404).json({error:'Order not found'})}let next=String(req.body.status||'');if(!(statusTransitions[current.status]||[]).includes(next)){await client.query('ROLLBACK');return res.status(409).json({error:'Invalid transition from '+current.status+' to '+next})}let note=safe(req.body.note,300),mins=req.body.estimatedMinutes==null?null:Math.max(1,Math.min(240,+req.body.estimatedMinutes||1));let r=await client.query("update orders set status=$1,status_note=case when $2='' then status_note else $2 end,estimated_minutes=coalesce($3,estimated_minutes),updated_at=now() where id=$4 returning *",[next,note,mins,req.params.id]);await client.query('insert into order_history(order_id,status,note) values($1,$2,$3)',[req.params.id,next,note]);await client.query('COMMIT');broadcast('order-status',{id:req.params.id,status:next});log('info','order_status_changed',{requestId:req.id,orderId:req.params.id,from:current.status,to:next,admin:req.admin?.email||''});res.json({order:r.rows[0]})}catch(e){await client.query('ROLLBACK').catch(()=>{});nextFn(e)}finally{client.release()}});
@@ -300,8 +368,8 @@ app.get('/api/admin/categories',async(req,res)=>res.json({categories:(await pool
 app.post('/api/admin/categories',async(req,res)=>{let b=req.body||{},id=safe(b.id||('cat_'+crypto.randomUUID()),80).toLowerCase().replace(/[^a-z0-9_-]/g,'-');try{let r=await pool.query('insert into categories(id,name_ar,name_en,icon,active,sort_order) values($1,$2,$3,$4,$5,$6) returning *',[id,safe(b.name_ar,100),safe(b.name_en,100),safe(b.icon||'🍽️',10),b.active!==false,+b.sort_order||999]);res.status(201).json({category:r.rows[0]})}catch(e){if(e.code==='23505')return res.status(409).json({error:'Category already exists'});throw e}});
 app.patch('/api/admin/categories/:id',async(req,res)=>{let b=req.body||{};let r=await pool.query('update categories set name_ar=coalesce($1,name_ar),name_en=coalesce($2,name_en),icon=coalesce($3,icon),active=coalesce($4,active),sort_order=coalesce($5,sort_order),updated_at=now() where id=$6 returning *',[b.name_ar??null,b.name_en??null,b.icon??null,b.active==null?null:!!b.active,b.sort_order==null?null:+b.sort_order,req.params.id]);if(!r.rows[0])return res.status(404).json({error:'Category not found'});res.json({category:r.rows[0]})});app.delete('/api/admin/categories/:id',async(req,res)=>{let used=+(await pool.query('select count(*) c from products where category_id=$1',[req.params.id])).rows[0].c;if(used)return res.status(409).json({error:'Category is used by '+used+' product(s). Move or delete those products first.'});let r=await pool.query('delete from categories where id=$1 returning id',[req.params.id]);if(!r.rows[0])return res.status(404).json({error:'Category not found'});res.json({ok:true})});
 app.get('/api/admin/products',async(req,res)=>res.json({products:(await pool.query('select p.*,c.name_ar category_ar,c.name_en category_en from products p join categories c on c.id=p.category_id order by c.sort_order,p.sort_order,p.name_ar')).rows,categories:(await pool.query('select * from categories order by sort_order')).rows}));
-app.post('/api/admin/products',async(req,res)=>{let b=req.body||{},id='prd_'+crypto.randomUUID();try{let r=await pool.query('insert into products(id,category_id,name_ar,name_en,description_ar,description_en,price,compare_at_price,unit_ar,unit_en,image,available,featured,sort_order,calories,orderable,price_note_ar,price_note_en) values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18) returning *',[id,safe(b.category_id||b.categoryId,80),safe(b.name_ar,150),safe(b.name_en,150),safe(b.description_ar,700),safe(b.description_en,700),money(b.price),b.compare_at_price==null?null:money(b.compare_at_price),safe(b.unit_ar||'طبق',60),safe(b.unit_en||'item',60),safe(b.image,500),b.available!==false,!!b.featured,+b.sort_order||999,b.calories==null?null:Math.max(0,Math.round(+b.calories||0)),b.orderable!==false,safe(b.price_note_ar,80),safe(b.price_note_en,80)]);res.status(201).json({product:r.rows[0]})}catch(e){if(e.code==='23503')return res.status(400).json({error:'Invalid category'});throw e}});
-app.patch('/api/admin/products/:id',async(req,res)=>{let b=req.body||{},p=(await pool.query('select * from products where id=$1',[req.params.id])).rows[0];if(!p)return res.status(404).json({error:'Product not found'});let r=await pool.query('update products set category_id=$1,name_ar=$2,name_en=$3,description_ar=$4,description_en=$5,price=$6,compare_at_price=$7,unit_ar=$8,unit_en=$9,image=$10,available=$11,featured=$12,sort_order=$13,calories=$14,orderable=$15,price_note_ar=$16,price_note_en=$17,updated_at=now() where id=$18 returning *',[safe(b.category_id??b.categoryId??p.category_id,80),safe(b.name_ar??p.name_ar,150),safe(b.name_en??p.name_en,150),safe(b.description_ar??p.description_ar,700),safe(b.description_en??p.description_en,700),b.price==null?+p.price:money(b.price),b.compare_at_price===undefined?p.compare_at_price:(b.compare_at_price==null?null:money(b.compare_at_price)),safe(b.unit_ar??p.unit_ar,60),safe(b.unit_en??p.unit_en,60),safe(b.image??p.image,500),b.available==null?p.available:!!b.available,b.featured==null?p.featured:!!b.featured,b.sort_order==null?p.sort_order:+b.sort_order,b.calories===undefined?p.calories:(b.calories==null?null:Math.max(0,Math.round(+b.calories||0))),b.orderable==null?p.orderable:!!b.orderable,safe(b.price_note_ar??p.price_note_ar,80),safe(b.price_note_en??p.price_note_en,80),req.params.id]);res.json({product:r.rows[0]})});
+app.post('/api/admin/products',async(req,res)=>{let b=req.body||{},id='prd_'+crypto.randomUUID();try{let r=await pool.query('insert into products(id,category_id,name_ar,name_en,description_ar,description_en,price,compare_at_price,unit_ar,unit_en,image,available,featured,sort_order,calories,orderable,price_note_ar,price_note_en,image_source) values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19) returning *',[id,safe(b.category_id||b.categoryId,80),safe(b.name_ar,150),safe(b.name_en,150),safe(b.description_ar,700),safe(b.description_en,700),money(b.price),b.compare_at_price==null?null:money(b.compare_at_price),safe(b.unit_ar||'طبق',60),safe(b.unit_en||'item',60),safe(b.image,500),b.available!==false,!!b.featured,+b.sort_order||999,b.calories==null?null:Math.max(0,Math.round(+b.calories||0)),b.orderable!==false,safe(b.price_note_ar,80),safe(b.price_note_en,80),safe(b.image_source||(String(b.image||'').startsWith('/api/images/')?'ADMIN_UPLOAD':'CUSTOM'),40)]);res.status(201).json({product:r.rows[0]})}catch(e){if(e.code==='23503')return res.status(400).json({error:'Invalid category'});throw e}});
+app.patch('/api/admin/products/:id',async(req,res)=>{let b=req.body||{},p=(await pool.query('select * from products where id=$1',[req.params.id])).rows[0];if(!p)return res.status(404).json({error:'Product not found'});let r=await pool.query('update products set category_id=$1,name_ar=$2,name_en=$3,description_ar=$4,description_en=$5,price=$6,compare_at_price=$7,unit_ar=$8,unit_en=$9,image=$10,available=$11,featured=$12,sort_order=$13,calories=$14,orderable=$15,price_note_ar=$16,price_note_en=$17,image_source=$18,updated_at=now() where id=$19 returning *',[safe(b.category_id??b.categoryId??p.category_id,80),safe(b.name_ar??p.name_ar,150),safe(b.name_en??p.name_en,150),safe(b.description_ar??p.description_ar,700),safe(b.description_en??p.description_en,700),b.price==null?+p.price:money(b.price),b.compare_at_price===undefined?p.compare_at_price:(b.compare_at_price==null?null:money(b.compare_at_price)),safe(b.unit_ar??p.unit_ar,60),safe(b.unit_en??p.unit_en,60),safe(b.image??p.image,500),b.available==null?p.available:!!b.available,b.featured==null?p.featured:!!b.featured,b.sort_order==null?p.sort_order:+b.sort_order,b.calories===undefined?p.calories:(b.calories==null?null:Math.max(0,Math.round(+b.calories||0))),b.orderable==null?p.orderable:!!b.orderable,safe(b.price_note_ar??p.price_note_ar,80),safe(b.price_note_en??p.price_note_en,80),b.image===undefined?p.image_source:(String(b.image||'').startsWith('/api/images/')?'ADMIN_UPLOAD':'CUSTOM'),req.params.id]);res.json({product:r.rows[0]})});
 app.delete('/api/admin/products/:id',async(req,res)=>{let r=await pool.query('delete from products where id=$1 returning id',[req.params.id]);if(!r.rows[0])return res.status(404).json({error:'Product not found'});res.json({ok:true})});
 app.get('/api/admin/offers',async(req,res)=>res.json({offers:(await pool.query('select * from offers order by sort_order,title_ar')).rows}));
 app.post('/api/admin/offers',async(req,res)=>{let b=req.body||{},id='off_'+crypto.randomUUID();let r=await pool.query('insert into offers(id,title_ar,title_en,description_ar,description_en,price,image,active,sort_order,starts_at,ends_at) values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11) returning *',[id,safe(b.title_ar,160),safe(b.title_en,160),safe(b.description_ar,800),safe(b.description_en,800),money(b.price),safe(b.image,500),b.active!==false,+b.sort_order||999,b.starts_at||null,b.ends_at||null]);res.status(201).json({offer:r.rows[0]})});
