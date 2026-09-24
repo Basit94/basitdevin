@@ -301,3 +301,26 @@ html,body{width:100%;max-width:100%;overflow-x:hidden}
  .photo-source-note{font-size:9px;padding-inline:3px}
  .restaurant-facts{grid-template-columns:1fr}
 }
+
+
+/* === Owner-supplied photo provenance === */
+.product-image:after{content:none!important}
+.photo-origin{position:absolute;z-index:5;top:9px;inset-inline-end:9px;display:inline-flex;align-items:center;gap:4px;padding:4px 7px;border-radius:999px;font-size:8px;font-weight:900;line-height:1;background:rgba(2,29,49,.76);color:#fff;backdrop-filter:blur(7px)}
+.photo-origin.owner{background:rgba(8,107,76,.9)}
+.photo-origin.owner:before{content:"✓"}
+.photo-origin.custom{background:rgba(5,46,76,.9)}
+.photo-origin.illustrative{background:rgba(2,29,49,.7);color:#eef4f7}
+.market-card .photo-origin{top:42px}
+.product-detail-copy .photo-origin{position:static;width:max-content;margin:0 0 10px;padding:6px 9px;font-size:9px}
+.offer-card .photo-origin{top:11px;inset-inline-start:11px;inset-inline-end:auto}
+.offer-card .offer-price{z-index:6}
+.owner-photo .product-image img,.owner-photo.offer-card img{filter:none}
+.illustrative-photo .product-image img,.illustrative-photo.offer-card img{filter:saturate(.94)}
+.photo-source-note{max-width:640px}
+.staff-link{display:inline-flex;align-items:center;gap:6px;color:#cadce7;text-decoration:none;font-size:11px;font-weight:700;padding:7px 10px;border:1px solid rgba(255,255,255,.15);border-radius:10px}
+.staff-link:hover{color:#fff;border-color:rgba(255,255,255,.35)}
+@media(max-width:760px){
+ .photo-origin{top:6px;inset-inline-end:6px;font-size:7px;padding:3px 5px}
+ .market-card .photo-origin{top:34px}
+ .offer-card .photo-origin{top:8px;inset-inline-start:8px}
+}
