@@ -43,8 +43,7 @@ jobs:
             await page.waitForSelector('#products .product-card',{timeout:30000});
             await page.waitForFunction(()=>document.querySelectorAll('#products .product-card').length>=50);
           }
-          const browser=await chromium.launch({headless:true});
-          try{
+          (async()=>{\n          const browser=await chromium.launch({headless:true});\n          try{
             const dctx=await browser.newContext({viewport:{width:1440,height:1000},deviceScaleFactor:1});
             const dp=await dctx.newPage();await collect(dp,'desktop');await waitReady(dp);
             report.desktop.title=await dp.title();
@@ -106,8 +105,7 @@ jobs:
             if(report.errors.length) throw new Error('Browser/runtime errors: '+report.errors.join(' | '));
             fs.writeFileSync(out+'/report.json',JSON.stringify(report,null,2));
             console.log('PLAYWRIGHT_QA_PASS '+JSON.stringify(report));
-          } finally { await browser.close(); }
-          NODE
+          } finally { await browser.close(); }\n          })().catch(e=>{console.error(e);process.exit(1)});\n          NODE
           node live-ui-qa.cjs
       - name: Upload visual QA artifacts
         if: always()
