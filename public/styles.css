@@ -86,3 +86,19 @@ footer{background:var(--navy2);color:#bfd0da;padding:37px max(24px,7vw);display:
 @media(max-width:370px){
  .products{grid-template-columns:1fr}.product-image{height:180px}.product-body h3{min-height:auto}.offer-card,.gallery-grid figure,.gallery-grid figure:first-child,.gallery-grid figure:last-child{flex-basis:88vw}
 }
+
+/* === Official Shrimp Fins imagery + checkout polish === */
+.hero-promo{width:min(650px,96%);aspect-ratio:16/9;border-radius:28px;overflow:hidden;background:#fff;border:1px solid rgba(255,255,255,.18);box-shadow:0 35px 90px rgba(0,0,0,.28);transform:rotate(-1deg)}
+.hero-promo img{width:100%;height:100%;object-fit:cover}
+.gallery-grid-real{grid-template-columns:1.35fr 1fr;grid-template-rows:420px}
+.gallery-grid-real figure,.gallery-grid-real figure:first-child,.gallery-grid-real figure:last-child{grid-column:auto;grid-row:auto;height:420px}
+.payment-switch span{min-height:58px;display:flex;align-items:center;justify-content:center;line-height:1.25}
+@media(max-width:850px){.gallery-grid-real{grid-template-columns:1fr 1fr;grid-template-rows:300px}.gallery-grid-real figure,.gallery-grid-real figure:first-child,.gallery-grid-real figure:last-child{height:300px}}
+@media(max-width:560px){
+ .hero-promo{width:100%;max-width:430px;border-radius:18px;transform:none}
+ .hero-card{height:auto;min-height:220px;padding:4px 0 22px}
+ .hero-mini{bottom:0}
+ .gallery-grid-real{display:flex;grid-template-columns:none;grid-template-rows:none}
+ .gallery-grid-real figure,.gallery-grid-real figure:first-child,.gallery-grid-real figure:last-child{height:215px!important}
+ .payment-switch{grid-template-columns:1fr}.payment-switch span{min-height:48px}
+}
