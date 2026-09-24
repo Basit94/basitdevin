@@ -101,6 +101,33 @@ if(st.menuRevision!=='menu-2026-09-v2'){
   }catch(e){await client.query('ROLLBACK').catch(()=>{});throw e}finally{client.release()}
 }
 st={restaurantNameAr:'زعانف الروبيان',restaurantNameEn:'Shrimp Fins',phone:'0541064143',whatsapp:'966541064143',addressAr:'الرياض - حي النسيم الغربي - شارع حسان بن ثابت، بجوار تقاطع أحمد بن حنبل',addressEn:'Riyadh - Al Naseem Al Gharbi, Hassan Bin Thabit St',deliveryFee:10,minimumOrder:30,acceptingOrders:true,currency:'SAR',heroMessageAr:'أشهى المأكولات البحرية الطازجة في مكان واحد',heroMessageEn:'Premium fresh seafood, prepared to order',openingHoursAr:'يومياً — تواصل معنا لتأكيد ساعات العمل',openingHoursEn:'Daily — contact us to confirm opening hours',mapQuery:'زعانف الروبيان، حي النسيم الغربي، الرياض',heroImage:px(8352805,1600,950),imageCredit:'Licensed Pexels stock photography is used where real restaurant dish photos are not yet available.',...st};await pool.query('update settings set data=$1 where id=1',[st]);}
+async function startupSelfTest(){
+ const c=await pool.connect(),tag='qa_'+crypto.randomBytes(6).toString('hex');
+ try{
+  await c.query('BEGIN');
+  await c.query('insert into categories(id,name_ar,name_en,icon,active,sort_order) values($1,$2,$3,$4,true,9999)',[tag,'اختبار مؤقت','Temporary QA','✓']);
+  const pid=tag+'_p',oid=tag+'_o',orderId=tag+'_order',token=tag+'_token';
+  await c.query('insert into products(id,category_id,name_ar,name_en,price,unit_ar,unit_en,available,featured,sort_order) values($1,$2,$3,$4,9.99,$5,$6,true,false,9999)',[pid,tag,'منتج اختبار','QA Product','قطعة','item']);
+  await c.query('insert into offers(id,title_ar,title_en,price,active,sort_order) values($1,$2,$3,19.99,true,9999)',[oid,'عرض اختبار','QA Offer']);
+  await c.query("insert into orders(id,order_no,token,customer_name,phone,order_type,subtotal,delivery_fee,total,status) values($1,$2,$3,'QA SELF TEST','0500000000','pickup',9.99,0,9.99,'PENDING')",[orderId,'QA'+crypto.randomBytes(5).toString('hex').toUpperCase(),token]);
+  await c.query('insert into order_items(order_id,product_id,name_ar,name_en,price,qty,total) values($1,$2,$3,$4,9.99,1,9.99)',[orderId,pid,'منتج اختبار','QA Product']);
+  await c.query("insert into order_history(order_id,status,note) values($1,'PENDING','startup self-test')",[orderId]);
+  for(const status of ['CONFIRMED','PREPARING','READY','COMPLETED']){await c.query('update orders set status=$1,updated_at=now() where id=$2',[status,orderId]);await c.query('insert into order_history(order_id,status,note) values($1,$2,$3)',[orderId,status,'startup self-test'])}
+  const q=(await c.query('select status from orders where id=$1',[orderId])).rows[0];
+  if(!q||q.status!=='COMPLETED')throw Error('Order workflow self-test failed');
+  await c.query('ROLLBACK');
+  const stats=(await pool.query(`select
+    (select count(*) from products where available=true) products,
+    (select count(*) from products where available=true and coalesce(image,'')<>'') product_images,
+    (select count(*) from offers where active=true) offers,
+    (select count(*) from offers where active=true and coalesce(image,'')<>'') offer_images,
+    (select count(*) from categories where active=true) categories`)).rows[0];
+  const st=(await pool.query('select data from settings where id=1')).rows[0]?.data||{};
+  if(+stats.products<products.length||+stats.product_images<products.length||+stats.offers<offers.length||+stats.offer_images<offers.length)throw Error('Menu completeness self-test failed: '+JSON.stringify(stats));
+  if(st.phone!=='0541064143'||!st.whatsapp||!st.restaurantNameAr||!st.addressAr)throw Error('Restaurant settings self-test failed');
+  console.log('STARTUP_QA_PASS '+JSON.stringify({products:+stats.products,productImages:+stats.product_images,offers:+stats.offers,offerImages:+stats.offer_images,categories:+stats.categories,phone:st.phone,menuRevision:st.menuRevision,transactionRollback:true,orderWorkflow:true}));
+ }catch(e){try{await c.query('ROLLBACK')}catch{}throw e}finally{c.release()}
+}
 const auth=(req,res,next)=>{try{req.admin=jwt.verify(req.cookies.sf_admin,SECRET);next()}catch{return res.status(401).json({error:'Unauthorized'})}};
 app.get('/api/health',async(req,res)=>{try{await pool.query('select 1');res.json({ok:true})}catch{res.status(503).json({ok:false})}});
 app.get('/api/images/:id',async(req,res,next)=>{try{const r=await pool.query('select mime_type,data from images where id=$1',[safe(req.params.id,100)]);if(!r.rows[0])return res.status(404).end();res.set('Content-Type',r.rows[0].mime_type).set('Cache-Control','public,max-age=31536000,immutable').send(r.rows[0].data)}catch(e){next(e)}});
@@ -133,4 +160,4 @@ app.post('/api/admin/change-password',async(req,res)=>{let a=(await pool.query('
 app.get('/api/admin/export',async(req,res)=>{let [settings,categories,products,offers,orders,items,history]=await Promise.all([pool.query('select data from settings where id=1'),pool.query('select * from categories order by sort_order'),pool.query('select * from products order by sort_order'),pool.query('select * from offers order by sort_order'),pool.query('select * from orders order by created_at desc'),pool.query('select * from order_items order by id'),pool.query('select * from order_history order by id')]);res.set('Content-Disposition','attachment; filename="shrimp-fins-backup-'+new Date().toISOString().slice(0,10)+'.json"').json({exportedAt:new Date().toISOString(),settings:settings.rows[0].data,categories:categories.rows,products:products.rows,offers:offers.rows,orders:orders.rows,orderItems:items.rows,orderHistory:history.rows})});
 app.use(express.static(path.join(__dirname,'public'),{maxAge:'1h'}));app.get('/admin',(req,res)=>res.sendFile(path.join(__dirname,'public','admin.html')));app.get('*',(req,res)=>res.sendFile(path.join(__dirname,'public','index.html')));
 app.use((e,req,res,next)=>{console.error(e);res.status(500).json({error:prod?'Unexpected server error':e.message})});
-init().then(()=>app.listen(PORT,'0.0.0.0',()=>console.log('Shrimp Fins live on '+PORT))).catch(e=>{console.error(e);process.exit(1)});
+init().then(startupSelfTest).then(()=>app.listen(PORT,'0.0.0.0',()=>console.log('Shrimp Fins live on '+PORT))).catch(e=>{console.error(e);process.exit(1)});
