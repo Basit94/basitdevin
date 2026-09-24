@@ -70,7 +70,37 @@ c=+(await pool.query('select count(*) c from offers')).rows[0].c;if(!c)for(let i
 c=+(await pool.query('select count(*) c from admins')).rows[0].c;if(!c){let e=process.env.ADMIN_EMAIL,h=process.env.ADMIN_PASSWORD_HASH;if(!e||!h)throw Error('ADMIN_EMAIL and ADMIN_PASSWORD_HASH required');await pool.query('insert into admins(email,name,password_hash) values($1,$2,$3)',[e.toLowerCase(),process.env.ADMIN_NAME||'Restaurant Admin',h]);}
 for(const p of products){const d=categoryDescriptions[p[1]]||['محضر طازجاً حسب الطلب.','Freshly prepared to order.'];await pool.query("update products set image=case when coalesce(image,'')='' then $1 else image end,description_ar=case when coalesce(description_ar,'')='' then $2 else description_ar end,description_en=case when coalesce(description_en,'')='' then $3 else description_en end where id=$4",[productImages[p[0]]||'',d[0],d[1],p[0]])}
 for(const o of offers){await pool.query("update offers set image=case when coalesce(image,'')='' then $1 else image end,description_ar=case when coalesce(description_ar,'')='' then 'عرض خاص من زعانف الروبيان للمشاركة والعزائم.' else description_ar end,description_en=case when coalesce(description_en,'')='' then 'A special Shrimp Fins offer for sharing and gatherings.' else description_en end where id=$2",[offerImages[o[0]]||'',o[0]])}
-let st=(await pool.query('select data from settings where id=1')).rows[0]?.data||{};st={restaurantNameAr:'زعانف الروبيان',restaurantNameEn:'Shrimp Fins',phone:'0541064143',whatsapp:'966541064143',addressAr:'الرياض - حي النسيم الغربي - شارع حسان بن ثابت، بجوار تقاطع أحمد بن حنبل',addressEn:'Riyadh - Al Naseem Al Gharbi, Hassan Bin Thabit St',deliveryFee:10,minimumOrder:30,acceptingOrders:true,currency:'SAR',heroMessageAr:'أشهى المأكولات البحرية الطازجة في مكان واحد',heroMessageEn:'Premium fresh seafood, prepared to order',openingHoursAr:'يومياً — تواصل معنا لتأكيد ساعات العمل',openingHoursEn:'Daily — contact us to confirm opening hours',mapQuery:'زعانف الروبيان، حي النسيم الغربي، الرياض',heroImage:px(8352805,1600,950),imageCredit:'Licensed Pexels stock photography is used where real restaurant dish photos are not yet available.',...st};await pool.query('update settings set data=$1 where id=1',[st]);}
+let st=(await pool.query('select data from settings where id=1')).rows[0]?.data||{};
+if(st.menuRevision!=='menu-2026-09-v2'){
+  const client=await pool.connect();
+  try{
+    await client.query('BEGIN');
+    for(let i=0;i<products.length;i++){
+      const p=products[i],d=categoryDescriptions[p[1]]||['محضر طازجاً حسب الطلب.','Freshly prepared to order.'];
+      await client.query(`INSERT INTO products(id,category_id,name_ar,name_en,description_ar,description_en,price,unit_ar,unit_en,image,available,featured,sort_order)
+        VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,TRUE,$11,$12)
+        ON CONFLICT(id) DO UPDATE SET category_id=EXCLUDED.category_id,name_ar=EXCLUDED.name_ar,name_en=EXCLUDED.name_en,price=EXCLUDED.price,unit_ar=EXCLUDED.unit_ar,unit_en=EXCLUDED.unit_en,sort_order=EXCLUDED.sort_order,
+        image=CASE WHEN COALESCE(products.image,'')='' THEN EXCLUDED.image ELSE products.image END,
+        description_ar=CASE WHEN COALESCE(products.description_ar,'')='' THEN EXCLUDED.description_ar ELSE products.description_ar END,
+        description_en=CASE WHEN COALESCE(products.description_en,'')='' THEN EXCLUDED.description_en ELSE products.description_en END,updated_at=NOW()`,
+        [p[0],p[1],p[2],p[3],d[0],d[1],p[4],p[5],p[6],productImages[p[0]]||'',!!p[7],i]);
+    }
+    for(let i=0;i<offers.length;i++){
+      const o=offers[i];
+      await client.query(`INSERT INTO offers(id,title_ar,title_en,description_ar,description_en,price,image,active,sort_order)
+        VALUES($1,$2,$3,$4,$5,$6,$7,TRUE,$8)
+        ON CONFLICT(id) DO UPDATE SET title_ar=EXCLUDED.title_ar,title_en=EXCLUDED.title_en,price=EXCLUDED.price,sort_order=EXCLUDED.sort_order,
+        image=CASE WHEN COALESCE(offers.image,'')='' THEN EXCLUDED.image ELSE offers.image END,
+        description_ar=CASE WHEN COALESCE(offers.description_ar,'')='' THEN EXCLUDED.description_ar ELSE offers.description_ar END,
+        description_en=CASE WHEN COALESCE(offers.description_en,'')='' THEN EXCLUDED.description_en ELSE offers.description_en END,updated_at=NOW()`,
+        [o[0],o[1],o[2],'عرض خاص من زعانف الروبيان للمشاركة والعزائم.','A special Shrimp Fins offer for sharing and gatherings.',o[3],offerImages[o[0]]||'',i]);
+    }
+    st.menuRevision='menu-2026-09-v2';st.menuSource='Restaurant menu artwork supplied by owner';st.menuProductCount=products.length;st.menuOfferCount=offers.length;
+    await client.query('UPDATE settings SET data=$1 WHERE id=1',[st]);
+    await client.query('COMMIT');
+  }catch(e){await client.query('ROLLBACK').catch(()=>{});throw e}finally{client.release()}
+}
+st={restaurantNameAr:'زعانف الروبيان',restaurantNameEn:'Shrimp Fins',phone:'0541064143',whatsapp:'966541064143',addressAr:'الرياض - حي النسيم الغربي - شارع حسان بن ثابت، بجوار تقاطع أحمد بن حنبل',addressEn:'Riyadh - Al Naseem Al Gharbi, Hassan Bin Thabit St',deliveryFee:10,minimumOrder:30,acceptingOrders:true,currency:'SAR',heroMessageAr:'أشهى المأكولات البحرية الطازجة في مكان واحد',heroMessageEn:'Premium fresh seafood, prepared to order',openingHoursAr:'يومياً — تواصل معنا لتأكيد ساعات العمل',openingHoursEn:'Daily — contact us to confirm opening hours',mapQuery:'زعانف الروبيان، حي النسيم الغربي، الرياض',heroImage:px(8352805,1600,950),imageCredit:'Licensed Pexels stock photography is used where real restaurant dish photos are not yet available.',...st};await pool.query('update settings set data=$1 where id=1',[st]);}
 const auth=(req,res,next)=>{try{req.admin=jwt.verify(req.cookies.sf_admin,SECRET);next()}catch{return res.status(401).json({error:'Unauthorized'})}};
 app.get('/api/health',async(req,res)=>{try{await pool.query('select 1');res.json({ok:true})}catch{res.status(503).json({ok:false})}});
 app.get('/api/images/:id',async(req,res,next)=>{try{const r=await pool.query('select mime_type,data from images where id=$1',[safe(req.params.id,100)]);if(!r.rows[0])return res.status(404).end();res.set('Content-Type',r.rows[0].mime_type).set('Cache-Control','public,max-age=31536000,immutable').send(r.rows[0].data)}catch(e){next(e)}});
