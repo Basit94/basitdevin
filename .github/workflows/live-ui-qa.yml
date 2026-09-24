@@ -9,6 +9,7 @@ permissions:
   contents: read
 
 jobs:
+  # production recheck after deployment
   live-ui:
     runs-on: ubuntu-latest
     timeout-minutes: 15
