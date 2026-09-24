@@ -31,7 +31,10 @@ function cartQty(){return Object.values(state.cart).reduce((a,b)=>a+(+b||0),0)}
 function product(id){return state.data?.products.find(p=>p.id===id)}
 function cat(id){return state.data?.categories.find(c=>c.id===id)||{}}
 function totals(type=null){const sub=Object.entries(state.cart).reduce((sum,[id,q])=>{const p=product(id);return sum+(p?+p.price*(+q||0):0)},0);const orderType=type||document.querySelector('input[name="orderType"]:checked')?.value||'pickup';const fee=orderType==='delivery'?+(state.data?.settings?.deliveryFee||0):0;return{sub,fee,total:sub+fee}}
-function setImage(img,src,fallback='🦐'){if(!img)return;img.onerror=()=>{const parent=img.parentElement;img.remove();if(parent&&!parent.querySelector('.img-fallback'))parent.insertAdjacentHTML('beforeend',`<div class="img-fallback">${fallback}</div>`)};img.src=src}
+const PRODUCT_PLACEHOLDER='/assets/product-placeholder.svg';
+function setImage(img,src,fallback='🦐'){if(!img)return;img.onerror=()=>{img.onerror=null;img.src=PRODUCT_PLACEHOLDER};img.src=src}
+function remoteImg(src,alt='',lazy=true){return `<img ${lazy?'loading="lazy" ':''}src="${PRODUCT_PLACEHOLDER}" data-remote-src="${esc(src||'')}" alt="${esc(alt)}">`}
+function hydrateRemoteImages(root=document){root.querySelectorAll('img[data-remote-src]').forEach(img=>{const src=img.dataset.remoteSrc;if(!src){img.removeAttribute('data-remote-src');return}img.onerror=()=>{img.onerror=null;img.removeAttribute('data-remote-src');img.src=PRODUCT_PLACEHOLDER};img.onload=()=>{if(img.src===src)img.removeAttribute('data-remote-src')};img.src=src})}
 function open(sel){$('#overlay').classList.remove('hidden');$(sel).classList.remove('hidden');document.body.classList.add('lock')}
 function closeAll(){['#overlay','#cartDrawer','#checkoutModal','#trackModal','#successModal','#productModal'].forEach(s=>$(s)?.classList.add('hidden'));document.body.classList.remove('lock')}
 function statusLabel(s){return tr(String(s||'').toLowerCase())||s}
