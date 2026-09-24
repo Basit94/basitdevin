@@ -34,7 +34,7 @@ function totals(type=null){const sub=Object.entries(state.cart).reduce((sum,[id,
 const PRODUCT_PLACEHOLDER='/assets/product-placeholder.svg';
 function setImage(img,src,fallback='🦐'){if(!img)return;img.onerror=()=>{img.onerror=null;img.src=PRODUCT_PLACEHOLDER};img.src=src}
 function remoteImg(src,alt='',lazy=true){return `<img ${lazy?'loading="lazy" ':''}src="${PRODUCT_PLACEHOLDER}" data-remote-src="${esc(src||'')}" alt="${esc(alt)}">`}
-function hydrateRemoteImages(root=document){root.querySelectorAll('img[data-remote-src]').forEach(img=>{const src=img.dataset.remoteSrc;if(!src){img.removeAttribute('data-remote-src');return}img.onerror=()=>{img.onerror=null;img.removeAttribute('data-remote-src');img.src=PRODUCT_PLACEHOLDER};img.onload=()=>{if(img.src===src)img.removeAttribute('data-remote-src')};img.src=src})}
+function hydrateRemoteImages(root=document){root.querySelectorAll('img[data-remote-src]').forEach(img=>{const src=img.dataset.remoteSrc;img.removeAttribute('data-remote-src');if(!src)return;const probe=new Image();probe.onload=()=>{img.src=src};probe.onerror=()=>{};probe.src=src})}
 function open(sel){$('#overlay').classList.remove('hidden');$(sel).classList.remove('hidden');document.body.classList.add('lock')}
 function closeAll(){['#overlay','#cartDrawer','#checkoutModal','#trackModal','#successModal','#productModal'].forEach(s=>$(s)?.classList.add('hidden'));document.body.classList.remove('lock')}
 function statusLabel(s){return tr(String(s||'').toLowerCase())||s}
