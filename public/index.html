@@ -1,73 +1,204 @@
 <!doctype html>
 <html lang="ar" dir="rtl">
 <head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#062c49"><meta name="description" content="زعانف الروبيان - مطعم مأكولات بحرية في الرياض. اطلب أونلاين وانتظر تأكيد المطعم.">
-<meta name="application-name" content="Shrimp Fins"><meta name="apple-mobile-web-app-capable" content="yes">
-<meta property="og:title" content="زعانف الروبيان | Shrimp Fins"><meta property="og:description" content="Fresh seafood in Riyadh. Order online with restaurant confirmation.">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#062c49">
+<meta name="description" content="زعانف الروبيان - مطعم مأكولات بحرية في الرياض. اطلب أونلاين وانتظر تأكيد المطعم.">
+<meta name="application-name" content="Shrimp Fins">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta property="og:title" content="زعانف الروبيان | Shrimp Fins">
+<meta property="og:description" content="Fresh seafood in Riyadh. Order online with restaurant confirmation.">
 <title>زعانف الروبيان | Shrimp Fins</title>
-<link rel="manifest" href="/manifest.webmanifest"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"><link rel="stylesheet" href="/styles.css">
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/styles.css">
 </head>
 <body>
 <div id="loading" class="loading"><div class="brandmark">🦐</div><b>زعانف الروبيان</b><span></span></div>
+
 <header class="topbar">
-<a class="brand" href="#top"><span class="brandmark">🦐</span><span><b>زعانف الروبيان</b><small>Shrimp Fins</small></span></a>
-<nav><a href="#offers" data-t="offers">العروض</a><a href="#menu" data-t="menu">المنيو</a><a href="#gallery" data-t="gallery">الصور</a><a href="#contact" data-t="contact">تواصل</a></nav>
-<div class="head-actions"><button id="langBtn" class="ghost">EN</button><button id="trackBtn" class="ghost">◎ <span data-t="track">تتبع</span></button><button id="cartBtn" class="cart">🛒 <span id="cartCount">0</span></button></div>
+  <a class="brand" href="#top"><span class="brandmark">🦐</span><span><b>زعانف الروبيان</b><small>Shrimp Fins</small></span></a>
+  <nav><a href="#offers" data-t="offers">العروض</a><a href="#menu" data-t="menu">المنيو</a><a href="#gallery" data-t="gallery">الصور</a><a href="#contact" data-t="contact">تواصل</a></nav>
+  <div class="head-actions">
+    <button id="langBtn" class="ghost" type="button">EN</button>
+    <button id="trackBtn" class="ghost" type="button">◎ <span data-t="track">تتبع</span></button>
+    <button id="cartBtn" class="cart" type="button">🛒 <span id="cartCount">0</span></button>
+  </div>
 </header>
+
 <main id="top">
 <section class="hero" id="hero">
-<div class="hero-overlay"></div><div class="hero-content">
-<div id="orderBadge" class="open-badge"><i></i><span>نستقبل الطلبات الآن</span></div>
-<p class="eyebrow">SHRIMP FINS · RIYADH</p><h1>زعانف <em>الروبيان</em></h1>
-<h2 id="heroMessage">أشهى المأكولات البحرية الطازجة في مكان واحد</h2>
-<p id="heroSub">اختر وجبتك وأرسل الطلب. المطعم يراجع الطلب ويؤكده قبل التحضير.</p>
-<div class="hero-actions"><a href="#menu" class="primary" data-t="orderNow">اطلب الآن</a><a id="waHero" class="secondary" target="_blank" rel="noopener">WhatsApp</a></div>
-<div class="trust"><span>✓ <b data-t="fresh">طازج يومياً</b></span><span>✓ <b data-t="restaurantConfirm">تأكيد من المطعم</b></span><span>✓ <b data-t="pickupDelivery">استلام أو توصيل</b></span></div>
-</div>
-<div class="hero-card"><div class="hero-food"><img id="heroFoodImage" alt="Seafood platter"></div><div class="hero-mini"><span>★ <b id="heroMenuCount">53+</b></span><small data-t="menuItems">صنف في المنيو</small></div></div>
+  <div class="hero-overlay"></div>
+  <div class="hero-content">
+    <div id="orderBadge" class="open-badge"><i></i><span>نستقبل الطلبات الآن</span></div>
+    <p class="eyebrow">SHRIMP FINS · RIYADH</p>
+    <h1>زعانف <em>الروبيان</em></h1>
+    <h2 id="heroMessage">أشهى المأكولات البحرية الطازجة في مكان واحد</h2>
+    <p id="heroSub">اختر وجبتك وأرسل الطلب. المطعم يراجع الطلب ويؤكده قبل التحضير.</p>
+    <div class="hero-actions">
+      <a href="#menu" class="primary" data-t="orderNow">اطلب الآن</a>
+      <a id="waHero" class="secondary" target="_blank" rel="noopener">WhatsApp</a>
+    </div>
+    <div class="trust">
+      <span>✓ <b data-t="fresh">طازج يومياً</b></span>
+      <span>✓ <b data-t="restaurantConfirm">تأكيد من المطعم</b></span>
+      <span>✓ <b data-t="pickupDelivery">استلام أو توصيل</b></span>
+    </div>
+  </div>
+  <div class="hero-card">
+    <div class="hero-promo"><img id="heroFoodImage" src="/assets/shrimp-fins-promo.webp" alt="Shrimp Fins restaurant and seafood"></div>
+    <div class="hero-mini"><span>★ <b id="heroMenuCount">63+</b></span><small data-t="menuItems">صنف في المنيو</small></div>
+  </div>
 </section>
 
-<section class="quick-stats">
-<div><strong id="menuCount">53+</strong><span data-t="items">صنف</span></div><div><strong id="offersCount">8</strong><span data-t="offers">عروض</span></div><div><strong>100%</strong><span data-t="confirmation">تأكيد الطلب</span></div><div><strong>0541064143</strong><span data-t="callUs">اتصل بنا</span></div>
+<section class="quick-stats" aria-label="Restaurant highlights">
+  <div><strong id="menuCount">63+</strong><span data-t="items">صنف</span></div>
+  <div><strong id="offersCount">8</strong><span data-t="offers">عروض</span></div>
+  <div><strong>100%</strong><span data-t="confirmation">تأكيد الطلب</span></div>
+  <div><strong>0541064143</strong><span data-t="callUs">اتصل بنا</span></div>
 </section>
 
-<section id="offers" class="section"><div class="section-head"><div><span class="kicker">OFFERS</span><h2 data-t="todayOffers">عروض زعانف</h2><p data-t="offerSub">عروض مشاركة وولائم مميزة</p></div><div class="slider"><button id="offerPrev">‹</button><button id="offerNext">›</button></div></div><div id="offersGrid" class="offers-grid"></div></section>
+<section id="offers" class="section">
+  <div class="section-head">
+    <div><span class="kicker">OFFERS</span><h2 data-t="todayOffers">عروض زعانف</h2><p data-t="offerSub">عروض مشاركة وولائم مميزة</p></div>
+    <div class="slider"><button id="offerPrev" type="button">‹</button><button id="offerNext" type="button">›</button></div>
+  </div>
+  <div id="offersGrid" class="offers-grid"></div>
+</section>
 
-<section id="menu" class="section menu-section"><div class="section-head"><div><span class="kicker">MENU</span><h2 data-t="chooseMeal">اختر وجبتك</h2><p data-t="menuSub">صور توضيحية احترافية، ويمكن للمطعم استبدالها بصور الأطباق الحقيقية من لوحة التحكم.</p></div><div class="search"><span>⌕</span><input id="searchInput" aria-label="Search menu" placeholder="ابحث في المنيو..."></div></div><div id="cats" class="cats"></div><div class="menu-toolbar"><span id="resultCount"></span><small id="minimumText"></small></div><div id="products" class="products"></div><div id="noProducts" class="empty hidden">🍽️ <b data-t="noResults">لا توجد نتائج</b></div><p class="photo-note" data-t="photoNote">صور الطعام توضيحية/مرجعية وقد يختلف التقديم الفعلي.</p></section>
+<section id="menu" class="section menu-section">
+  <div class="section-head">
+    <div><span class="kicker">MENU</span><h2 data-t="chooseMeal">اختر وجبتك</h2><p data-t="menuSub">اختر من المنيو الكامل، وأضف الطلب للسلة بسهولة.</p></div>
+    <div class="search"><span>⌕</span><input id="searchInput" aria-label="Search menu" placeholder="ابحث في المنيو..."></div>
+  </div>
+  <div id="cats" class="cats"></div>
+  <div class="menu-toolbar"><span id="resultCount"></span><small id="minimumText"></small></div>
+  <div id="products" class="products"></div>
+  <div id="noProducts" class="empty hidden">🍽️ <b data-t="noResults">لا توجد نتائج</b></div>
+  <p class="photo-note" data-t="photoNote">بعض صور الأصناف توضيحية حتى يضيف المطعم الصور الأصلية لكل طبق.</p>
+</section>
 
-<section id="gallery" class="section gallery-section"><div class="section-head"><div><span class="kicker">GALLERY</span><h2 data-t="galleryTitle">أجواء وطعم البحر</h2><p data-t="gallerySub">المطعم الحقيقي مع صور بحرية مختارة للعرض.</p></div></div><div class="gallery-grid">
-<figure class="store-shot"><img src="/assets/storefront.svg" alt="Shrimp Fins restaurant storefront"><div class="storefront-label"><b>زعانف الروبيان</b><span>0541064143</span></div></div></section>
+<section id="gallery" class="section gallery-section">
+  <div class="section-head">
+    <div><span class="kicker">GALLERY</span><h2 data-t="galleryTitle">زعانف الروبيان</h2><p data-t="gallerySub">صورة المطعم والهوية الرسمية.</p></div>
+  </div>
+  <div class="gallery-grid gallery-grid-real">
+    <figure class="promo-shot">
+      <img src="/assets/shrimp-fins-promo.webp" alt="Shrimp Fins promotional restaurant banner">
+      <figcaption data-t="officialPromo">هوية وصورة زعانف الروبيان</figcaption>
+    </figure>
+    <figure class="store-shot">
+      <img src="/assets/storefront.svg" alt="Shrimp Fins restaurant storefront">
+      <figcaption data-t="realStore">واجهة زعانف الروبيان الحقيقية</figcaption>
+    </figure>
+  </div>
+</section>
+
+<section class="workflow section">
+  <div><span class="kicker">ORDER FLOW</span><h2 data-t="howWorks">كيف يعمل الطلب؟</h2><p data-t="howWorksSub">الطلب لا يصبح مؤكداً إلا بعد موافقة المطعم.</p></div>
+  <div class="steps">
+    <article><b>1</b><span>🛒</span><h3 data-t="step1">اختر الأصناف</h3></article><i></i>
+    <article><b>2</b><span>📲</span><h3 data-t="step2">أرسل الطلب</h3></article><i></i>
+    <article><b>3</b><span>✅</span><h3 data-t="step3">المطعم يؤكد</h3></article><i></i>
+    <article><b>4</b><span>🔥</span><h3 data-t="step4">تحضير واستلام</h3></article>
+  </div>
+</section>
+
+<section id="contact" class="section contact-section">
+  <div class="contact-copy">
+    <span class="kicker">VISIT US</span>
+    <h2 id="restaurantName">زعانف الروبيان</h2>
+    <p id="addressText"></p>
+    <div class="contact-actions">
+      <a id="callBtn" class="primary">📞 <span id="phoneText"></span></a>
+      <a id="waBtn" class="secondary-dark" target="_blank" rel="noopener">💬 WhatsApp</a>
+      <a id="mapBtn" class="secondary-dark" target="_blank" rel="noopener">📍 <span data-t="directions">الاتجاهات</span></a>
+    </div>
+    <div class="hours"><b data-t="hours">ساعات العمل</b><span id="hoursText"></span></div>
+  </div>
+  <div class="storefront">
+    <img id="storefrontImg" src="/assets/storefront.svg" alt="Shrimp Fins restaurant storefront">
+    <div class="storefront-label"><b>زعانف الروبيان</b><span>0541064143</span></div>
+  </div>
+</section>
 </main>
 
-<footer><div class="brand"><span class="brandmark">🦐</span><span><b>زعانف الروبيان</b><small>Shrimp Fins Restaurant</small></span></div><p data-t="footer">جميع الطلبات تحتاج تأكيد المطعم قبل التحضير.</p><div><a href="/admin">Restaurant Admin</a><small> · Food photography: Pexels licensed stock where real dish photos are unavailable.</small></div></footer>
+<footer>
+  <div class="brand"><span class="brandmark">🦐</span><span><b>زعانف الروبيان</b><small>Shrimp Fins Restaurant</small></span></div>
+  <p data-t="footer">جميع الطلبات تحتاج تأكيد المطعم قبل التحضير.</p>
+  <div><a href="/admin">Restaurant Admin</a></div>
+</footer>
 
 <nav class="mobile-nav" aria-label="Mobile navigation">
-<a href="#top" class="mobile-nav-link"><span>⌂</span><small>الرئيسية</small></a>
-<a href="#offers" class="mobile-nav-link"><span>✦</span><small>العروض</small></a>
-<a href="#menu" class="mobile-nav-link mobile-nav-main"><span>🍽️</span><small>المنيو</small></a>
-<button id="mobileTrackBtn" type="button"><span>◎</span><small>تتبع</small></button>
-<button id="mobileCartBtn" type="button"><span>🛒</span><small>السلة <b id="mobileCartCount">0</b></small></button>
+  <a href="#top" class="mobile-nav-link"><span>⌂</span><small>الرئيسية</small></a>
+  <a href="#offers" class="mobile-nav-link"><span>✦</span><small>العروض</small></a>
+  <a href="#menu" class="mobile-nav-link mobile-nav-main"><span>🍽️</span><small>المنيو</small></a>
+  <button id="mobileTrackBtn" type="button"><span>◎</span><small>تتبع</small></button>
+  <button id="mobileCartBtn" type="button"><span>🛒</span><small>السلة <b id="mobileCartCount">0</b></small></button>
 </nav>
 
-<button id="floatingCart" class="floating-cart hidden"><span>🛒 <b id="floatingCount">0</b></span><strong id="floatingTotal">0 SAR</strong></button>
+<button id="floatingCart" class="floating-cart hidden" type="button"><span>🛒 <b id="floatingCount">0</b></span><strong id="floatingTotal">0 SAR</strong></button>
 
 <div id="overlay" class="overlay hidden" data-close></div>
-<aside id="cartDrawer" class="drawer hidden"><div class="drawer-head"><div><span class="kicker">YOUR ORDER</span><h2 data-t="cartTitle">سلة الطلب</h2></div><button class="close" data-close>×</button></div><div id="cartItems" class="cart-items"></div><div id="cartEmpty" class="cart-empty">🛒 <b data-t="emptyCart">السلة فارغة</b></div><div id="cartTotals" class="cart-totals hidden"><div><span data-t="subtotal">المجموع</span><b id="subTotal"></b></div><div><span data-t="deliveryFee">التوصيل</span><b id="deliveryFee">—</b></div><div class="grand"><span data-t="total">الإجمالي</span><b id="grandTotal"></b></div><button id="checkoutBtn" class="checkout" data-t="checkout">متابعة الطلب</button></div></aside>
 
-<div id="checkoutModal" class="modal hidden"><button class="close" data-close>×</button><span class="kicker">CHECKOUT</span><h2 data-t="checkoutTitle">بيانات الطلب</h2><p class="muted" data-t="checkoutNote">سيصل الطلب للمطعم كـ "بانتظار التأكيد".</p><form id="checkoutForm">
-<div class="type-switch"><label><input type="radio" name="orderType" value="pickup" checked><span>🏪 <b data-t="pickup">استلام</b></span></label><label><input type="radio" name="orderType" value="delivery"><span>🛵 <b data-t="delivery">توصيل</b></span></label></div>
-<div class="field-row"><label><span data-t="name">الاسم</span><input name="customerName" required minlength="2" autocomplete="name"></label><label><span data-t="phone">الجوال</span><input name="phone" required inputmode="tel" autocomplete="tel" placeholder="05xxxxxxxx"></label></div>
-<label id="addressField" class="hidden"><span data-t="address">عنوان التوصيل</span><textarea name="address" rows="2"></textarea></label><label><span data-t="notes">ملاحظات</span><textarea name="notes" rows="2" placeholder="مثال: بدون حار"></textarea></label>
-<div class="payment-title" data-t="payment">طريقة الدفع</div><div class="type-switch"><label><input type="radio" name="paymentMethod" value="cash" checked><span>💵 <b data-t="cash">نقداً</b></span></label><label><input type="radio" name="paymentMethod" value="card"><span>💳 <b data-t="card">بطاقة عند الاستلام</b></span></label></div>
-<div class="checkout-total"><span data-t="amountDue">الإجمالي</span><b id="checkoutTotal"></b></div><button id="placeOrderBtn" class="checkout" type="submit" data-t="placeOrder">إرسال الطلب للمطعم</button><small class="muted" data-t="terms">الطلب ينتظر موافقة المطعم ولا يعتبر مؤكداً فور الإرسال.</small>
-</form></div>
+<aside id="cartDrawer" class="drawer hidden">
+  <div class="drawer-head"><div><span class="kicker">YOUR ORDER</span><h2 data-t="cartTitle">سلة الطلب</h2></div><button class="close" data-close type="button">×</button></div>
+  <div id="cartItems" class="cart-items"></div>
+  <div id="cartEmpty" class="cart-empty">🛒 <b data-t="emptyCart">السلة فارغة</b></div>
+  <div id="cartTotals" class="cart-totals hidden">
+    <div><span data-t="subtotal">المجموع</span><b id="subTotal"></b></div>
+    <div><span data-t="deliveryFee">التوصيل</span><b id="deliveryFee">—</b></div>
+    <div class="grand"><span data-t="total">الإجمالي</span><b id="grandTotal"></b></div>
+    <button id="checkoutBtn" class="checkout" type="button" data-t="checkout">متابعة الطلب</button>
+  </div>
+</aside>
 
-<div id="trackModal" class="modal hidden"><button class="close" data-close>×</button><span class="kicker">TRACK ORDER</span><h2 data-t="trackOrder">تتبع الطلب</h2><form id="trackForm"><label>Tracking Token<input id="trackToken" required></label><label><span data-t="phone">الجوال</span><input id="trackPhone" required></label><button class="checkout" data-t="showStatus">عرض الحالة</button></form><div id="trackResult"></div></div>
+<div id="checkoutModal" class="modal hidden">
+  <button class="close" data-close type="button">×</button>
+  <span class="kicker">CHECKOUT</span>
+  <h2 data-t="checkoutTitle">بيانات الطلب</h2>
+  <p class="muted" data-t="checkoutNote">سيصل الطلب للمطعم كـ "بانتظار التأكيد".</p>
+  <form id="checkoutForm">
+    <div class="type-switch">
+      <label><input type="radio" name="orderType" value="pickup" checked><span>🏪 <b data-t="pickup">استلام</b></span></label>
+      <label><input type="radio" name="orderType" value="delivery"><span>🛵 <b data-t="delivery">توصيل</b></span></label>
+    </div>
+    <div class="field-row">
+      <label><span data-t="name">الاسم</span><input name="customerName" required minlength="2" autocomplete="name"></label>
+      <label><span data-t="phone">الجوال</span><input name="phone" required inputmode="tel" autocomplete="tel" placeholder="05xxxxxxxx"></label>
+    </div>
+    <label id="addressField" class="hidden"><span data-t="address">عنوان التوصيل</span><textarea name="address" rows="2"></textarea></label>
+    <label><span data-t="notes">ملاحظات</span><textarea name="notes" rows="2" placeholder="مثال: بدون حار"></textarea></label>
+    <div class="payment-title" data-t="payment">طريقة الدفع</div>
+    <div class="type-switch payment-switch">
+      <label><input type="radio" name="paymentMethod" value="cod" checked><span>💵 <b data-t="cod">الدفع نقداً عند الاستلام</b></span></label>
+      <label><input type="radio" name="paymentMethod" value="card_on_delivery"><span>💳 <b data-t="cardOnDelivery">بطاقة عند الاستلام</b></span></label>
+    </div>
+    <div class="checkout-total"><span data-t="amountDue">الإجمالي</span><b id="checkoutTotal"></b></div>
+    <button id="placeOrderBtn" class="checkout" type="submit" data-t="placeOrder">إرسال الطلب للمطعم</button>
+    <small class="muted" data-t="terms">الطلب ينتظر موافقة المطعم ولا يعتبر مؤكداً فور الإرسال.</small>
+  </form>
+</div>
 
-<div id="successModal" class="modal success hidden"><div class="success-icon">✓</div><span class="kicker">ORDER SENT</span><h2 data-t="orderSent">تم إرسال طلبك</h2><p data-t="waitingConfirm">طلبك الآن بانتظار تأكيد المطعم.</p><div class="order-box"><small data-t="orderNumber">رقم الطلب</small><b id="successNo"></b></div><div class="success-actions"><button id="trackNow" class="primary" data-t="trackNow">تتبع الآن</button><button class="secondary-dark" data-close data-t="done">تم</button></div></div>
+<div id="trackModal" class="modal hidden">
+  <button class="close" data-close type="button">×</button>
+  <span class="kicker">TRACK ORDER</span><h2 data-t="trackOrder">تتبع الطلب</h2>
+  <form id="trackForm"><label>Tracking Token<input id="trackToken" required></label><label><span data-t="phone">الجوال</span><input id="trackPhone" required></label><button class="checkout" data-t="showStatus">عرض الحالة</button></form>
+  <div id="trackResult"></div>
+</div>
 
-<div id="productModal" class="modal product-modal hidden"><button class="close" data-close>×</button><div id="productModalBody"></div></div>
-<div id="toast" class="toast"></div><script src="/app.js"></script>
-</body></html>
+<div id="successModal" class="modal success hidden">
+  <div class="success-icon">✓</div><span class="kicker">ORDER SENT</span><h2 data-t="orderSent">تم إرسال طلبك</h2>
+  <p data-t="waitingConfirm">طلبك الآن بانتظار تأكيد المطعم.</p>
+  <div class="order-box"><small data-t="orderNumber">رقم الطلب</small><b id="successNo"></b></div>
+  <div class="success-actions"><button id="trackNow" class="primary" type="button" data-t="trackNow">تتبع الآن</button><button class="secondary-dark" type="button" data-close data-t="done">تم</button></div>
+</div>
+
+<div id="productModal" class="modal product-modal hidden"><button class="close" data-close type="button">×</button><div id="productModalBody"></div></div>
+<div id="toast" class="toast"></div>
+<script src="/app.js"></script>
+</body>
+</html>
