@@ -1,5 +1,14 @@
 const express=require('express'),{Pool}=require('pg'),bcrypt=require('bcryptjs'),jwt=require('jsonwebtoken'),cookieParser=require('cookie-parser'),helmet=require('helmet'),compression=require('compression'),rateLimit=require('express-rate-limit'),multer=require('multer'),crypto=require('crypto'),path=require('path'),fs=require('fs');
 const app=express(),PORT=process.env.PORT||3000,prod=process.env.NODE_ENV==='production';
+const BUILD_SHA=process.env.RAILWAY_GIT_COMMIT_SHA||process.env.GITHUB_SHA||'local';
+const startedAt=Date.now();
+const log=(level,event,data={})=>console[level==='error'?'error':'log'](JSON.stringify({ts:new Date().toISOString(),level,event,build:BUILD_SHA,...data}));
+for(const method of ['get','post','put','patch','delete']){
+ const original=app[method].bind(app);
+ app[method]=(route,...handlers)=>original(route,...handlers.map(fn=>typeof fn==='function'?function(req,res,next){try{const out=fn(req,res,next);if(out&&typeof out.catch==='function')out.catch(next)}catch(e){next(e)}}:fn));
+}
+process.on('uncaughtException',e=>{log('error','uncaught_exception',{message:e?.message||String(e),stack:e?.stack||''});process.exit(1)});
+process.on('unhandledRejection',e=>{log('error','unhandled_rejection',{message:e?.message||String(e),stack:e?.stack||''});process.exit(1)});
 if(process.env.TRUST_PROXY) app.set('trust proxy',1);
 const pool=new Pool({connectionString:process.env.DATABASE_URL,ssl:String(process.env.DATABASE_SSL).toLowerCase()==='true'?{rejectUnauthorized:false}:false});
 const SECRET=process.env.JWT_SECRET;if(!SECRET||SECRET.length<32) throw Error('JWT_SECRET must be 32+ chars');
@@ -13,7 +22,17 @@ async function verifyPassword(password,hash){
  }
  return bcrypt.compare(String(password),hash);
 }
-app.use(helmet({contentSecurityPolicy:{directives:{defaultSrc:["'self'"],styleSrc:["'self'","'unsafe-inline'",'https://fonts.googleapis.com'],fontSrc:["'self'",'https://fonts.gstatic.com'],imgSrc:["'self'",'data:','https:'],scriptSrc:["'self'"],connectSrc:["'self'"]}}}));app.use(compression());app.use(cookieParser());app.use(express.json({limit:'300kb'}));
+app.use(helmet({contentSecurityPolicy:{directives:{defaultSrc:["'self'"],styleSrc:["'self'","'unsafe-inline'",'https://fonts.googleapis.com'],fontSrc:["'self'",'https://fonts.gstatic.com'],imgSrc:["'self'",'data:','https:'],scriptSrc:["'self'"],connectSrc:["'self'"]}}}));
+app.use(compression());app.use(cookieParser());app.use(express.json({limit:'300kb'}));
+app.use((req,res,next)=>{
+ const started=Date.now(),requestId=safe(req.get('x-request-id')||crypto.randomUUID(),80);
+ req.id=requestId;res.set('X-Request-ID',requestId);
+ res.on('finish',()=>{
+  const durationMs=Date.now()-started,write=!['GET','HEAD','OPTIONS'].includes(req.method),important=write||res.statusCode>=400||durationMs>=1000;
+  if(important)log(res.statusCode>=500?'error':'info','http_request',{requestId,method:req.method,path:req.path,status:res.statusCode,durationMs});
+ });
+ next();
+});
 const orderLimit=rateLimit({windowMs:600000,limit:40}),loginLimit=rateLimit({windowMs:900000,limit:12});
 const upload=multer({storage:multer.memoryStorage(),limits:{fileSize:4*1024*1024},fileFilter:(_req,file,cb)=>cb(null,['image/jpeg','image/png','image/webp'].includes(file.mimetype))});
 const sseClients=new Set();
@@ -240,7 +259,8 @@ async function startupHttpSelfTest(){
  }
 }
 const auth=(req,res,next)=>{try{req.admin=jwt.verify(req.cookies.sf_admin,SECRET);next()}catch{return res.status(401).json({error:'Unauthorized'})}};
-app.get('/api/health',async(req,res)=>{try{await pool.query('select 1');res.json({ok:true})}catch{res.status(503).json({ok:false})}});
+app.get('/api/health',async(req,res)=>{try{await pool.query('select 1');res.json({ok:true,build:BUILD_SHA,uptimeSeconds:Math.floor((Date.now()-startedAt)/1000)})}catch(e){log('error','healthcheck_failed',{requestId:req.id,message:e.message});res.status(503).json({ok:false,build:BUILD_SHA})}});
+app.get('/api/version',(req,res)=>res.set('Cache-Control','no-store').json({build:BUILD_SHA,node:process.version,startedAt:new Date(startedAt).toISOString()}));
 app.get('/api/images/:id',async(req,res,next)=>{try{const r=await pool.query('select mime_type,data from images where id=$1',[safe(req.params.id,100)]);if(!r.rows[0])return res.status(404).end();res.set('Content-Type',r.rows[0].mime_type).set('Cache-Control','public,max-age=31536000,immutable').send(r.rows[0].data)}catch(e){next(e)}});
 app.get('/api/public',async(req,res)=>{const[s,c,p,o]=await Promise.all([pool.query('select data from settings where id=1'),pool.query('select * from categories where active=true order by sort_order'),pool.query('select * from products where available=true order by featured desc,sort_order'),pool.query('select * from offers where active=true order by sort_order')]);res.set('Cache-Control','no-store, no-cache, must-revalidate').json({settings:s.rows[0].data,categories:c.rows,products:p.rows.map(x=>({...x,price:+x.price})),offers:o.rows.map(x=>({...x,price:+x.price}))})});
 app.post('/api/orders',orderLimit,async(req,res)=>{const b=req.body||{},name=String(b.customerName||'').trim().slice(0,80),phone=String(b.phone||'').replace(/\D/g,'').slice(0,20),type=b.orderType==='delivery'?'delivery':'pickup',address=String(b.address||'').trim().slice(0,300);if(name.length<2||phone.length<9||!Array.isArray(b.items)||!b.items.length)return res.status(400).json({error:'Please complete your order details.'});if(type==='delivery'&&address.length<5)return res.status(400).json({error:'Delivery address is required.'});const ids=b.items.map(x=>String(x.productId));const pr=(await pool.query('select * from products where id=any($1::text[]) and available=true and orderable=true',[ids])).rows;let items=[];for(const raw of b.items){let p=pr.find(x=>x.id===String(raw.productId));if(!p)return res.status(409).json({error:'A selected item is unavailable.'});let q=Math.max(1,Math.min(50,Math.floor(+raw.qty||1)));items.push({p,q,total:+p.price*q})}let subtotal=items.reduce((a,x)=>a+x.total,0),st=(await pool.query('select data from settings where id=1')).rows[0].data;if(st.acceptingOrders===false)return res.status(409).json({error:'Restaurant is currently not accepting orders.'});if(subtotal<+(st.minimumOrder||0))return res.status(400).json({error:'Minimum order is '+st.minimumOrder+' SAR.'});let fee=type==='delivery'?+(st.deliveryFee||0):0,total=subtotal+fee,id='ord_'+crypto.randomUUID(),token=crypto.randomBytes(24).toString('base64url'),no='SF'+Date.now().toString(36).toUpperCase()+crypto.randomBytes(2).toString('hex').toUpperCase(),payment=b.paymentMethod==='card_on_delivery'?'card_on_delivery':'cod';if(payment==='cod'&&st.cashOnDelivery===false)return res.status(409).json({error:'Cash payment is currently unavailable.'});if(payment==='card_on_delivery'&&st.cardOnDelivery===false)return res.status(409).json({error:'Card on delivery is currently unavailable.'});const client=await pool.connect();try{await client.query('BEGIN');await client.query(`insert into orders(id,order_no,token,customer_name,phone,order_type,address,notes,payment,subtotal,delivery_fee,total,status) values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,'PENDING')`,[id,no,token,name,phone,type,address,String(b.notes||'').slice(0,500),payment,subtotal,fee,total]);for(const x of items)await client.query('insert into order_items(order_id,product_id,name_ar,name_en,price,qty,total) values($1,$2,$3,$4,$5,$6,$7)',[id,x.p.id,x.p.name_ar,x.p.name_en,x.p.price,x.q,x.total]);await client.query("insert into order_history(order_id,status,note) values($1,'PENDING','Order submitted by customer')",[id]);await client.query('COMMIT');broadcast('new-order',{orderNumber:no,total,status:'PENDING',customerName:name,createdAt:new Date().toISOString()});res.status(201).json({ok:true,order:{orderNumber:no,trackingToken:token,status:'PENDING',total}})}catch(e){await client.query('ROLLBACK').catch(()=>{});throw e}finally{client.release()}});
@@ -271,6 +291,17 @@ app.post('/api/admin/change-password',async(req,res)=>{let a=(await pool.query('
 app.get('/api/admin/export',async(req,res)=>{let [settings,categories,products,offers,orders,items,history]=await Promise.all([pool.query('select data from settings where id=1'),pool.query('select * from categories order by sort_order'),pool.query('select * from products order by sort_order'),pool.query('select * from offers order by sort_order'),pool.query('select * from orders order by created_at desc'),pool.query('select * from order_items order by id'),pool.query('select * from order_history order by id')]);res.set('Content-Disposition','attachment; filename="shrimp-fins-backup-'+new Date().toISOString().slice(0,10)+'.json"').json({exportedAt:new Date().toISOString(),settings:settings.rows[0].data,categories:categories.rows,products:products.rows,offers:offers.rows,orders:orders.rows,orderItems:items.rows,orderHistory:history.rows})});
 app.get('/favicon.ico',(req,res)=>res.type('image/svg+xml').set('Cache-Control','public,max-age=86400').sendFile(path.join(__dirname,'public','favicon.svg')));
 app.use((req,res,next)=>{if(['/','/index.html','/app.js','/styles.css','/sw.js','/manifest.webmanifest','/admin','/admin.html','/admin.js','/admin.css'].includes(req.path))res.set('Cache-Control','no-store, no-cache, must-revalidate');next()});
-app.use(express.static(path.join(__dirname,'public'),{maxAge:0,etag:false}));app.get('/admin',(req,res)=>res.set('Cache-Control','no-store').sendFile(path.join(__dirname,'public','admin.html')));app.get('*',(req,res)=>res.set('Cache-Control','no-store').sendFile(path.join(__dirname,'public','index.html')));
-app.use((e,req,res,next)=>{console.error(e);res.status(500).json({error:prod?'Unexpected server error':e.message})});
-init().then(startupSelfTest).then(()=>{app.listen(PORT,'0.0.0.0',async()=>{console.log('Shrimp Fins live on '+PORT);try{await startupHttpSelfTest()}catch(e){console.error('HTTP_QA_FAIL',e);process.exit(1)}})}).catch(e=>{console.error(e);process.exit(1)});
+app.use(express.static(path.join(__dirname,'public'),{maxAge:0,etag:false}));
+app.get('/admin',(req,res)=>res.set('Cache-Control','no-store').sendFile(path.join(__dirname,'public','admin.html')));
+app.use('/api',(req,res)=>res.status(404).json({error:'API endpoint not found',requestId:req.id}));
+app.get('*',(req,res)=>res.set('Cache-Control','no-store').sendFile(path.join(__dirname,'public','index.html')));
+app.use((e,req,res,next)=>{
+ const status=Number(e?.status||e?.statusCode)||500;
+ log('error','request_error',{requestId:req.id,method:req.method,path:req.path,status,message:e?.message||String(e),stack:e?.stack||''});
+ if(res.headersSent)return next(e);
+ res.status(status>=400&&status<600?status:500).json({error:prod?'Unexpected server error':(e?.message||'Unexpected server error'),requestId:req.id});
+});
+init().then(startupSelfTest).then(()=>{app.listen(PORT,'0.0.0.0',async()=>{
+ log('info','server_started',{port:Number(PORT),node:process.version});
+ try{await startupHttpSelfTest();log('info','startup_http_qa_pass',{})}catch(e){log('error','startup_http_qa_fail',{message:e.message,stack:e.stack||''});process.exit(1)}
+})}).catch(e=>{log('error','startup_failed',{message:e.message,stack:e.stack||''});process.exit(1)});
