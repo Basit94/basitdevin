@@ -23,9 +23,9 @@ async function verifyPassword(password,hash){
  return bcrypt.compare(String(password),hash);
 }
 app.use(helmet({contentSecurityPolicy:{directives:{defaultSrc:["'self'"],styleSrc:["'self'","'unsafe-inline'",'https://fonts.googleapis.com'],fontSrc:["'self'",'https://fonts.gstatic.com'],imgSrc:["'self'",'data:','https:'],scriptSrc:["'self'"],connectSrc:["'self'"]}}}));
-app.use(compression());app.use(cookieParser());app.use(express.json({limit:'300kb'}));
+app.use(compression());app.use(cookieParser());
 app.use((req,res,next)=>{
- const started=Date.now(),requestId=safe(req.get('x-request-id')||crypto.randomUUID(),80);
+ const started=Date.now(),requestId=String(req.get('x-request-id')||crypto.randomUUID()).trim().slice(0,80);
  req.id=requestId;res.set('X-Request-ID',requestId);
  res.on('finish',()=>{
   const durationMs=Date.now()-started,write=!['GET','HEAD','OPTIONS'].includes(req.method),important=write||res.statusCode>=400||durationMs>=1000;
@@ -33,6 +33,7 @@ app.use((req,res,next)=>{
  });
  next();
 });
+app.use(express.json({limit:'300kb'}));
 const orderLimit=rateLimit({windowMs:600000,limit:40}),loginLimit=rateLimit({windowMs:900000,limit:12});
 const upload=multer({storage:multer.memoryStorage(),limits:{fileSize:4*1024*1024},fileFilter:(_req,file,cb)=>cb(null,['image/jpeg','image/png','image/webp'].includes(file.mimetype))});
 const sseClients=new Set();
