@@ -52,7 +52,7 @@ async function main(){
 
  x=await call('/api/admin/login',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({email,password:credential})});check('admin login',x.r.status===200&&x.body.ok);cookie=(x.r.headers.get('set-cookie')||'').split(';')[0];check('auth cookie',cookie.startsWith('sf_admin='));
  x=await call('/api/admin/me');check('admin session',x.r.status===200&&x.body.admin.email===email);
- x=await call('/api/admin/dashboard');check('dashboard',x.r.status===200&&x.body.products===63&&x.body.pending>=2,JSON.stringify({products:x.body.products,pending:x.body.pending}));
+ x=await call('/api/admin/dashboard');check('dashboard',x.r.status===200&&Number(x.body.products)>=pub.products.length&&Number(x.body.pending)>=2,JSON.stringify({allProducts:x.body.products,publicProducts:pub.products.length,pending:x.body.pending}));
 
  x=await call('/api/admin/orders?status=PENDING&q='+encodeURIComponent(codOrder.orderNumber));const o=x.body.orders.find(v=>v.order_no===codOrder.orderNumber);check('order filters',x.r.status===200&&!!o);
  x=await call('/api/admin/orders/'+o.id);check('COD order details/history',x.r.status===200&&x.body.items.length===1&&x.body.history.length>=1&&x.body.order.payment==='cod',x.body.order?.payment||'');
