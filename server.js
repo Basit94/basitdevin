@@ -120,7 +120,7 @@ if(st.menuRevision!=='excel-2026-09-v3'){
       await client.query(`INSERT INTO products(id,category_id,name_ar,name_en,description_ar,description_en,price,unit_ar,unit_en,image,available,featured,sort_order,calories,orderable,price_note_ar,price_note_en)
       VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,TRUE,$11,$12,$13,$14,$15,$16)
       ON CONFLICT(id) DO UPDATE SET category_id=EXCLUDED.category_id,name_ar=EXCLUDED.name_ar,name_en=EXCLUDED.name_en,description_ar=EXCLUDED.description_ar,description_en=EXCLUDED.description_en,price=EXCLUDED.price,unit_ar=EXCLUDED.unit_ar,unit_en=EXCLUDED.unit_en,image=CASE WHEN COALESCE(products.image,'')='' THEN EXCLUDED.image ELSE products.image END,available=TRUE,featured=EXCLUDED.featured,sort_order=EXCLUDED.sort_order,calories=EXCLUDED.calories,orderable=EXCLUDED.orderable,price_note_ar=EXCLUDED.price_note_ar,price_note_en=EXCLUDED.price_note_en,updated_at=NOW()`,
-      [p[0],p[1],p[2],p[3],p[4],p[5],p[6],p[7],menuImage(cat,i),featured,i,p[7],orderable,orderable?'':'حسب سعر اليوم',orderable?'':'Market price']);
+      [p[0],p[1],p[2],p[3],descAr,descEn,p[4],p[5],p[6],menuImage(cat,i),featured,i,p[7],orderable,orderable?'':'حسب سعر اليوم',orderable?'':'Market price']);
     }
     await client.query("UPDATE offers SET active=FALSE,updated_at=NOW() WHERE id ~ '^o[0-9]+$'");
     const canonicalOffers=[
