@@ -65,10 +65,16 @@
     </div>
   </div>
   <div class="hero-visual">
-    <figure>
-      <img id="heroFoodImage" src="/assets/shrimp-fins-promo.webp?v=12" alt="زعانف الروبيان - Shrimp Fins">
-      <figcaption><span>مطعم زعانف الروبيان</span><b>0541064143</b></figcaption>
+    <figure class="hero-photo-frame">
+      <img id="heroFoodImage" src="/assets/storefront.svg?v=12" alt="واجهة مطعم زعانف الروبيان">
+      <figcaption><span id="heroPhotoCaption">واجهة المطعم · الرياض</span><b>0541064143</b></figcaption>
+      <div class="hero-photo-controls" aria-label="Restaurant photos">
+        <button id="heroPhotoPrev" type="button" aria-label="Previous photo">‹</button>
+        <div id="heroPhotoDots" class="hero-photo-dots"></div>
+        <button id="heroPhotoNext" type="button" aria-label="Next photo">›</button>
+      </div>
     </figure>
+    <p class="photo-source-note" id="photoSourceNote">صور المطعم والمنيو من المواد التي زودنا بها المطعم، مع صور توضيحية فقط عند عدم توفر صورة أصلية.</p>
   </div>
 </section>
 
@@ -98,7 +104,7 @@
   </div>
   <div id="products" class="products"></div>
   <div id="noProducts" class="empty hidden">🍽️ <b data-t="noResults">لا توجد نتائج</b></div>
-  <p class="photo-note" data-t="photoNote">صور بعض الأصناف توضيحية، والمنيو والأسعار حسب بيانات المطعم.</p>
+  <p class="photo-note" data-t="photoNote">المنيو والأسعار والسعرات من ملف المطعم. نستخدم صورة المطعم الأصلية وصور المنيو المتاحة، وتظهر صورة توضيحية فقط للصنف الذي لم تُرفق له صورة أصلية.</p>
 </section>
 
 <section class="workflow section">
@@ -124,6 +130,8 @@
     <div class="restaurant-facts">
       <div class="fact-card"><span>🍽️</span><div><b data-t="serviceOptions">خيارات الخدمة</b><small id="serviceModesContact"></small></div></div>
       <div class="fact-card"><span>🅿️</span><div><b data-t="visitorInfo">معلومات الزيارة</b><small id="amenitiesText"></small></div></div>
+      <div class="fact-card"><span>☎</span><div><b data-t="reservations">الحجوزات والطلبات الكبيرة</b><small id="reservationText">متاحة بالتواصل مع المطعم</small></div></div>
+      <div class="fact-card"><span>✓</span><div><b data-t="verifiedInfo">بيانات المطعم</b><small id="infoVerifiedText">تمت مراجعتها من ملف المطعم وخرائط Google</small></div></div>
     </div>
     <div class="contact-actions">
       <a id="waBtn" class="primary" target="_blank" rel="noopener">💬 WhatsApp</a>
