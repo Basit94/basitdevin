@@ -55,26 +55,28 @@ function filteredProducts(){
  if(q)arr=arr.filter(p=>(p.name_ar+' '+p.name_en+' '+(p.description_ar||'')+' '+(p.description_en||'')).toLowerCase().includes(q));
  return arr;
 }
+function productPrice(p){if(p.orderable===false)return state.lang==='ar'?(p.price_note_ar||'حسب سعر اليوم'):(p.price_note_en||'Market price');return money(p.price)}
+function calorieTag(p){return p.calories==null?'':`<span class="calorie-badge">🔥 ${esc(p.calories)} <small>${state.lang==='ar'?'سعرة':'cal'}</small></span>`}
 function renderProducts(){
  if(!state.data)return;const arr=filteredProducts();$('#resultCount').textContent=arr.length+' '+tr('items');$('#noProducts').classList.toggle('hidden',!!arr.length);
- $('#products').innerHTML=arr.map(p=>{const c=cat(p.category_id||p.categoryId);const image=p.image||'';return `<article class="product-card">
- <div class="product-image" data-view="${esc(p.id)}">${image?`<img loading="lazy" src="${esc(image)}" alt="${esc(txt(p,'name_ar','name_en'))}">`:`<div class="img-fallback">${esc(c.icon||'🍽️')}</div>`}${p.featured?`<span class="featured-badge">★ ${state.lang==='ar'?'مميز':'Featured'}</span>`:''}</div>
+ $('#products').innerHTML=arr.map(p=>{const c=cat(p.category_id||p.categoryId),image=p.image||'',canOrder=p.orderable!==false;return `<article class="product-card ${canOrder?'':'market-card'}">
+ <div class="product-image" data-view="${esc(p.id)}">${image?`<img loading="lazy" src="${esc(image)}" alt="${esc(txt(p,'name_ar','name_en'))}">`:`<div class="img-fallback">${esc(c.icon||'🍽️')}</div>`}${p.featured?`<span class="featured-badge">★ ${state.lang==='ar'?'مميز':'Featured'}</span>`:''}${calorieTag(p)}</div>
  <div class="product-body"><span class="product-cat">${esc(txt(c,'name_ar','name_en'))}</span><h3>${esc(txt(p,'name_ar','name_en'))}</h3><p class="product-desc">${esc(txt(p,'description_ar','description_en'))}</p>
- <div class="product-footer"><div class="price"><b>${money(p.price)}</b><small>/ ${esc(txt(p,'unit_ar','unit_en'))}</small></div><button class="add-btn" aria-label="${tr('add')}" data-add="${esc(p.id)}">+</button></div><button class="view-btn" data-view="${esc(p.id)}">${tr('view')}</button></div></article>`}).join('');
+ <div class="product-footer"><div class="price"><b class="${canOrder?'':'market-price'}">${esc(productPrice(p))}</b>${canOrder?`<small>/ ${esc(txt(p,'unit_ar','unit_en'))}</small>`:''}</div>${canOrder?`<button class="add-btn" aria-label="${tr('add')}" data-add="${esc(p.id)}">+</button>`:`<button class="call-btn" data-view="${esc(p.id)}">☎</button>`}</div><button class="view-btn" data-view="${esc(p.id)}">${tr('view')}</button></div></article>`}).join('');
  $$('[data-add]').forEach(b=>b.onclick=e=>{e.stopPropagation();addToCart(b.dataset.add)});
  $$('[data-view]').forEach(b=>b.onclick=()=>showProduct(b.dataset.view));
- $$('#products img').forEach(img=>img.onerror=()=>{const p=img.closest('.product-card'),id=p?.querySelector('[data-add]')?.dataset.add,c=cat(product(id)?.category_id);img.parentElement.innerHTML=`<div class="img-fallback">${esc(c.icon||'🦐')}</div>`});
+ $$('#products img').forEach(img=>img.onerror=()=>{const card=img.closest('.product-card'),id=card?.querySelector('[data-view]')?.dataset.view,c=cat(product(id)?.category_id);img.parentElement.innerHTML=`<div class="img-fallback">${esc(c.icon||'🦐')}</div>`});
 }
 function showProduct(id){
- const p=product(id);if(!p)return;const c=cat(p.category_id||p.categoryId);
- $('#productModalBody').innerHTML=`<div class="product-detail"><div class="product-detail-image">${p.image?`<img src="${esc(p.image)}" alt="${esc(txt(p,'name_ar','name_en'))}">`:`<div class="img-fallback">${esc(c.icon||'🍽️')}</div>`}</div><div class="product-detail-copy"><span class="kicker">${esc(txt(c,'name_ar','name_en'))}</span><h2>${esc(txt(p,'name_ar','name_en'))}</h2><p>${esc(txt(p,'description_ar','description_en'))}</p><div class="price"><b>${money(p.price)}</b><small>/ ${esc(txt(p,'unit_ar','unit_en'))}</small></div><button class="checkout add-detail" data-detail-add="${esc(p.id)}">${tr('add')}</button></div></div>`;
+ const p=product(id);if(!p)return;const c=cat(p.category_id||p.categoryId),canOrder=p.orderable!==false;
+ $('#productModalBody').innerHTML=`<div class="product-detail"><div class="product-detail-image">${p.image?`<img src="${esc(p.image)}" alt="${esc(txt(p,'name_ar','name_en'))}">`:`<div class="img-fallback">${esc(c.icon||'🍽️')}</div>`}</div><div class="product-detail-copy"><span class="kicker">${esc(txt(c,'name_ar','name_en'))}</span><h2>${esc(txt(p,'name_ar','name_en'))}</h2>${p.calories!=null?`<div class="detail-calories">🔥 ${esc(p.calories)} ${state.lang==='ar'?'سعرة حرارية':'calories'}</div>`:''}<p>${esc(txt(p,'description_ar','description_en'))}</p><div class="price"><b>${esc(productPrice(p))}</b>${canOrder?`<small>/ ${esc(txt(p,'unit_ar','unit_en'))}</small>`:''}</div>${canOrder?`<button class="checkout add-detail" data-detail-add="${esc(p.id)}">${tr('add')}</button>`:`<a class="checkout market-contact" href="tel:${esc(state.data.settings?.phone||'0541064143')}">${state.lang==='ar'?'اتصل لمعرفة سعر اليوم':'Call for today’s price'}</a>`}</div></div>`;
  $('#productModalBody img')?.addEventListener('error',e=>e.target.parentElement.innerHTML=`<div class="img-fallback">${esc(c.icon||'🦐')}</div>`);
- $('[data-detail-add]').onclick=()=>{addToCart(id);closeAll();open('#cartDrawer')};open('#productModal');
+ const add=$('[data-detail-add]');if(add)add.onclick=()=>{addToCart(id);closeAll();open('#cartDrawer')};open('#productModal');
 }
-function addToCart(id){if(!product(id))return toast(tr('unavailable'),true);state.cart[id]=(state.cart[id]||0)+1;saveCart();toast(tr('added'))}
+function addToCart(id){const p=product(id);if(!p||p.orderable===false||+p.price<=0)return toast(state.lang==='ar'?'هذا الصنف بسعر اليوم، تواصل مع المطعم':'This item is market price. Contact the restaurant.',true);state.cart[id]=(state.cart[id]||0)+1;saveCart();toast(tr('added'))}
 function renderCart(){
- if(!state.data)return;for(const id of Object.keys(state.cart))if(!product(id)||state.cart[id]<=0)delete state.cart[id];
- const entries=Object.entries(state.cart);const count=cartQty();$('#cartCount').textContent=count;$('#floatingCount').textContent=count;$('#floatingCart').classList.toggle('hidden',count===0);
+ if(!state.data)return;for(const id of Object.keys(state.cart)){const p=product(id);if(!p||p.orderable===false||state.cart[id]<=0)delete state.cart[id]}
+ const entries=Object.entries(state.cart);const count=cartQty();$('#cartCount').textContent=count;$('#floatingCount').textContent=count;if($('#mobileCartCount'))$('#mobileCartCount').textContent=count;$('#floatingCart').classList.toggle('hidden',count===0);
  const t=totals();$('#floatingTotal').textContent=money(t.sub);
  $('#cartEmpty').classList.toggle('hidden',entries.length>0);$('#cartTotals').classList.toggle('hidden',entries.length===0);
  $('#cartItems').innerHTML=entries.map(([id,q])=>{const p=product(id);return `<div class="cart-row">${p.image?`<img src="${esc(p.image)}" alt="">`:`<div class="img-fallback">🦐</div>`}<div><h4>${esc(txt(p,'name_ar','name_en'))}</h4><small>${money(p.price)}</small></div><div class="qty"><button data-minus="${id}">−</button><b>${q}</b><button data-plus="${id}">+</button></div></div>`}).join('');
@@ -107,7 +109,7 @@ async function load(){
 }
 $('#langBtn').onclick=()=>{state.lang=state.lang==='ar'?'en':'ar';localStorage.setItem('sf_lang',state.lang);applyLanguage()};
 $('#searchInput').oninput=e=>{state.search=e.target.value;renderProducts()};
-$('#cartBtn').onclick=()=>open('#cartDrawer');$('#floatingCart').onclick=()=>open('#cartDrawer');$('#trackBtn').onclick=()=>open('#trackModal');
+$('#cartBtn').onclick=()=>open('#cartDrawer');$('#floatingCart').onclick=()=>open('#cartDrawer');$('#trackBtn').onclick=()=>open('#trackModal');if($('#mobileCartBtn'))$('#mobileCartBtn').onclick=()=>open('#cartDrawer');if($('#mobileTrackBtn'))$('#mobileTrackBtn').onclick=()=>open('#trackModal');
 $$('[data-close]').forEach(x=>x.onclick=closeAll);document.addEventListener('keydown',e=>{if(e.key==='Escape')closeAll()});
 $('#checkoutBtn').onclick=()=>{if(!cartQty())return toast(tr('emptyCart'),true);if(state.data.settings.acceptingOrders===false)return toast(tr('closed'),true);closeAll();open('#checkoutModal');updateCheckoutTotal()};
 $$('input[name="orderType"]').forEach(x=>x.onchange=updateCheckoutTotal);$('#checkoutForm').onsubmit=placeOrder;
