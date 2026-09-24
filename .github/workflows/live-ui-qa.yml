@@ -1,0 +1,119 @@
+name: Live UI QA
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  live-ui:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Install browser QA tooling
+        run: |
+          npm install --no-save playwright@1.55.0
+          npx playwright install --with-deps chromium
+      - name: Test live customer and admin UI
+        env:
+          BASE_URL: https://shrimp-fins-app-production.up.railway.app
+        run: |
+          cat > /tmp/live-ui-qa.js <<'NODE'
+          const { chromium } = require('playwright');
+          const fs = require('fs');
+          const assert = (ok,msg)=>{ if(!ok) throw new Error(msg); };
+          const base = process.env.BASE_URL;
+          const out = 'qa-artifacts';
+          fs.mkdirSync(out,{recursive:true});
+          const report={base,desktop:{},mobile:{},admin:{},errors:[]};
+          async function collect(page,label){
+            page.on('console',m=>{ if(m.type()==='error') report.errors.push(label+': console: '+m.text()); });
+            page.on('pageerror',e=>report.errors.push(label+': pageerror: '+e.message));
+            page.on('requestfailed',r=>report.errors.push(label+': requestfailed: '+r.url()+' '+(r.failure()?.errorText||'')));
+          }
+          async function waitReady(page){
+            await page.goto(base+'/',{waitUntil:'networkidle',timeout:60000});
+            await page.waitForSelector('#products .product-card',{timeout:30000});
+            await page.waitForFunction(()=>document.querySelectorAll('#products .product-card').length>=50);
+          }
+          const browser=await chromium.launch({headless:true});
+          try{
+            const dctx=await browser.newContext({viewport:{width:1440,height:1000},deviceScaleFactor:1});
+            const dp=await dctx.newPage();await collect(dp,'desktop');await waitReady(dp);
+            report.desktop.title=await dp.title();
+            report.desktop.products=await dp.locator('#products .product-card').count();
+            report.desktop.offers=await dp.locator('#offersGrid .offer-card').count();
+            report.desktop.categories=await dp.locator('#cats button').count();
+            report.desktop.dir=await dp.locator('html').getAttribute('dir');
+            const hero=dp.locator('#heroFoodImage');
+            assert(await hero.isVisible(),'desktop hero image not visible');
+            assert(await hero.evaluate(i=>i.complete&&i.naturalWidth>0),'desktop hero image failed to load');
+            assert(report.desktop.products>=60,'desktop product count below expected');
+            assert(report.desktop.offers>=8,'desktop offers below expected');
+            const mapHref=await dp.locator('#mapBtn').getAttribute('href');
+            assert(mapHref&&mapHref.includes('google.com/maps'),'map link missing');
+            await dp.screenshot({path:out+'/desktop-home.png',fullPage:true});
+            await dp.locator('[data-add]').first().click();
+            await dp.locator('#cartBtn').click();
+            assert(await dp.locator('#cartDrawer').isVisible(),'desktop cart did not open');
+            await dp.locator('#checkoutBtn').click();
+            assert(await dp.locator('#checkoutModal').isVisible(),'desktop checkout did not open');
+            await dp.locator('input[name="orderType"][value="delivery"]').check();
+            await dp.locator('input[name="customerName"]').fill('QA Preview');
+            await dp.locator('input[name="phone"]').fill('0500000000');
+            await dp.locator('textarea[name="address"]').fill('Riyadh QA preview address');
+            assert(await dp.locator('input[name="paymentMethod"][value="cod"]').isVisible(),'COD option hidden');
+            assert(await dp.locator('input[name="paymentMethod"][value="cod"]').isEnabled(),'COD option disabled');
+            await dp.screenshot({path:out+'/desktop-checkout.png',fullPage:false});
+            await dp.locator('[data-close]').first().click().catch(()=>{});
+            await dp.locator('#langBtn').click();
+            assert((await dp.locator('html').getAttribute('dir'))==='ltr','English switch did not set LTR');
+            report.desktop.languageSwitch=true;
+            await dctx.close();
+
+            const mctx=await browser.newContext({viewport:{width:390,height:844},deviceScaleFactor:2,isMobile:true,hasTouch:true,userAgent:'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 Mobile/15E148 Safari/604.1'});
+            const mp=await mctx.newPage();await collect(mp,'mobile');await waitReady(mp);
+            report.mobile.products=await mp.locator('#products .product-card').count();
+            report.mobile.navVisible=await mp.locator('.mobile-nav').isVisible();
+            report.mobile.heroVisible=await mp.locator('#heroFoodImage').isVisible();
+            assert(report.mobile.navVisible,'mobile bottom nav not visible');
+            assert(report.mobile.heroVisible,'mobile hero not visible');
+            const bodyOverflow=await mp.evaluate(()=>document.documentElement.scrollWidth<=document.documentElement.clientWidth+1);
+            assert(bodyOverflow,'mobile page has horizontal overflow');
+            await mp.screenshot({path:out+'/mobile-home.png',fullPage:true});
+            await mp.locator('[data-add]').first().click();
+            await mp.locator('#mobileCartBtn').click();
+            assert(await mp.locator('#cartDrawer').isVisible(),'mobile cart did not open');
+            await mp.screenshot({path:out+'/mobile-cart.png',fullPage:false});
+            await mctx.close();
+
+            const actx=await browser.newContext({viewport:{width:1280,height:900}});
+            const ap=await actx.newPage();await collect(ap,'admin');
+            const ar=await ap.goto(base+'/admin',{waitUntil:'networkidle',timeout:60000});
+            assert(ar&&ar.ok(),'admin route failed');
+            assert(await ap.locator('#loginForm').isVisible(),'admin login form not visible');
+            report.admin.loginVisible=true;
+            await ap.screenshot({path:out+'/admin-login.png',fullPage:true});
+            await actx.close();
+
+            if(report.errors.length) throw new Error('Browser/runtime errors: '+report.errors.join(' | '));
+            fs.writeFileSync(out+'/report.json',JSON.stringify(report,null,2));
+            console.log('PLAYWRIGHT_QA_PASS '+JSON.stringify(report));
+          } finally { await browser.close(); }
+          NODE
+          node /tmp/live-ui-qa.js
+      - name: Upload visual QA artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: live-ui-qa
+          path: qa-artifacts
+          if-no-files-found: warn
+          retention-days: 7
