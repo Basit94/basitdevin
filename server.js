@@ -249,7 +249,7 @@ async function startupHttpSelfTest(){
   let adminJs=await fetch(base+'/admin.js'),adminJsText=await adminJs.text();
   if(!adminJs.ok||!adminJsText.includes('sCashOnDelivery')||!adminJsText.includes('sGoogleRating')||!adminJsText.includes('loadSettings'))throw Error('Admin JS self-test failed');
   let sw=await fetch(base+'/sw.js?v=9'),swText=await sw.text();
-  if(!sw.ok||!swText.includes("shrimp-fins-v11")||!swText.includes('/favicon.svg?v=11'))throw Error('PWA service worker self-test failed');
+  if(!sw.ok||!swText.includes("shrimp-fins-v12")||!swText.includes('/favicon.svg?v=12'))throw Error('PWA service worker self-test failed');
   let manifest=await fetch(base+'/manifest.webmanifest'),manifestText=await manifest.text();
   if(!manifest.ok||!manifestText.includes('/favicon.svg?v=9')||!manifestText.includes('"display": "standalone"'))throw Error('PWA manifest self-test failed');
   let favicon=await fetch(base+'/favicon.svg?v=9'),faviconText=await favicon.text();
