@@ -102,3 +102,30 @@ footer{background:var(--navy2);color:#bfd0da;padding:37px max(24px,7vw);display:
  .gallery-grid-real figure,.gallery-grid-real figure:first-child,.gallery-grid-real figure:last-child{height:215px!important}
  .payment-switch{grid-template-columns:1fr}.payment-switch span{min-height:48px}
 }
+
+
+/* === Official restaurant identity + verified visit information === */
+.official-banner{position:relative;max-width:1460px;margin:24px auto 0;padding:0 24px}
+.official-banner>img{display:block;width:100%;aspect-ratio:1672/941;object-fit:cover;border-radius:30px;background:#eef3f6;box-shadow:0 22px 60px rgba(5,46,76,.14)}
+.official-banner-actions{position:absolute;inset-inline-end:50px;bottom:28px;display:flex;gap:10px;z-index:2}
+.official-banner-actions a{min-height:46px;display:inline-flex;align-items:center;justify-content:center;padding:0 20px;border-radius:14px;text-decoration:none;font-weight:900;box-shadow:0 10px 25px rgba(0,0,0,.14)}
+.official-banner-actions .primary{background:var(--orange);color:#fff}
+.banner-map{background:rgba(255,255,255,.95);color:var(--navy);backdrop-filter:blur(10px)}
+.hero-card .hero-promo img{display:block;width:100%;height:100%;object-fit:cover}
+.restaurant-facts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:14px}
+.fact-card{min-height:76px;border:1px solid var(--line);border-radius:16px;background:#fff;padding:12px;display:flex;align-items:flex-start;gap:10px;text-decoration:none;color:var(--navy);box-shadow:0 5px 16px rgba(5,46,76,.045)}
+.fact-card>span{width:34px;height:34px;display:grid;place-items:center;border-radius:11px;background:#fff3e9;font-size:18px;flex:0 0 auto}
+.fact-card b{display:block;font-size:12px;margin-bottom:3px}
+.fact-card small{display:block;color:#6d7b85;font-size:10px;line-height:1.45}
+.rating-fact>span{background:#fff4cf;color:#e49d00}.rating-fact #googleRating{font-size:16px;color:#072f4f}
+.storefront img,.gallery-grid img,.hero-promo img,.official-banner img{image-rendering:auto}
+@media(max-width:760px){
+ .official-banner{margin-top:10px;padding:0 10px}
+ .official-banner>img{border-radius:20px;aspect-ratio:16/9;box-shadow:0 12px 32px rgba(5,46,76,.13)}
+ .official-banner-actions{inset-inline:20px;bottom:12px;justify-content:center}
+ .official-banner-actions a{min-height:38px;padding:0 14px;border-radius:12px;font-size:11px}
+ .restaurant-facts{grid-template-columns:1fr 1fr;gap:8px}
+ .fact-card{min-height:70px;padding:10px;border-radius:14px}.fact-card>span{width:30px;height:30px;font-size:16px}.fact-card b{font-size:10px}.fact-card small{font-size:8px}
+ .contact-section{scroll-margin-top:72px}
+}
+@media(max-width:380px){.restaurant-facts{grid-template-columns:1fr}.official-banner-actions{position:static;margin-top:8px}.official-banner-actions a{flex:1}}
