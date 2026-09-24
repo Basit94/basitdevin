@@ -155,8 +155,8 @@ async function startupSelfTest(){
   await c.query('insert into order_items(order_id,product_id,name_ar,name_en,price,qty,total) values($1,$2,$3,$4,9.99,1,9.99)',[orderId,pid,'منتج اختبار','QA Product']);
   await c.query("insert into order_history(order_id,status,note) values($1,'PENDING','startup self-test')",[orderId]);
   for(const status of ['CONFIRMED','PREPARING','READY','COMPLETED']){await c.query('update orders set status=$1,updated_at=now() where id=$2',[status,orderId]);await c.query('insert into order_history(order_id,status,note) values($1,$2,$3)',[orderId,status,'startup self-test'])}
-  const q=(await c.query('select status from orders where id=$1',[orderId])).rows[0];
-  if(!q||q.status!=='COMPLETED')throw Error('Order workflow self-test failed');
+  const q=(await c.query('select status,payment from orders where id=$1',[orderId])).rows[0];
+  if(!q||q.status!=='COMPLETED'||q.payment!=='cod')throw Error('Order/COD workflow self-test failed');
   await c.query('ROLLBACK');
   const indexPath=path.join(__dirname,'public','index.html'),promoPath=path.join(__dirname,'public','assets','shrimp-fins-promo.webp'),storePath=path.join(__dirname,'public','assets','storefront.svg');
   const indexHtml=fs.readFileSync(indexPath,'utf8');
@@ -171,11 +171,13 @@ async function startupSelfTest(){
     (select count(*) from products where available=true and coalesce(image,'')<>'') product_images,
     (select count(*) from offers where active=true) offers,
     (select count(*) from offers where active=true and coalesce(image,'')<>'') offer_images,
-    (select count(*) from categories where active=true) categories`)).rows[0];
+    (select count(*) from categories where active=true) categories,
+    (select count(*) from products where available=true and calories is not null) calories_populated,
+    (select count(*) from products where available=true and orderable=false) market_price_items`)).rows[0];
   const st=(await pool.query('select data from settings where id=1')).rows[0]?.data||{};
-  if(+stats.products<menuProducts.length||+stats.product_images<menuProducts.length||+stats.offers<8||+stats.offer_images<8)throw Error('Menu completeness self-test failed: '+JSON.stringify(stats));
-  if(st.phone!=='0541064143'||!st.whatsapp||!st.restaurantNameAr||!st.addressAr)throw Error('Restaurant settings self-test failed');
-  console.log('STARTUP_QA_PASS '+JSON.stringify({products:+stats.products,productImages:+stats.product_images,offers:+stats.offers,offerImages:+stats.offer_images,categories:+stats.categories,phone:st.phone,menuRevision:st.menuRevision,transactionRollback:true,orderWorkflow:true,frontendDom:true,promoAsset:true,storefrontAsset:true,cashOnDelivery:true}));
+  if(+stats.products<menuProducts.length||+stats.product_images<menuProducts.length||+stats.offers<8||+stats.offer_images<8||+stats.calories_populated<40||+stats.market_price_items<1)throw Error('Menu completeness self-test failed: '+JSON.stringify(stats));
+  if(st.phone!=='0541064143'||!st.whatsapp||!st.restaurantNameAr||!st.addressAr||st.heroImage!=='/assets/shrimp-fins-promo.webp'||st.storefrontImage!=='/assets/storefront.svg'||st.cashOnDelivery!==true)throw Error('Restaurant settings self-test failed');
+  console.log('STARTUP_QA_PASS '+JSON.stringify({products:+stats.products,productImages:+stats.product_images,offers:+stats.offers,offerImages:+stats.offer_images,categories:+stats.categories,caloriesPopulated:+stats.calories_populated,marketPriceItems:+stats.market_price_items,phone:st.phone,menuRevision:st.menuRevision,transactionRollback:true,orderWorkflow:true,frontendDom:true,promoAsset:true,storefrontAsset:true,cashOnDelivery:true}));
  }catch(e){try{await c.query('ROLLBACK')}catch{}throw e}finally{c.release()}
 }
 const auth=(req,res,next)=>{try{req.admin=jwt.verify(req.cookies.sf_admin,SECRET);next()}catch{return res.status(401).json({error:'Unauthorized'})}};
