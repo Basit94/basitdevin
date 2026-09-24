@@ -183,35 +183,60 @@ async function startupSelfTest(){
  }catch(e){try{await c.query('ROLLBACK')}catch{}throw e}finally{c.release()}
 }
 async function startupHttpSelfTest(){
- const base='http://127.0.0.1:'+PORT,qaPhone='0500000000';let createdOrderNo=null,createdOrderId=null;
+ const base='http://127.0.0.1:'+PORT,qaPhone='0500000000',createdIds=[];
  const getJson=async(url,opts={})=>{const r=await fetch(base+url,opts);let j=null;try{j=await r.json()}catch{}return{r,j}};
+ const createOrder=async(payload,expectedPayment,expectedType)=>{
+  const x=await getJson('/api/orders',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(payload)});
+  if(x.r.status!==201||x.j?.order?.status!=='PENDING'||!x.j?.order?.trackingToken)throw Error('HTTP '+expectedPayment+' order create self-test failed');
+  const q=(await pool.query('select id,payment,order_type,total from orders where order_no=$1',[x.j.order.orderNumber])).rows[0];
+  if(!q||q.payment!==expectedPayment||q.order_type!==expectedType)throw Error('HTTP '+expectedPayment+' persistence self-test failed');
+  createdIds.push(q.id);
+  const t=await getJson('/api/orders/track/'+encodeURIComponent(x.j.order.trackingToken)+'?phone='+qaPhone);
+  if(!t.r.ok||t.j?.order?.status!=='PENDING'||t.j?.order?.orderNumber!==x.j.order.orderNumber)throw Error('HTTP '+expectedPayment+' tracking self-test failed');
+  return x.j.order;
+ };
  try{
   let x=await getJson('/api/health');if(!x.r.ok||!x.j?.ok)throw Error('HTTP health self-test failed');
   x=await getJson('/api/public');if(!x.r.ok)throw Error('HTTP public API self-test failed');
   const pub=x.j||{},st=pub.settings||{};
-  if((pub.products||[]).length<menuProducts.length||(pub.categories||[]).length<13||(pub.offers||[]).length<8)throw Error('HTTP public catalog self-test failed');
-  if(st.phone!=='0541064143'||st.cashOnDelivery!==true||st.mapUrl!=='https://www.google.com/maps/search/?api=1&query=24.7358191,46.8310771'||st.openingHoursEn!=='Daily 12:00 PM – 12:00 AM')throw Error('HTTP public settings self-test failed');
-  let home=await fetch(base+'/');let html=await home.text();if(!home.ok||!html.includes('/assets/shrimp-fins-promo.webp')||!html.includes('value="cod"')||!html.includes('id="googleRating"')||!html.includes('class="official-banner"'))throw Error('Homepage self-test failed');
-  let css=await fetch(base+'/styles.css?v=7'),cssText=await css.text();if(!css.ok||!String(css.headers.get('content-type')).includes('text/css')||!cssText.includes('.official-banner')||!cssText.includes('.mobile-nav'))throw Error('Customer CSS self-test failed');
-  let js=await fetch(base+'/app.js?v=7'),jsText=await js.text();if(!js.ok||!jsText.includes('function renderProducts')||!jsText.includes('cashOnDelivery')||!jsText.includes('restaurantOpenNow'))throw Error('Customer JS self-test failed');
-  let admin=await fetch(base+'/admin'),adminHtml=await admin.text();if(!admin.ok||!adminHtml.includes('id="loginForm"')||!adminHtml.includes('id="sCashOnDelivery"')||!adminHtml.includes('id="sCardOnDelivery"')||!adminHtml.includes('id="sMapUrl"')||!adminHtml.includes('id="sGoogleRating"'))throw Error('Admin HTML self-test failed');
-  let adminJs=await fetch(base+'/admin.js'),adminJsText=await adminJs.text();if(!adminJs.ok||!adminJsText.includes('sCashOnDelivery')||!adminJsText.includes('sGoogleRating')||!adminJsText.includes('loadSettings'))throw Error('Admin JS self-test failed');
-  let sw=await fetch(base+'/sw.js?v=7'),swText=await sw.text();if(!sw.ok||!swText.includes("shrimp-fins-v7"))throw Error('PWA service worker self-test failed');
-  let promo=await fetch(base+'/assets/shrimp-fins-promo.webp?v=7');let promoBytes=(await promo.arrayBuffer()).byteLength;if(!promo.ok||!String(promo.headers.get('content-type')).includes('image/webp')||promoBytes<10000)throw Error('Promo asset HTTP self-test failed');
-  let store=await fetch(base+'/assets/storefront.svg?v=7');let storeText=await store.text();if(!store.ok||!String(store.headers.get('content-type')).includes('image/svg')||storeText.length<1000)throw Error('Storefront asset HTTP self-test failed');
+  if((pub.products||[]).length<63||(pub.categories||[]).length<13||(pub.offers||[]).length<8)throw Error('HTTP public catalog self-test failed');
+  if(st.phone!=='0541064143'||st.cashOnDelivery!==true||st.cardOnDelivery!==true||!String(st.mapUrl||'').includes('google.com/maps')||st.openingHoursEn!=='Daily 12:00 PM – 12:00 AM')throw Error('HTTP public settings self-test failed');
+
+  let home=await fetch(base+'/'),html=await home.text();
+  if(!home.ok||!html.includes('/assets/shrimp-fins-promo.webp')||!html.includes('value="cod"')||!html.includes('id="googleRating"')||!html.includes('class="hero-visual"')||!html.includes('id="loadError"'))throw Error('Homepage self-test failed');
+  let css=await fetch(base+'/styles.css?v=8'),cssText=await css.text();
+  if(!css.ok||!String(css.headers.get('content-type')).includes('text/css')||!cssText.includes('V8 CUSTOMER STOREFRONT')||!cssText.includes('.mobile-nav'))throw Error('Customer CSS self-test failed');
+  let js=await fetch(base+'/app.js?v=8'),jsText=await js.text();
+  if(!js.ok||!jsText.includes('function renderProducts')||!jsText.includes('cashOnDelivery')||!jsText.includes('restaurantOpenNow')||!jsText.includes("$('#retryBtn')"))throw Error('Customer JS self-test failed');
+  let admin=await fetch(base+'/admin'),adminHtml=await admin.text();
+  if(!admin.ok||!adminHtml.includes('id="loginForm"')||!adminHtml.includes('id="sCashOnDelivery"')||!adminHtml.includes('id="sCardOnDelivery"')||!adminHtml.includes('id="sMapUrl"')||!adminHtml.includes('id="sGoogleRating"'))throw Error('Admin HTML self-test failed');
+  let adminJs=await fetch(base+'/admin.js'),adminJsText=await adminJs.text();
+  if(!adminJs.ok||!adminJsText.includes('sCashOnDelivery')||!adminJsText.includes('sGoogleRating')||!adminJsText.includes('loadSettings'))throw Error('Admin JS self-test failed');
+  let sw=await fetch(base+'/sw.js?v=8'),swText=await sw.text();
+  if(!sw.ok||!swText.includes("shrimp-fins-v8")||!swText.includes('/favicon.svg?v=8'))throw Error('PWA service worker self-test failed');
+  let manifest=await fetch(base+'/manifest.webmanifest'),manifestText=await manifest.text();
+  if(!manifest.ok||!manifestText.includes('/favicon.svg?v=8')||!manifestText.includes('"display": "standalone"'))throw Error('PWA manifest self-test failed');
+  let favicon=await fetch(base+'/favicon.svg?v=8'),faviconText=await favicon.text();
+  if(!favicon.ok||!String(favicon.headers.get('content-type')).includes('image/svg')||!faviconText.includes('<svg'))throw Error('Favicon self-test failed');
+  let promo=await fetch(base+'/assets/shrimp-fins-promo.webp?v=8'),promoBytes=(await promo.arrayBuffer()).byteLength;
+  if(!promo.ok||!String(promo.headers.get('content-type')).includes('image/webp')||promoBytes<10000)throw Error('Promo asset HTTP self-test failed');
+  let store=await fetch(base+'/assets/storefront.svg?v=8'),storeText=await store.text();
+  if(!store.ok||!String(store.headers.get('content-type')).includes('image/svg')||storeText.length<1000)throw Error('Storefront asset HTTP self-test failed');
+
   const prod=(pub.products||[]).find(p=>p.orderable!==false&&+p.price>=Math.max(30,+(st.minimumOrder||0)))||(pub.products||[]).find(p=>p.orderable!==false&&+p.price>0);
   if(!prod)throw Error('No orderable QA product');
   const qty=Math.max(1,Math.ceil((+(st.minimumOrder||0))/(+prod.price||1)));
-  x=await getJson('/api/orders',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({customerName:'QA HTTP TEST',phone:qaPhone,orderType:'delivery',address:'QA delivery address Riyadh',notes:'AUTO QA - DELETE',paymentMethod:'cod',items:[{productId:prod.id,qty}]})});
-  if(x.r.status!==201||x.j?.order?.status!=='PENDING'||!x.j?.order?.trackingToken)throw Error('HTTP COD order create self-test failed');
-  createdOrderNo=x.j.order.orderNumber;
-  const expected=+(prod.price)*qty+(+(st.deliveryFee||0));if(Math.abs(+x.j.order.total-expected)>.01)throw Error('HTTP order total self-test failed');
-  let q=await pool.query('select id,payment,order_type,total from orders where order_no=$1',[createdOrderNo]);if(!q.rows[0]||q.rows[0].payment!=='cod'||q.rows[0].order_type!=='delivery')throw Error('HTTP COD persistence self-test failed');createdOrderId=q.rows[0].id;
-  x=await getJson('/api/orders/track/'+encodeURIComponent(x.j.order.trackingToken)+'?phone='+qaPhone);if(!x.r.ok||x.j?.order?.status!=='PENDING'||x.j?.order?.orderNumber!==createdOrderNo)throw Error('HTTP tracking self-test failed');
-  const market=(pub.products||[]).find(p=>p.orderable===false);if(market){x=await getJson('/api/orders',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({customerName:'QA MARKET',phone:qaPhone,orderType:'pickup',paymentMethod:'cod',items:[{productId:market.id,qty:1}]})});if(x.r.status!==409)throw Error('Market-price protection self-test failed')}
-  console.log('HTTP_QA_PASS '+JSON.stringify({health:true,homepage:true,customerCss:true,customerJs:true,adminHtml:true,adminJs:true,pwa:true,promoAsset:true,storefrontAsset:true,publicApi:true,products:(pub.products||[]).length,categories:(pub.categories||[]).length,offers:(pub.offers||[]).length,cashOnDelivery:true,deliveryOrder:true,tracking:true,marketPriceProtection:true,map:true,hours:true,rating:st.googleRating}));
+  const cod=await createOrder({customerName:'QA COD DELIVERY',phone:qaPhone,orderType:'delivery',address:'QA delivery address Riyadh',notes:'AUTO QA - DELETE',paymentMethod:'cod',items:[{productId:prod.id,qty}]},'cod','delivery');
+  const expected=+(prod.price)*qty+(+(st.deliveryFee||0));if(Math.abs(+cod.total-expected)>.01)throw Error('HTTP COD delivery total self-test failed');
+  const card=await createOrder({customerName:'QA CARD PICKUP',phone:qaPhone,orderType:'pickup',notes:'AUTO QA - DELETE',paymentMethod:'card_on_delivery',items:[{productId:prod.id,qty}]},'card_on_delivery','pickup');
+  const expectedPickup=+(prod.price)*qty;if(Math.abs(+card.total-expectedPickup)>.01)throw Error('HTTP card pickup total self-test failed');
+
+  const market=(pub.products||[]).find(p=>p.orderable===false);
+  if(market){x=await getJson('/api/orders',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({customerName:'QA MARKET',phone:qaPhone,orderType:'pickup',paymentMethod:'cod',items:[{productId:market.id,qty:1}]})});if(x.r.status!==409)throw Error('Market-price protection self-test failed')}
+
+  console.log('HTTP_QA_PASS '+JSON.stringify({health:true,homepage:true,customerCss:true,customerJs:true,adminHtml:true,adminJs:true,pwa:true,manifest:true,favicon:true,promoAsset:true,storefrontAsset:true,publicApi:true,products:(pub.products||[]).length,categories:(pub.categories||[]).length,offers:(pub.offers||[]).length,cashOnDelivery:true,cardOnDelivery:true,codDeliveryOrder:true,cardPickupOrder:true,tracking:true,marketPriceProtection:true,map:true,hours:true,rating:st.googleRating}));
  }finally{
-  try{if(createdOrderId){await pool.query('delete from order_history where order_id=$1',[createdOrderId]);await pool.query('delete from order_items where order_id=$1',[createdOrderId]);await pool.query('delete from orders where id=$1',[createdOrderId])}else if(createdOrderNo){await pool.query('delete from order_history where order_id in (select id from orders where order_no=$1)',[createdOrderNo]);await pool.query('delete from order_items where order_id in (select id from orders where order_no=$1)',[createdOrderNo]);await pool.query('delete from orders where order_no=$1',[createdOrderNo])}}catch(e){console.error('QA cleanup failed',e)}
+  for(const id of createdIds){try{await pool.query('delete from order_history where order_id=$1',[id]);await pool.query('delete from order_items where order_id=$1',[id]);await pool.query('delete from orders where id=$1',[id])}catch(e){console.error('QA cleanup failed',e)}}
  }
 }
 const auth=(req,res,next)=>{try{req.admin=jwt.verify(req.cookies.sf_admin,SECRET);next()}catch{return res.status(401).json({error:'Unauthorized'})}};
