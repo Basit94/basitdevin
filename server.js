@@ -119,7 +119,13 @@ ALTER TABLE admins ADD COLUMN IF NOT EXISTS last_login_at timestamptz;
 ALTER TABLE admins ADD COLUMN IF NOT EXISTS created_at timestamptz NOT NULL DEFAULT now();
 ALTER TABLE admins ADD COLUMN IF NOT EXISTS updated_at timestamptz NOT NULL DEFAULT now();
 ALTER TABLE orders ADD COLUMN IF NOT EXISTS client_request_id text;
-CREATE UNIQUE INDEX IF NOT EXISTS uq_orders_client_request_id ON orders(client_request_id) WHERE client_request_id IS NOT NULL;`);
+CREATE UNIQUE INDEX IF NOT EXISTS uq_orders_client_request_id ON orders(client_request_id) WHERE client_request_id IS NOT NULL;
+CREATE INDEX IF NOT EXISTS ix_orders_status_created ON orders(status,created_at DESC);
+CREATE INDEX IF NOT EXISTS ix_orders_created ON orders(created_at DESC);
+CREATE INDEX IF NOT EXISTS ix_order_items_order ON order_items(order_id);
+CREATE INDEX IF NOT EXISTS ix_order_history_order ON order_history(order_id,id);
+CREATE INDEX IF NOT EXISTS ix_products_public ON products(available,category_id,sort_order);
+CREATE INDEX IF NOT EXISTS ix_offers_public ON offers(active,sort_order);`);
 let c=+(await pool.query('select count(*) c from settings')).rows[0].c;if(!c)await pool.query('insert into settings values(1,$1)',[{restaurantNameAr:'زعانف الروبيان',restaurantNameEn:'Shrimp Fins',phone:'0541064143',whatsapp:'966541064143',addressAr:'الرياض - حي النسيم الغربي - شارع حسان بن ثابت، بجوار تقاطع أحمد بن حنبل',addressEn:'Riyadh - Al Naseem Al Gharbi, Hassan Bin Thabit St',deliveryFee:10,minimumOrder:30,acceptingOrders:true,currency:'SAR'}]);
 c=+(await pool.query('select count(*) c from categories')).rows[0].c;if(!c)for(let i=0;i<cats.length;i++)await pool.query('insert into categories values($1,$2,$3,$4,true,$5)',[...cats[i],i]);
 c=+(await pool.query('select count(*) c from products')).rows[0].c;if(!c)for(let i=0;i<products.length;i++){let p=products[i];await pool.query('insert into products(id,category_id,name_ar,name_en,price,unit_ar,unit_en,available,featured,sort_order) values($1,$2,$3,$4,$5,$6,$7,true,$8,$9)',[...p.slice(0,7),!!p[7],i]);}
