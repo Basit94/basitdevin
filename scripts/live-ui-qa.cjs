@@ -164,7 +164,7 @@ async function main(){
     await mobile.locator('#mobileCartBtn').click();
     check('mobile cart opens',await mobile.locator('#cartDrawer').isVisible());
     await mobile.screenshot({path:out+'/mobile-cart.png',fullPage:false});
-    await mobile.locator('[data-close]').first().click();
+    await mobile.locator('#cartDrawer .close').click();
     await mobile.screenshot({path:out+'/mobile-home.png',fullPage:true});
     await mobileContext.close();
 
