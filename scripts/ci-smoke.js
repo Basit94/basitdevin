@@ -17,7 +17,7 @@ async function main(){
  let x=await call('/api/health');check('health',x.r.status===200&&x.body.ok);
  x=await call('/');check('customer HTML',x.r.status===200&&x.body.includes('Shrimp Fins')&&x.body.includes('heroFoodImage'));
  x=await call('/admin');check('admin HTML',x.r.status===200&&x.body.includes('Restaurant Control')&&x.body.includes('sCashOnDelivery')&&x.body.includes('sCardOnDelivery'));
- x=await call('/manifest.webmanifest');check('PWA manifest',x.r.status===200&&String(x.body).includes('Shrimp Fins'));
+ x=await call('/manifest.webmanifest');check('PWA manifest',x.r.status===200&&((typeof x.body==='object'&&x.body?.name?.includes('Shrimp Fins'))||String(x.body).includes('Shrimp Fins')));
  x=await call('/sw.js');check('service worker',x.r.status===200);
  x=await call('/favicon.svg');check('favicon SVG',x.r.status===200&&(x.r.headers.get('content-type')||'').includes('image/svg+xml'));
 
