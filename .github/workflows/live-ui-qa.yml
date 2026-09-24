@@ -1,8 +1,6 @@
 name: Live UI QA
 
 on:
-  push:
-    branches: [main]
   workflow_dispatch:
 
 permissions:
