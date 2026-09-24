@@ -79,6 +79,19 @@ async function main(){
     report.desktop.categoryCount=await page.locator('#cats button').count();
     report.desktop.dir=await page.locator('html').getAttribute('dir');
     check('desktop 63 products',report.desktop.productCount===63,String(report.desktop.productCount));
+    const ownerCards=page.locator('#products .product-card.owner-photo');
+    report.desktop.ownerPhotoProducts=await ownerCards.count();
+    check('at least 50 owner Excel product photos',report.desktop.ownerPhotoProducts>=50,String(report.desktop.ownerPhotoProducts));
+    check('staff login link visible',await page.locator('a.staff-link[href="/admin"]').isVisible());
+    const heroDots=page.locator('#heroPhotoDots [data-hero-dot]');
+    report.desktop.heroPhotoCount=await heroDots.count();
+    check('real photo carousel has at least 6 slides',report.desktop.heroPhotoCount>=6,String(report.desktop.heroPhotoCount));
+    if(report.desktop.heroPhotoCount>1){
+      await heroDots.nth(1).click();
+      await page.waitForTimeout(500);
+      const heroSrc=await page.locator('#heroFoodImage').getAttribute('src');
+      check('carousel uses owner Excel food photo',String(heroSrc||'').includes('/assets/menu-real/'),String(heroSrc||''));
+    }
     check('desktop 8 offers',report.desktop.offerCount===8,String(report.desktop.offerCount));
     check('desktop 14 category buttons including All',report.desktop.categoryCount===14,String(report.desktop.categoryCount));
     check('Arabic RTL default',report.desktop.dir==='rtl',String(report.desktop.dir));
@@ -153,6 +166,8 @@ async function main(){
     report.mobile.scrollWidth=await mobile.evaluate(()=>document.documentElement.scrollWidth);
     report.mobile.clientWidth=await mobile.evaluate(()=>document.documentElement.clientWidth);
     check('mobile 63 products',report.mobile.productCount===63,String(report.mobile.productCount));
+    report.mobile.ownerPhotoProducts=await mobile.locator('#products .product-card.owner-photo').count();
+    check('mobile shows owner menu photos',report.mobile.ownerPhotoProducts>=50,String(report.mobile.ownerPhotoProducts));
     check('mobile bottom nav visible',await mobile.locator('.mobile-nav').isVisible());
     check('mobile hero visible',await mobile.locator('#heroFoodImage').isVisible());
     check('mobile no horizontal overflow',report.mobile.scrollWidth<=report.mobile.clientWidth+1,JSON.stringify({scrollWidth:report.mobile.scrollWidth,clientWidth:report.mobile.clientWidth}));
