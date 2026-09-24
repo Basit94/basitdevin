@@ -88,6 +88,7 @@ async function main(){
  x=await call('/api/admin/settings',{method:'PUT',headers:{'content-type':'application/json'},body:JSON.stringify({deliveryFee:12,minimumOrder:25,acceptingOrders:true,cashOnDelivery:true,cardOnDelivery:true,openingHoursEn:'Daily 12:00 PM – 12:00 AM'})});check('settings update',x.r.status===200&&Number(x.body.settings.deliveryFee)===12&&x.body.settings.cashOnDelivery&&x.body.settings.cardOnDelivery);
 
  x=await call('/api/admin/export');check('backup export',x.r.status===200&&Array.isArray(x.body.products)&&Array.isArray(x.body.orders));
+ await new Promise(r=>setTimeout(r,80));x=await call('/api/admin/audit?limit=200');check('admin audit log',x.r.status===200&&Array.isArray(x.body.audit)&&x.body.audit.length>=5&&x.body.audit.some(a=>a.actor===email&&['POST','PUT','PATCH','DELETE'].includes(a.action)),JSON.stringify({rows:x.body.audit?.length}));
  x=await call('/api/admin/products/'+pid,{method:'DELETE'});check('product delete',x.r.status===200&&x.body.ok);
 
  console.log('\nSHRIMP FINS QA');for(const r of rows)console.log(r.join(' | '));console.log('RESULT',pass,'passed',fail,'failed');
