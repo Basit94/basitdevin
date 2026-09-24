@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 650" role="img" aria-label="Shrimp Fins seafood">
+<defs>
+  <linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#052e4c"/><stop offset="1" stop-color="#0b4f79"/></linearGradient>
+  <radialGradient id="o" cx=".78" cy=".18" r=".7"><stop stop-color="#ff8a42" stop-opacity=".38"/><stop offset="1" stop-color="#f36c21" stop-opacity="0"/></radialGradient>
+</defs>
+<rect width="900" height="650" fill="url(#g)"/><rect width="900" height="650" fill="url(#o)"/>
+<circle cx="450" cy="285" r="145" fill="#fff" opacity=".07"/>
+<path d="M350 330c45-95 132-119 211-71 28 18 44 46 43 75-20-19-48-25-76-16 7 45-28 86-81 92-57 7-107-23-124-70 8 1 18 0 27-3z" fill="#f36c21"/>
+<path d="M555 271c41-7 72 1 97 27-27 7-50 23-68 47-3-28-13-52-29-74z" fill="#ffb17e"/>
+<circle cx="535" cy="288" r="7" fill="#052e4c"/>
+<text x="450" y="500" text-anchor="middle" fill="#fff" font-family="Arial,sans-serif" font-size="46" font-weight="700">Shrimp Fins</text>
+<text x="450" y="548" text-anchor="middle" fill="#cfe5f2" font-family="Arial,sans-serif" font-size="24">Seafood · Riyadh</text>
+</svg>
