@@ -105,7 +105,7 @@ c=+(await pool.query('select count(*) c from admins')).rows[0].c;if(!c){let e=pr
 for(const p of products){const d=categoryDescriptions[p[1]]||['محضر طازجاً حسب الطلب.','Freshly prepared to order.'];await pool.query("update products set image=case when coalesce(image,'')='' then $1 else image end,description_ar=case when coalesce(description_ar,'')='' then $2 else description_ar end,description_en=case when coalesce(description_en,'')='' then $3 else description_en end where id=$4",[productImages[p[0]]||'',d[0],d[1],p[0]])}
 for(const o of offers){await pool.query("update offers set image=case when coalesce(image,'')='' then $1 else image end,description_ar=case when coalesce(description_ar,'')='' then 'عرض خاص من زعانف الروبيان للمشاركة والعزائم.' else description_ar end,description_en=case when coalesce(description_en,'')='' then 'A special Shrimp Fins offer for sharing and gatherings.' else description_en end where id=$2",[offerImages[o[0]]||'',o[0]])}
 let st=(await pool.query('select data from settings where id=1')).rows[0]?.data||{};
-if(st.menuRevision!=='excel-2026-09-v3'){
+if(st.menuRevision!=='excel-2026-09-v4'){
   const client=await pool.connect();
   try{
     await client.query('BEGIN');
@@ -114,6 +114,7 @@ if(st.menuRevision!=='excel-2026-09-v3'){
       await client.query(`INSERT INTO categories(id,name_ar,name_en,icon,active,sort_order) VALUES($1,$2,$3,$4,TRUE,$5)
       ON CONFLICT(id) DO UPDATE SET name_ar=EXCLUDED.name_ar,name_en=EXCLUDED.name_en,icon=EXCLUDED.icon,active=TRUE,sort_order=EXCLUDED.sort_order,updated_at=NOW()`,[c[0],c[1],c[2],c[3],i]);
     }
+    await client.query("UPDATE categories SET active=FALSE,updated_at=NOW() WHERE id = ANY($1::text[])",[['shellfish','meals','rice','drinks']]);
     await client.query("UPDATE products SET available=FALSE,updated_at=NOW() WHERE id ~ '^p[0-9]+$'");
     for(let i=0;i<menuProducts.length;i++){
       const p=menuProducts[i],cat=p[1],generic=categoryDescriptions[cat]||['محضر طازجاً حسب الطلب.','Freshly prepared to order.'],descAr=p[8]??generic[0],descEn=p[9]??generic[1],featured=!!p[10],orderable=p[0]!=='m063';
@@ -136,7 +137,7 @@ if(st.menuRevision!=='excel-2026-09-v3'){
     for(let i=0;i<canonicalOffers.length;i++){const o=canonicalOffers[i];await client.query(`INSERT INTO offers(id,title_ar,title_en,description_ar,description_en,price,image,active,sort_order) VALUES($1,$2,$3,$4,$5,$6,$7,TRUE,$8)
       ON CONFLICT(id) DO UPDATE SET title_ar=EXCLUDED.title_ar,title_en=EXCLUDED.title_en,description_ar=EXCLUDED.description_ar,description_en=EXCLUDED.description_en,price=EXCLUDED.price,image=CASE WHEN COALESCE(offers.image,'')='' THEN EXCLUDED.image ELSE offers.image END,active=TRUE,sort_order=EXCLUDED.sort_order,updated_at=NOW()`,
       [o[0],o[1],o[2],o[4],'Shrimp Fins sharing offer based on the restaurant menu.',o[3],offerImages[o[0]]||px(8352805,1100,700),i])}
-    st.menuRevision='excel-2026-09-v3';st.menuSource='Owner Excel menu';st.menuProductCount=menuProducts.length;st.menuOfferCount=canonicalOffers.length;st.storefrontImage='/assets/storefront.svg';
+    st.menuRevision='excel-2026-09-v4';st.menuSource='Owner Excel menu';st.menuProductCount=menuProducts.length;st.menuOfferCount=canonicalOffers.length;st.storefrontImage='/assets/storefront.svg';
     await client.query('UPDATE settings SET data=$1 WHERE id=1',[st]);
     await client.query('COMMIT');
   }catch(e){await client.query('ROLLBACK').catch(()=>{});throw e}finally{client.release()}
