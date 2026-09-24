@@ -31,11 +31,30 @@ function recordPage(page,label){
     if(status>=400&&!url.includes('/api/orders/track/'))report.network.badResponses.push({label,status,url});
   });
 }
-async function waitForApp(page){
+async function waitForApp(page,label){
   const r=await page.goto(base+'/',{waitUntil:'networkidle',timeout:60000});
-  check('homepage HTTP 200',r&&r.ok(),String(r?.status()));
-  await page.waitForSelector('#products .product-card',{timeout:30000});
-  await page.waitForFunction(()=>document.querySelectorAll('#products .product-card').length>=60);
+  check(label+' homepage HTTP 200',r&&r.ok(),String(r?.status()));
+  try{
+    await page.waitForFunction(()=>{
+      const products=document.querySelectorAll('#products .product-card').length;
+      const err=document.querySelector('#loadError');
+      return products>=60 || (err && !err.classList.contains('hidden'));
+    },null,{timeout:30000});
+  }catch(e){
+    const diag=await page.evaluate(()=>({
+      products:document.querySelectorAll('#products .product-card').length,
+      loadingClass:document.querySelector('#loading')?.className||'',
+      loadErrorClass:document.querySelector('#loadError')?.className||'',
+      loadErrorText:document.querySelector('#loadError')?.innerText||'',
+      bodyText:(document.body?.innerText||'').slice(0,1200)
+    })).catch(()=>({}));
+    await page.screenshot({path:out+'/'+label+'-load-failure.png',fullPage:true}).catch(()=>{});
+    throw new Error(label+' app did not render: '+JSON.stringify(diag)+' | '+e.message);
+  }
+  const errVisible=await page.locator('#loadError').isVisible().catch(()=>false);
+  check(label+' menu load did not show error panel',!errVisible,errVisible?await page.locator('#loadError').innerText():'');
+  const count=await page.locator('#products .product-card').count();
+  check(label+' menu rendered at least 60 items',count>=60,String(count));
 }
 async function imageHealth(page,scope){
   return await page.locator(scope+' img:visible').evaluateAll(imgs=>imgs.map(i=>({src:i.currentSrc||i.src,ok:i.complete&&i.naturalWidth>0,w:i.naturalWidth,h:i.naturalHeight})));
@@ -52,7 +71,7 @@ async function main(){
   const browser=await chromium.launch({headless:true});
   try{
     const desktopContext=await browser.newContext({viewport:{width:1440,height:1000},deviceScaleFactor:1,locale:'ar-SA'});
-    const page=await desktopContext.newPage();recordPage(page,'desktop');await waitForApp(page);
+    const page=await desktopContext.newPage();recordPage(page,'desktop');await waitForApp(page,'desktop');
 
     report.desktop.title=await page.title();
     report.desktop.productCount=await page.locator('#products .product-card').count();
@@ -123,7 +142,7 @@ async function main(){
       locale:'ar-SA',
       userAgent:'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 Mobile/15E148 Safari/604.1'
     });
-    const mobile=await mobileContext.newPage();recordPage(mobile,'mobile');await waitForApp(mobile);
+    const mobile=await mobileContext.newPage();recordPage(mobile,'mobile');await waitForApp(mobile,'mobile');
     report.mobile.productCount=await mobile.locator('#products .product-card').count();
     report.mobile.scrollWidth=await mobile.evaluate(()=>document.documentElement.scrollWidth);
     report.mobile.clientWidth=await mobile.evaluate(()=>document.documentElement.clientWidth);
