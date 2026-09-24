@@ -9,6 +9,7 @@ permissions:
   contents: read
 
 jobs:
+  # post-deploy live verification v11
   # production recheck after deployment
   live-ui:
     runs-on: ubuntu-latest
