@@ -34,7 +34,12 @@ app.use((req,res,next)=>{
  next();
 });
 app.use(express.json({limit:'300kb'}));
-const orderLimit=rateLimit({windowMs:600000,limit:40}),loginLimit=rateLimit({windowMs:900000,limit:12});
+const orderLimit=rateLimit({windowMs:600000,limit:40}),loginLimit=rateLimit({windowMs:900000,limit:12}),clientErrorLimit=rateLimit({windowMs:600000,limit:80});
+app.post('/api/client-errors',clientErrorLimit,(req,res)=>{
+ const b=req.body||{};
+ log('error','client_error',{requestId:req.id,kind:safe(b.kind,80),message:safe(b.message,500),stack:safe(b.stack,2000),path:safe(b.path,300)});
+ res.status(204).end();
+});
 const upload=multer({storage:multer.memoryStorage(),limits:{fileSize:4*1024*1024},fileFilter:(_req,file,cb)=>cb(null,['image/jpeg','image/png','image/webp'].includes(file.mimetype))});
 const sseClients=new Set();
 function broadcast(event,payload){const body='event: '+event+'\ndata: '+JSON.stringify(payload)+'\n\n';for(const res of sseClients){try{res.write(body)}catch{sseClients.delete(res)}}}
