@@ -14,7 +14,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/styles.css?v=6">
+<link rel="preload" as="image" href="/assets/shrimp-fins-promo.webp?v=7"><link rel="preload" as="image" href="/assets/storefront.svg?v=7"><link rel="stylesheet" href="/styles.css?v=7">
 </head>
 <body>
 <div id="loading" class="loading"><div class="brandmark">🦐</div><b>زعانف الروبيان</b><span></span></div>
@@ -30,6 +30,13 @@
 </header>
 
 <main id="top">
+<section class="official-banner" aria-label="Shrimp Fins official restaurant banner">
+  <img id="heroFoodImage" src="/assets/shrimp-fins-promo.webp?v=7" alt="زعانف الروبيان - Shrimp Fins official restaurant banner">
+  <div class="official-banner-actions">
+    <a href="#menu" class="primary" data-t="orderNow">اطلب الآن</a>
+    <a id="bannerMapBtn" class="banner-map" target="_blank" rel="noopener">📍 <span data-t="directions">الاتجاهات</span></a>
+  </div>
+</section>
 <section class="hero" id="hero">
   <div class="hero-overlay"></div>
   <div class="hero-content">
@@ -49,7 +56,7 @@
     </div>
   </div>
   <div class="hero-card">
-    <div class="hero-promo"><img id="heroFoodImage" src="/assets/shrimp-fins-promo.webp" alt="Shrimp Fins restaurant and seafood"></div>
+    <div class="hero-promo"><img src="/assets/storefront.svg?v=7" alt="واجهة مطعم زعانف الروبيان"></div>
     <div class="hero-mini"><span>★ <b id="heroMenuCount">63+</b></span><small data-t="menuItems">صنف في المنيو</small></div>
   </div>
 </section>
@@ -87,11 +94,11 @@
   </div>
   <div class="gallery-grid gallery-grid-real">
     <figure class="promo-shot">
-      <img src="/assets/shrimp-fins-promo.webp" alt="Shrimp Fins promotional restaurant banner">
+      <img src="/assets/shrimp-fins-promo.webp?v=7" alt="Shrimp Fins promotional restaurant banner">
       <figcaption data-t="officialPromo">هوية وصورة زعانف الروبيان</figcaption>
     </figure>
     <figure class="store-shot">
-      <img src="/assets/storefront.svg" alt="Shrimp Fins restaurant storefront">
+      <img src="/assets/storefront.svg?v=7" alt="Shrimp Fins restaurant storefront">
       <figcaption data-t="realStore">واجهة زعانف الروبيان الحقيقية</figcaption>
     </figure>
   </div>
@@ -118,9 +125,15 @@
       <a id="mapBtn" class="secondary-dark" target="_blank" rel="noopener">📍 <span data-t="directions">الاتجاهات</span></a>
     </div>
     <div class="hours"><b data-t="hours">ساعات العمل</b><span id="hoursText"></span></div>
+    <div class="restaurant-facts">
+      <a id="googleRatingLink" class="fact-card rating-fact" target="_blank" rel="noopener"><span>★</span><div><b id="googleRating">4.8</b><small id="googleReviews">Google Maps</small></div></a>
+      <div class="fact-card"><span>🍽️</span><div><b data-t="serviceOptions">خيارات الخدمة</b><small id="serviceModes"></small></div></div>
+      <div class="fact-card"><span>🅿️</span><div><b data-t="visitorInfo">معلومات الزيارة</b><small id="amenitiesText"></small></div></div>
+      <div class="fact-card"><span id="openNowIcon">🕒</span><div><b data-t="todayStatus">حالة اليوم</b><small id="physicalOpenStatus"></small></div></div>
+    </div>
   </div>
   <div class="storefront">
-    <img id="storefrontImg" src="/assets/storefront.svg" alt="Shrimp Fins restaurant storefront">
+    <img id="storefrontImg" src="/assets/storefront.svg?v=7" alt="Shrimp Fins restaurant storefront">
     <div class="storefront-label"><b>زعانف الروبيان</b><span>0541064143</span></div>
   </div>
 </section>
@@ -199,6 +212,6 @@
 
 <div id="productModal" class="modal product-modal hidden"><button class="close" data-close type="button">×</button><div id="productModalBody"></div></div>
 <div id="toast" class="toast"></div>
-<script src="/app.js?v=6"></script>
+<script src="/app.js?v=7"></script>
 </body>
 </html>
