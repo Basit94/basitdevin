@@ -91,12 +91,12 @@ function calorieTag(p){return p.calories==null?'':`<span class="calorie-badge">�
 function renderProducts(){
  if(!state.data)return;const arr=filteredProducts();$('#resultCount').textContent=arr.length+' '+tr('items');$('#noProducts').classList.toggle('hidden',!!arr.length);
  $('#products').innerHTML=arr.map(p=>{const c=cat(p.category_id||p.categoryId),image=p.image||'',canOrder=p.orderable!==false;return `<article class="product-card ${canOrder?'':'market-card'}">
- <div class="product-image" data-view="${esc(p.id)}">${image?`<img loading="lazy" src="${esc(image)}" alt="${esc(txt(p,'name_ar','name_en'))}">`:`<div class="img-fallback">${esc(c.icon||'🍽️')}</div>`}${p.featured?`<span class="featured-badge">★ ${state.lang==='ar'?'مميز':'Featured'}</span>`:''}${calorieTag(p)}</div>
+ <div class="product-image" data-view="${esc(p.id)}">${image?remoteImg(image,txt(p,'name_ar','name_en')):`<div class="img-fallback">${esc(c.icon||'🍽️')}</div>`}${p.featured?`<span class="featured-badge">★ ${state.lang==='ar'?'مميز':'Featured'}</span>`:''}${calorieTag(p)}</div>
  <div class="product-body"><span class="product-cat">${esc(txt(c,'name_ar','name_en'))}</span><h3>${esc(txt(p,'name_ar','name_en'))}</h3><p class="product-desc">${esc(txt(p,'description_ar','description_en'))}</p>
  <div class="product-footer"><div class="price"><b class="${canOrder?'':'market-price'}">${esc(productPrice(p))}</b>${canOrder?`<small>/ ${esc(txt(p,'unit_ar','unit_en'))}</small>`:''}</div>${canOrder?`<button class="add-btn" aria-label="${tr('add')}" data-add="${esc(p.id)}">+</button>`:`<button class="call-btn" data-view="${esc(p.id)}">☎</button>`}</div><button class="view-btn" data-view="${esc(p.id)}">${tr('view')}</button></div></article>`}).join('');
  $$('[data-add]').forEach(b=>b.onclick=e=>{e.stopPropagation();addToCart(b.dataset.add)});
  $$('[data-view]').forEach(b=>b.onclick=()=>showProduct(b.dataset.view));
- $$('#products img').forEach(img=>img.onerror=()=>{const card=img.closest('.product-card'),id=card?.querySelector('[data-view]')?.dataset.view,c=cat(product(id)?.category_id);img.parentElement.innerHTML=`<div class="img-fallback">${esc(c.icon||'🦐')}</div>`});
+ hydrateRemoteImages($('#products'));
 }
 function showProduct(id){
  const p=product(id);if(!p)return;const c=cat(p.category_id||p.categoryId),canOrder=p.orderable!==false;
