@@ -267,3 +267,17 @@ footer #footerCall{color:#fff;text-decoration:none;font-weight:900}
  .product-card{grid-template-columns:112px minmax(0,1fr)}
  .product-image{min-height:120px}
 }
+
+
+/* === Mobile overflow hardening === */
+html,body{width:100%;max-width:100%;overflow-x:hidden}
+@media(max-width:760px){
+  .offers-grid{margin-inline:0!important;max-width:100%;padding-inline:0}
+  .menu-sticky{margin-inline:0!important;max-width:100%}
+  .menu-section{overflow:hidden}
+  .cats{max-width:100%}
+  .service-strip{max-width:calc(100% - 20px)}
+  .mobile-nav{max-width:calc(100% - 16px)}
+  .hero,.section,.contact-section,.workflow,footer{max-width:100%;overflow-x:hidden}
+  .drawer,.modal{max-width:100vw}
+}
