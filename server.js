@@ -235,23 +235,23 @@ async function startupHttpSelfTest(){
 
   let home=await fetch(base+'/'),html=await home.text();
   if(!home.ok||!html.includes('/assets/shrimp-fins-promo.webp')||!html.includes('value="cod"')||!html.includes('id="googleRating"')||!html.includes('class="hero-visual"')||!html.includes('id="loadError"'))throw Error('Homepage self-test failed');
-  let css=await fetch(base+'/styles.css?v=8'),cssText=await css.text();
+  let css=await fetch(base+'/styles.css?v=9'),cssText=await css.text();
   if(!css.ok||!String(css.headers.get('content-type')).includes('text/css')||!cssText.includes('V8 CUSTOMER STOREFRONT')||!cssText.includes('.mobile-nav'))throw Error('Customer CSS self-test failed');
-  let js=await fetch(base+'/app.js?v=8'),jsText=await js.text();
+  let js=await fetch(base+'/app.js?v=9'),jsText=await js.text();
   if(!js.ok||!jsText.includes('function renderProducts')||!jsText.includes('cashOnDelivery')||!jsText.includes('restaurantOpenNow')||!jsText.includes("$('#retryBtn')"))throw Error('Customer JS self-test failed');
   let admin=await fetch(base+'/admin'),adminHtml=await admin.text();
   if(!admin.ok||!adminHtml.includes('id="loginForm"')||!adminHtml.includes('id="sCashOnDelivery"')||!adminHtml.includes('id="sCardOnDelivery"')||!adminHtml.includes('id="sMapUrl"')||!adminHtml.includes('id="sGoogleRating"'))throw Error('Admin HTML self-test failed');
   let adminJs=await fetch(base+'/admin.js'),adminJsText=await adminJs.text();
   if(!adminJs.ok||!adminJsText.includes('sCashOnDelivery')||!adminJsText.includes('sGoogleRating')||!adminJsText.includes('loadSettings'))throw Error('Admin JS self-test failed');
-  let sw=await fetch(base+'/sw.js?v=8'),swText=await sw.text();
-  if(!sw.ok||!swText.includes("shrimp-fins-v8")||!swText.includes('/favicon.svg?v=8'))throw Error('PWA service worker self-test failed');
+  let sw=await fetch(base+'/sw.js?v=9'),swText=await sw.text();
+  if(!sw.ok||!swText.includes("shrimp-fins-v9")||!swText.includes('/favicon.svg?v=9'))throw Error('PWA service worker self-test failed');
   let manifest=await fetch(base+'/manifest.webmanifest'),manifestText=await manifest.text();
-  if(!manifest.ok||!manifestText.includes('/favicon.svg?v=8')||!manifestText.includes('"display": "standalone"'))throw Error('PWA manifest self-test failed');
-  let favicon=await fetch(base+'/favicon.svg?v=8'),faviconText=await favicon.text();
+  if(!manifest.ok||!manifestText.includes('/favicon.svg?v=9')||!manifestText.includes('"display": "standalone"'))throw Error('PWA manifest self-test failed');
+  let favicon=await fetch(base+'/favicon.svg?v=9'),faviconText=await favicon.text();
   if(!favicon.ok||!String(favicon.headers.get('content-type')).includes('image/svg')||!faviconText.includes('<svg'))throw Error('Favicon self-test failed');
-  let promo=await fetch(base+'/assets/shrimp-fins-promo.webp?v=8'),promoBytes=(await promo.arrayBuffer()).byteLength;
+  let promo=await fetch(base+'/assets/shrimp-fins-promo.webp?v=9'),promoBytes=(await promo.arrayBuffer()).byteLength;
   if(!promo.ok||!String(promo.headers.get('content-type')).includes('image/webp')||promoBytes<10000)throw Error('Promo asset HTTP self-test failed');
-  let store=await fetch(base+'/assets/storefront.svg?v=8'),storeText=await store.text();
+  let store=await fetch(base+'/assets/storefront.svg?v=9'),storeText=await store.text();
   if(!store.ok||!String(store.headers.get('content-type')).includes('image/svg')||storeText.length<1000)throw Error('Storefront asset HTTP self-test failed');
 
   const prod=(pub.products||[]).find(p=>p.orderable!==false&&+p.price>=Math.max(30,+(st.minimumOrder||0)))||(pub.products||[]).find(p=>p.orderable!==false&&+p.price>0);
