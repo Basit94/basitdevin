@@ -60,6 +60,7 @@ function photoOrigin(p){
  if(src==='OWNER_EXCEL')return{cls:'owner',ar:'صورة المطعم',en:'Restaurant photo'};
  if(src==='ADMIN_UPLOAD')return{cls:'owner',ar:'صورة المطعم',en:'Restaurant photo'};
  if(src==='CUSTOM')return{cls:'custom',ar:'صورة مخصصة',en:'Custom photo'};
+ if(src==='ILLUSTRATIVE')return{cls:'illustrative',ar:'صورة توضيحية',en:'Illustration'};
  return{cls:'missing',ar:'الصورة الأصلية قريباً',en:'Real photo coming soon'};
 }
 function photoBadge(p){const o=photoOrigin(p);return `<span class="photo-origin ${o.cls}">${state.lang==='ar'?o.ar:o.en}</span>`}

@@ -106,6 +106,8 @@ const excelRealImages={
  m061:'/assets/menu-real/m061.webp',m062:'/assets/menu-real/m062.webp'
 };
 const excelRealOfferImages={o001:excelRealImages.m036,o002:excelRealImages.m037,o003:excelRealImages.m038,o007:excelRealImages.m035,o008:excelRealImages.m039};
+const illustrativeImages=Object.fromEntries(['m005','m012','m026','m032','m033','m034','m042','m052','m053','m054','m055','m056','m063'].map(id=>[id,`/assets/menu-illustrative/${id}.webp`]));
+const illustrativeOfferImages={o004:illustrativeImages.m032,o005:illustrativeImages.m033,o006:illustrativeImages.m034};
 
 async function init(){await pool.query(`
 CREATE TABLE IF NOT EXISTS settings(id int primary key,data jsonb not null);
@@ -238,6 +240,19 @@ if(st.photoRevision!=='owner-excel-photos-2026-09-25-v3'){
     await client.query('COMMIT');
   }catch(e){await client.query('ROLLBACK').catch(()=>{});throw e}finally{client.release()}
 }
+if(st.illustrativeRevision!=='menu-illustrations-2026-09-25-v1'){
+  const client=await pool.connect();
+  try{
+    await client.query('BEGIN');
+    for(const [id,url] of Object.entries(illustrativeImages))await client.query(`UPDATE products SET image=$1,image_source='ILLUSTRATIVE',updated_at=NOW() WHERE id=$2 AND image_source='MISSING'`,[url,id]);
+    for(const [id,url] of Object.entries(illustrativeOfferImages))await client.query(`UPDATE offers SET image=$1,image_source='ILLUSTRATIVE',updated_at=NOW() WHERE id=$2 AND image_source='MISSING'`,[url,id]);
+    st.illustrativeRevision='menu-illustrations-2026-09-25-v1';
+    st.illustrativeMenuCount=Object.keys(illustrativeImages).length;
+    st.imageCredit='Restaurant-supplied Excel photos are used for 50 menu items. The remaining 13 menu items and three matching offers use clearly labeled generated illustrations until staff upload actual product photos.';
+    await client.query('UPDATE settings SET data=$1 WHERE id=1',[st]);
+    await client.query('COMMIT');
+  }catch(e){await client.query('ROLLBACK').catch(()=>{});throw e}finally{client.release()}
+}
 st={restaurantNameAr:'زعانف الروبيان',restaurantNameEn:'Shrimp Fins',phone:'0541064143',whatsapp:'966541064143',addressAr:'شارع حسان بن ثابت، حي النسيم الغربي، الرياض 14232',addressEn:'Hassan Ibn Thabet, An Nasim Al Gharbi, Riyadh 14232, Saudi Arabia',deliveryFee:10,minimumOrder:30,acceptingOrders:true,currency:'SAR',heroMessageAr:'أشهى المأكولات البحرية الطازجة في مكان واحد',heroMessageEn:'Premium fresh seafood, prepared to order',openingHoursAr:'يومياً 12:00 ظهراً – 12:00 منتصف الليل',openingHoursEn:'Daily 12:00 PM – 12:00 AM',mapQuery:'24.7358191,46.8310771',mapUrl:'https://www.google.com/maps/search/?api=1&query=24.7358191,46.8310771',googleRating:4.8,googleReviewCount:251,serviceModesAr:'توصيل • سفري • تناول داخل المطعم',serviceModesEn:'Delivery • Takeaway • Dine-in',amenitiesAr:'مناسب للعائلات • مواقف مجانية • يقبل البطاقات والدفع بالجوال',amenitiesEn:'Family-friendly • Free parking • Cards & NFC payments',googleInfoCheckedAt:'2026-09-24',heroImage:'/assets/shrimp-fins-promo.webp',storefrontImage:'/assets/storefront.svg',cashOnDelivery:true,cardOnDelivery:true,imageCredit:'Licensed Pexels stock photography is used where real restaurant dish photos are not yet available.',...st};
 if(st.infoRevision!=='google-maps-2026-09-25-v2'){Object.assign(st,{addressAr:'شارع حسان بن ثابت، حي النسيم الغربي، الرياض 14232',addressEn:'Hassan Ibn Thabet, An Nasim Al Gharbi, Riyadh 14232, Saudi Arabia',openingHoursAr:'يومياً 12:00 ظهراً – 12:00 منتصف الليل',openingHoursEn:'Daily 12:00 PM – 12:00 AM',mapQuery:'24.7358191,46.8310771',mapUrl:'https://www.google.com/maps/search/?api=1&query=24.7358191,46.8310771',googleRating:4.8,googleReviewCount:251,serviceModesAr:'توصيل بدون تلامس • توصيل • سفري • تناول داخل المطعم',serviceModesEn:'No-contact delivery • Delivery • Takeaway • Dine-in',amenitiesAr:'مناسب للعائلات • يقبل الحجز • مواقف مجانية • بطاقات ائتمان وخصم • دفع بالجوال',amenitiesEn:'Family-friendly • Reservations • Free parking • Credit/debit cards • NFC mobile payments',reservationsAr:'الحجز متاح — تواصل مع المطعم على 0541064143',reservationsEn:'Reservations available — call 0541064143',googleInfoCheckedAt:'2026-09-25',heroImage:'/assets/shrimp-fins-promo.webp',storefrontImage:'/assets/storefront.svg',cashOnDelivery:true,infoRevision:'google-maps-2026-09-25-v2'});}
 await pool.query('update settings set data=$1 where id=1',[st]);}
@@ -301,7 +316,9 @@ async function startupHttpSelfTest(){
   const pub=x.j||{},st=pub.settings||{};
   if((pub.products||[]).length<63||(pub.categories||[]).length<13||(pub.offers||[]).length<8)throw Error('HTTP public catalog self-test failed');
   const realPhotos=(pub.products||[]).filter(p=>p.image_source==='OWNER_EXCEL');
+  const illustrations=(pub.products||[]).filter(p=>p.image_source==='ILLUSTRATIVE');
   if(realPhotos.length<50)throw Error('HTTP owner Excel photo coverage failed: '+realPhotos.length);
+  if(illustrations.length!==13||(pub.products||[]).some(p=>p.image_source==='MISSING')||(pub.offers||[]).some(o=>o.image_source==='MISSING'))throw Error('Illustrative catalog coverage failed');
   if(st.photoRevision!=='owner-excel-photos-2026-09-25-v3'||!Array.isArray(st.heroPhotos)||st.heroPhotos.length<8)throw Error('HTTP photo settings self-test failed');
   if(st.phone!=='0541064143'||st.cashOnDelivery!==true||st.cardOnDelivery!==true||!String(st.mapUrl||'').includes('google.com/maps')||st.openingHoursEn!=='Daily 12:00 PM – 12:00 AM')throw Error('HTTP public settings self-test failed');
 
@@ -325,6 +342,8 @@ async function startupHttpSelfTest(){
   let store=await fetch(base+'/assets/storefront.svg?v=20'),storeText=await store.text();
   if(!store.ok||!String(store.headers.get('content-type')).includes('image/svg')||storeText.length<1000)throw Error('Storefront asset HTTP self-test failed');
   for(const p of realPhotos.slice(0,5)){const ir=await fetch(base+p.image);if(!ir.ok||!String(ir.headers.get('content-type')).includes('image/webp')||+(ir.headers.get('content-length')||0)===0)throw Error('Owner Excel image asset failed: '+p.image)}
+  for(const p of illustrations){const ir=await fetch(base+p.image);if(!ir.ok||!String(ir.headers.get('content-type')).includes('image/webp')||(await ir.arrayBuffer()).byteLength<10000)throw Error('Illustration asset failed: '+p.image)}
+  for(const o of (pub.offers||[]).filter(o=>o.image_source==='ILLUSTRATIVE')){const ir=await fetch(base+o.image);if(!ir.ok)throw Error('Illustrated offer asset failed: '+o.image)}
 
   const prod=(pub.products||[]).find(p=>p.orderable!==false&&+p.price>=Math.max(30,+(st.minimumOrder||0)))||(pub.products||[]).find(p=>p.orderable!==false&&+p.price>0);
   if(!prod)throw Error('No orderable QA product');
@@ -399,7 +418,7 @@ async function startupHttpSelfTest(){
   x=await getJson('/api/orders/track/'+encodeURIComponent(card.public.trackingToken)+'?phone='+qaPhone);
   if(!x.r.ok||x.j?.order?.status!=='REJECTED')throw Error('HTTP rejected tracking self-test failed');
 
-  console.log('HTTP_QA_PASS '+JSON.stringify({health:true,homepage:true,customerCss:true,customerJs:true,adminHtml:true,adminJs:true,adminAnonymousSession:true,adminLogin:true,adminAuthenticatedSession:true,adminDashboard:true,adminApprovalWorkflow:true,adminRejectWorkflow:true,pwa:true,manifest:true,promoAsset:true,storefrontAsset:true,ownerExcelPhotos:realPhotos.length,publicApi:true,products:(pub.products||[]).length,categories:(pub.categories||[]).length,offers:(pub.offers||[]).length,cashOnDelivery:true,cardOnDelivery:true,codDeliveryOrder:true,cardPickupOrder:true,tracking:true,marketPriceProtection:true,map:true,hours:true,rating:st.googleRating,customerRegistration:true,customerLogin:true,savedDeliveryPin:true,customerOrderHistory:true,customerStaffIsolation:true,customerOrderStaffQueue:true,customerDeliveryPinForStaff:true,customerApprovalToCompletion:true,customerStatusHistory:true,deliveryPinRequired:true,offerCheckout:true,savedAddressDeduplication:true}));
+  console.log('HTTP_QA_PASS '+JSON.stringify({health:true,homepage:true,customerCss:true,customerJs:true,adminHtml:true,adminJs:true,adminAnonymousSession:true,adminLogin:true,adminAuthenticatedSession:true,adminDashboard:true,adminApprovalWorkflow:true,adminRejectWorkflow:true,pwa:true,manifest:true,promoAsset:true,storefrontAsset:true,ownerExcelPhotos:realPhotos.length,illustrations:illustrations.length,illustratedOffers:(pub.offers||[]).filter(o=>o.image_source==='ILLUSTRATIVE').length,publicApi:true,products:(pub.products||[]).length,categories:(pub.categories||[]).length,offers:(pub.offers||[]).length,cashOnDelivery:true,cardOnDelivery:true,codDeliveryOrder:true,cardPickupOrder:true,tracking:true,marketPriceProtection:true,map:true,hours:true,rating:st.googleRating,customerRegistration:true,customerLogin:true,savedDeliveryPin:true,customerOrderHistory:true,customerStaffIsolation:true,customerOrderStaffQueue:true,customerDeliveryPinForStaff:true,customerApprovalToCompletion:true,customerStatusHistory:true,deliveryPinRequired:true,offerCheckout:true,savedAddressDeduplication:true}));
  }finally{
   for(const id of createdIds){try{await pool.query('delete from order_history where order_id=$1',[id]);await pool.query('delete from order_items where order_id=$1',[id]);await pool.query('delete from orders where id=$1',[id])}catch(e){console.error('QA cleanup failed',e)}}
   if(qaCustomerId)try{await pool.query('delete from customers where id=$1',[qaCustomerId])}catch(e){console.error('QA customer cleanup failed',e)}

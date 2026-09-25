@@ -309,6 +309,7 @@ html,body{width:100%;max-width:100%;overflow-x:hidden}
 .photo-origin.owner{background:rgba(8,107,76,.9)}
 .photo-origin.owner:before{content:"✓"}
 .photo-origin.custom{background:rgba(5,46,76,.9)}
+.photo-origin.illustrative{background:rgba(58,67,111,.9)}
 .photo-origin.missing{background:rgba(5,46,76,.9);color:#eef4f7}
 .missing-photo .product-image img,.missing-photo.offer-card img{object-fit:cover;filter:none;opacity:.96}
 .missing-photo .product-image{background:#063b60}
