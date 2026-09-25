@@ -4,7 +4,7 @@ let failed=false;
 for(const file of files){
  const s=fs.readFileSync(file,'utf8');
  const checks=[
-  {name:'single-selector forEach',re:/(^|[^$])\$\((['"`])[^\n]*?\2\)\.forEach/g},
+  {name:'single-selector forEach',re:/(^|[^$])\$\((['"`])[^'"`\n]*\2\)\.forEach/g},
   {name:'debugger statement',re:/\bdebugger\s*;/g},
   {name:'localhost customer URL',re:/https?:\/\/(?:localhost|127\.0\.0\.1)/g}
  ];
