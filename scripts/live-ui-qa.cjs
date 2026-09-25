@@ -38,7 +38,7 @@ async function waitForApp(page,label){
     await page.waitForFunction(()=>{
       const products=document.querySelectorAll('#products .product-card').length;
       const err=document.querySelector('#loadError');
-      return products>=60 || (err && !err.classList.contains('hidden'));
+      return products>=12 || (err && !err.classList.contains('hidden'));
     },null,{timeout:30000});
   }catch(e){
     const diag=await page.evaluate(()=>({
@@ -54,7 +54,7 @@ async function waitForApp(page,label){
   const errVisible=await page.locator('#loadError').isVisible().catch(()=>false);
   check(label+' menu load did not show error panel',!errVisible,errVisible?await page.locator('#loadError').innerText():'');
   const count=await page.locator('#products .product-card').count();
-  check(label+' menu rendered at least 60 items',count>=60,String(count));
+  check(label+' menu rendered',count>=12,String(count));
 }
 async function imageHealth(page,scope){
   return await page.locator(scope+' img:visible').evaluateAll(imgs=>imgs.map(i=>({src:i.currentSrc||i.src,ok:i.complete&&i.naturalWidth>0,w:i.naturalWidth,h:i.naturalHeight})));
@@ -178,15 +178,31 @@ async function main(){
       userAgent:'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 Mobile/15E148 Safari/604.1'
     });
     const mobile=await mobileContext.newPage();recordPage(mobile,'mobile');await waitForApp(mobile,'mobile');
-    report.mobile.productCount=await mobile.locator('#products .product-card').count();
+    report.mobile.initialProductCount=await mobile.locator('#products .product-card').count();
     report.mobile.scrollWidth=await mobile.evaluate(()=>document.documentElement.scrollWidth);
     report.mobile.clientWidth=await mobile.evaluate(()=>document.documentElement.clientWidth);
-    check('mobile 63 products',report.mobile.productCount===63,String(report.mobile.productCount));
-    report.mobile.ownerPhotoProducts=await mobile.locator('#products .product-card.owner-photo').count();
-    check('mobile shows owner menu photos',report.mobile.ownerPhotoProducts>=50,String(report.mobile.ownerPhotoProducts));
+    check('mobile starts with 12 products for easier browsing',report.mobile.initialProductCount===12,String(report.mobile.initialProductCount));
+    check('mobile show-all menu button visible',await mobile.locator('#menuExpandBtn').isVisible());
+    check('mobile show-all menu button mentions full catalog',(await mobile.locator('#menuExpandBtn').innerText()).includes('63'));
+    report.mobile.initialOwnerPhotoProducts=await mobile.locator('#products .product-card.owner-photo').count();
+    check('mobile initial menu uses owner photos',report.mobile.initialOwnerPhotoProducts>=8,String(report.mobile.initialOwnerPhotoProducts));
     check('mobile bottom nav visible',await mobile.locator('.mobile-nav').isVisible());
     check('mobile hero visible',await mobile.locator('#heroFoodImage').isVisible());
     check('mobile no horizontal overflow',report.mobile.scrollWidth<=report.mobile.clientWidth+1,JSON.stringify({scrollWidth:report.mobile.scrollWidth,clientWidth:report.mobile.clientWidth}));
+    await mobile.locator('#menuExpandBtn').click();
+    await mobile.waitForFunction(()=>document.querySelectorAll('#products .product-card').length===63);
+    report.mobile.expandedProductCount=await mobile.locator('#products .product-card').count();
+    report.mobile.ownerPhotoProducts=await mobile.locator('#products .product-card.owner-photo').count();
+    check('mobile show-all expands to 63 products',report.mobile.expandedProductCount===63,String(report.mobile.expandedProductCount));
+    check('mobile expanded menu shows 50 owner photos',report.mobile.ownerPhotoProducts>=50,String(report.mobile.ownerPhotoProducts));
+    const firstCategory=mobile.locator('#cats [data-cat]').nth(1);
+    const firstCategoryId=await firstCategory.getAttribute('data-cat');
+    await firstCategory.click();
+    const filteredCount=await mobile.locator('#products .product-card').count();
+    check('mobile category filter narrows menu',filteredCount>0&&filteredCount<63,JSON.stringify({firstCategoryId,filteredCount}));
+    check('mobile show-all button hides inside category',!(await mobile.locator('#menuExpandBtn').isVisible()));
+    await mobile.locator('#cats [data-cat="all"]').click();
+    await mobile.locator('#menuExpandBtn').click();
     await mobile.evaluate(async()=>{
       for(let y=0;y<document.body.scrollHeight;y+=520){window.scrollTo(0,y);await new Promise(r=>setTimeout(r,35))}
       window.scrollTo(0,0);
@@ -229,7 +245,8 @@ async function main(){
   console.log('LIVE_UI_QA_PASS '+JSON.stringify({
     build:report.version?.build,
     desktopProducts:report.desktop.productCount,
-    mobileProducts:report.mobile.productCount,
+    mobileInitialProducts:report.mobile.initialProductCount,
+    mobileExpandedProducts:report.mobile.expandedProductCount,
     offers:report.desktop.offerCount,
     visibleDesktopImages:report.desktop.visibleImages,
     visibleMobileImages:report.mobile.visibleImages,
