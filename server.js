@@ -354,6 +354,7 @@ async function startupHttpSelfTest(){
   try{await pool.query('delete from audit_log where actor=$1',[qaAdminEmail]);await pool.query('delete from admins where email=$1',[qaAdminEmail])}catch(e){console.error('QA admin cleanup failed',e)}
  }
 }
+app.get('/api/admin/session',(req,res)=>{try{const admin=jwt.verify(req.cookies.sf_admin,SECRET);res.set('Cache-Control','no-store').json({authenticated:true,admin})}catch{res.set('Cache-Control','no-store').json({authenticated:false})}});
 const auth=(req,res,next)=>{try{req.admin=jwt.verify(req.cookies.sf_admin,SECRET);next()}catch{return res.status(401).json({error:'Unauthorized'})}};
 app.get('/api/health',async(req,res)=>{res.set('Cache-Control','no-store');try{await pool.query('select 1');res.json({ok:true,build:BUILD_SHA,uptimeSeconds:Math.floor((Date.now()-startedAt)/1000)})}catch(e){log('error','healthcheck_failed',{requestId:req.id,message:e.message});res.status(503).json({ok:false,build:BUILD_SHA})}});
 app.get('/api/version',(req,res)=>res.set('Cache-Control','no-store').json({build:BUILD_SHA,node:process.version,startedAt:new Date(startedAt).toISOString()}));
