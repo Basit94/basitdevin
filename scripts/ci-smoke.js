@@ -51,7 +51,7 @@ async function main(){
  x=await call('/api/orders',{method:'POST',headers:{'content-type':'application/json','idempotency-key':codKey},body:JSON.stringify(codPayload)});check('idempotent checkout retry',x.r.status===200&&x.body.reused===true&&x.body.order.orderNumber===codOrder.orderNumber,String(x.r.status));
  x=await call('/api/orders/track/'+encodeURIComponent(codOrder.trackingToken)+'?phone=55555555');check('track COD order',x.r.status===200&&x.body.order.orderNumber===codOrder.orderNumber);
 
- x=await call('/api/orders',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({customerName:'QA CARD',phone:'0555555566',orderType:'delivery',address:'Riyadh QA Address',notes:'QA CARD',paymentMethod:'card_on_delivery',items:[{productId:prod.id,qty}]})});
+ x=await call('/api/orders',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({customerName:'QA CARD',phone:'0555555566',orderType:'delivery',address:'Riyadh QA Address',latitude:24.7136,longitude:46.6753,notes:'QA CARD',paymentMethod:'card_on_delivery',items:[{productId:prod.id,qty}]})});
  check('create card delivery order',x.r.status===201&&x.body.order.status==='PENDING',String(x.r.status));const cardOrder=x.body.order;
  check('delivery total includes fee',Number(cardOrder.total)>=Number(prod.price)*qty+Number(pub.settings.deliveryFee||0)-0.01,String(cardOrder.total));
 

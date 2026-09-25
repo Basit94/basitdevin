@@ -193,6 +193,7 @@
     </div>
     <div id="addressField" class="hidden"><label><span data-t="address">عنوان التوصيل</span><textarea name="address" rows="2" placeholder="الحي، الشارع، رقم المبنى، الطابق"></textarea></label>
       <div class="pin-actions"><button id="useLocationBtn" type="button">📍 تحديد موقعي · Use my location</button><span id="locationStatus">أضف نقطة دقيقة للسائق · Add a precise pin for the driver</span></div>
+      <label class="map-paste-label">رابط الموقع من الخرائط · Map location link<input id="mapPaste" type="url" placeholder="Paste a Google Maps link with coordinates"></label><button id="useMapLinkBtn" type="button" class="map-link-button">استخدم الرابط · Use map link</button>
       <div class="pin-coordinates"><label>Latitude<input id="deliveryLat" name="latitude" type="number" step="any" min="-90" max="90" placeholder="24.7136"></label><label>Longitude<input id="deliveryLng" name="longitude" type="number" step="any" min="-180" max="180" placeholder="46.6753"></label></div>
       <a id="deliveryMapLink" class="hidden" target="_blank" rel="noopener">معاينة نقطة التوصيل · Preview delivery pin</a>
       <div id="savedAddresses"></div>
