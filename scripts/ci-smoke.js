@@ -30,7 +30,7 @@ async function main(){
  check('8 offers',pub.offers.length===8,String(pub.offers.length));
  check('63 product images',pub.products.every(p=>p.image),String(pub.products.filter(p=>!p.image).length));
  check('50+ owner Excel product photos',pub.products.filter(p=>p.image_source==='OWNER_EXCEL').length>=50,String(pub.products.filter(p=>p.image_source==='OWNER_EXCEL').length));
- check('real photo revision',pub.settings.photoRevision==='owner-excel-photos-2026-09-25-v1',String(pub.settings.photoRevision));
+ check('real photo revision',pub.settings.photoRevision==='owner-excel-photos-2026-09-25-v2',String(pub.settings.photoRevision));
  check('real hero photo carousel',Array.isArray(pub.settings.heroPhotos)&&pub.settings.heroPhotos.length>=6,String(pub.settings.heroPhotos?.length||0));
  check('8 offer images',pub.offers.every(o=>o.image),String(pub.offers.filter(o=>!o.image).length));
  check('calories populated',pub.products.filter(p=>p.calories!=null).length>=52,String(pub.products.filter(p=>p.calories!=null).length));
@@ -40,7 +40,7 @@ async function main(){
  check('card on delivery enabled',pub.settings.cardOnDelivery===true,String(pub.settings.cardOnDelivery));
  check('Google rating',Number(pub.settings.googleRating)===4.8,String(pub.settings.googleRating));
  check('Maps URL',String(pub.settings.mapUrl||'').includes('google.com/maps'),String(pub.settings.mapUrl||''));
- check('opening hours',pub.settings.openingHoursEn==='Daily 12:00 PM – 12:00 AM',String(pub.settings.openingHoursEn));
+ check('opening hours',pub.settings.openingHoursEn==='Daily 12:00 PM – 12:00 AM',String(pub.settings.openingHoursEn));check('reservations verified',String(pub.settings.reservationsEn||'').includes('Reservations available'),String(pub.settings.reservationsEn||''));check('verified info revision',pub.settings.infoRevision==='google-maps-2026-09-25-v2',String(pub.settings.infoRevision));
 
  x=await call('/api/orders',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({customerName:'X',phone:'1',items:[]})});check('bad order validation',x.r.status===400,String(x.r.status));
 
