@@ -188,7 +188,7 @@ $$('input[name="orderType"]').forEach(x=>x.onchange=updateCheckoutTotal);$('#che
 $('#trackForm').onsubmit=async e=>{e.preventDefault();try{await trackOrder($('#trackToken').value,$('#trackPhone').value)}catch(err){toast(err.message,true)}};
 $('#trackNow').onclick=()=>{const o=state.lastOrder;if(!o)return;closeAll();open('#trackModal');$('#trackToken').value=o.trackingToken;$('#trackPhone').value=o.phone;$('#trackForm').requestSubmit()};
 $('#offerPrev').onclick=()=>$('#offersGrid').scrollBy({left:-320,behavior:'smooth'});$('#offerNext').onclick=()=>$('#offersGrid').scrollBy({left:320,behavior:'smooth'});
-if('serviceWorker'in navigator)window.addEventListener('load',async()=>{try{if('caches'in window){const ks=await caches.keys();await Promise.all(ks.filter(k=>k.startsWith('shrimp-fins-')&&k!=='shrimp-fins-v14').map(k=>caches.delete(k)))}await navigator.serviceWorker.register('/sw.js?v=14',{updateViaCache:'none'})}catch{}});
+if('serviceWorker'in navigator)window.addEventListener('load',async()=>{try{if('caches'in window){const ks=await caches.keys();await Promise.all(ks.filter(k=>k.startsWith('shrimp-fins-')&&k!=='shrimp-fins-v15').map(k=>caches.delete(k)))}await navigator.serviceWorker.register('/sw.js?v=15',{updateViaCache:'none'})}catch{}});
 state.lastOrder=JSON.parse(localStorage.getItem('sf_last_order')||'null');
 initHeroPhotos();
 load();
