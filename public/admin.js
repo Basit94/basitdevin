@@ -33,7 +33,7 @@ function connectEvents(){
 }
 function beep(){try{const A=window.AudioContext||window.webkitAudioContext,c=new A(),o=c.createOscillator(),g=c.createGain();o.frequency.value=880;g.gain.value=.08;o.connect(g);g.connect(c.destination);o.start();setTimeout(()=>{o.stop();c.close()},180)}catch{}}
 function statusPill(s){return '<span class="status s-'+esc(s)+'">'+esc(s)+'</span>'}
-function photoSourcePill(s){const v=String(s||'ILLUSTRATIVE');return '<span class="'+(v==='OWNER_EXCEL'||v==='ADMIN_UPLOAD'?'pill-yes':'pill-no')+'">'+esc(v==='OWNER_EXCEL'?'Restaurant file':v==='ADMIN_UPLOAD'?'Uploaded':v==='CUSTOM'?'Custom':'Illustrative')+'</span>'}
+function photoSourcePill(s){const v=String(s||'MISSING');return '<span class="'+(v==='OWNER_EXCEL'||v==='ADMIN_UPLOAD'||v==='CUSTOM'?'pill-yes':'pill-no')+'">'+esc(v==='OWNER_EXCEL'?'Restaurant Excel':v==='ADMIN_UPLOAD'?'Uploaded':v==='CUSTOM'?'Custom':'Needs real photo')+'</span>'}
 function orderActions(o){
  const map={PENDING:['CONFIRMED','REJECTED'],CONFIRMED:['PREPARING','CANCELLED'],PREPARING:['READY','CANCELLED'],READY:['COMPLETED','CANCELLED']}[o.status]||[];
  return '<div class="row-actions">'+map.map(s=>'<button class="'+(s==='REJECTED'||s==='CANCELLED'?'reject':'accept')+'" data-status="'+s+'" data-order="'+o.id+'">'+s+'</button>').join('')+'<button data-order-view="'+o.id+'">View</button></div>'
@@ -48,7 +48,7 @@ function bindOrderActions(root=document){
 }
 async function loadDash(){
  try{const d=await api('/api/admin/dashboard');$('#mTodayOrders').textContent=d.todayOrders;$('#mTodaySales').textContent=money(d.todaySales);$('#mPending').textContent=d.pending;$('#mMonthSales').textContent=money(d.monthSales);$('#mProducts').textContent=d.products;$('#mOffers').textContent=d.offers;
- $('#mWeekSales').textContent=money(d.weekSales||0);$('#mWeekOrders').textContent=d.weekOrders||0;$('#mRealPhotos').textContent=d.photoCoverage?.real_products||0;$('#mIllustrativePhotos').textContent=d.photoCoverage?.illustrative_products||0;
+ $('#mWeekSales').textContent=money(d.weekSales||0);$('#mWeekOrders').textContent=d.weekOrders||0;$('#mRealPhotos').textContent=d.photoCoverage?.real_products||0;$('#mIllustrativePhotos').textContent=d.photoCoverage?.missing_products||0;
  $('#navPending').textContent=d.pending;$('#navPending').classList.toggle('hidden',!d.pending);
  $('#recentOrders').innerHTML=ordersTable(d.recent||[]);bindOrderActions($('#recentOrders'));
  $('#topProducts').innerHTML=(d.topItems||[]).length?(d.topItems||[]).map((p,i)=>'<div class="top-product"><div><b>'+(i+1)+'. '+esc(p.name_en||p.name_ar)+'</b><small>'+p.qty+' units</small></div><strong>'+money(p.revenue)+'</strong></div>').join(''):'<p class="muted">Completed sales will appear here.</p>';
