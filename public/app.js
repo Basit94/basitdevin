@@ -189,6 +189,23 @@ $('#trackForm').onsubmit=async e=>{e.preventDefault();try{await trackOrder($('#t
 $('#trackNow').onclick=()=>{const o=state.lastOrder;if(!o)return;closeAll();open('#trackModal');$('#trackToken').value=o.trackingToken;$('#trackPhone').value=o.phone;$('#trackForm').requestSubmit()};
 $('#offerPrev').onclick=()=>$('#offersGrid').scrollBy({left:-320,behavior:'smooth'});$('#offerNext').onclick=()=>$('#offersGrid').scrollBy({left:320,behavior:'smooth'});
 if('serviceWorker'in navigator)window.addEventListener('load',async()=>{try{if('caches'in window){const ks=await caches.keys();await Promise.all(ks.filter(k=>k.startsWith('shrimp-fins-')&&k!=='shrimp-fins-v17').map(k=>caches.delete(k)))}await navigator.serviceWorker.register('/sw.js?v=17',{updateViaCache:'none'})}catch{}});
+let loadedBuild='';
+async function checkForNewBuild(){
+ try{
+  const r=await fetch('/api/version',{cache:'no-store',headers:{accept:'application/json'}});
+  if(!r.ok)return;
+  const j=await r.json(),next=String(j.build||'');
+  if(!next)return;
+  if(!loadedBuild){loadedBuild=next;return}
+  if(next!==loadedBuild){
+   try{const reg=await navigator.serviceWorker?.getRegistration();await reg?.update()}catch{}
+   location.reload();
+  }
+ }catch{}
+}
+checkForNewBuild();
+setInterval(checkForNewBuild,300000);
+
 state.lastOrder=JSON.parse(localStorage.getItem('sf_last_order')||'null');
 initHeroPhotos();
 load();
