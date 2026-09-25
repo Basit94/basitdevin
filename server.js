@@ -252,19 +252,6 @@ async function startupSelfTest(){
   await c.query("insert into orders(id,order_no,token,customer_name,phone,order_type,payment,subtotal,delivery_fee,total,status) values($1,$2,$3,'QA SELF TEST','0500000000','pickup','cod',9.99,0,9.99,'PENDING')",[orderId,'QA'+crypto.randomBytes(5).toString('hex').toUpperCase(),token]);
   await c.query('insert into order_items(order_id,product_id,name_ar,name_en,price,qty,total) values($1,$2,$3,$4,9.99,1,9.99)',[orderId,pid,'منتج اختبار','QA Product']);
   await c.query("insert into order_history(order_id,status,note) values($1,'PENDING','startup self-test')",[orderId]);
-  x=await adminJson('/api/admin/orders?status=PENDING&q='+encodeURIComponent(qaCustomerOrderNumber));
-  if(!x.r.ok||!x.j?.orders?.some(o=>o.id===customerOrder.id))throw Error('Customer order missing from staff queue');
-  x=await adminJson('/api/admin/orders/'+customerOrder.id);
-  if(!x.r.ok||+x.j?.order?.delivery_latitude!==24.7136||+x.j?.order?.delivery_longitude!==46.6753||x.j?.items?.length!==1)throw Error('Staff delivery order details or pin failed');
-  for(const status of ['CONFIRMED','PREPARING','READY','COMPLETED']){
-    x=await adminJson('/api/admin/orders/'+customerOrder.id+'/status',{method:'PATCH',headers:{'content-type':'application/json'},body:JSON.stringify({status,estimatedMinutes:status==='CONFIRMED'?30:undefined,note:'AUTO QA customer delivery'})});
-    if(!x.r.ok||x.j?.order?.status!==status)throw Error('Staff customer order workflow failed at '+status);
-    const customerView=await getJson('/api/customer/me',{headers:{cookie:qaCustomerCookie}});
-    if(!customerView.r.ok||customerView.j?.orders?.find(o=>o.order_no===qaCustomerOrderNumber)?.status!==status)throw Error('Customer order history did not reflect '+status);
-  }
-  x=await getJson('/api/orders/track/'+encodeURIComponent(qaCustomerTrackingToken)+'?phone='+qaCustomerPhone);
-  if(!x.r.ok||x.j?.order?.status!=='COMPLETED'||x.j?.order?.history?.length!==5)throw Error('Customer completed order tracking failed');
-
   for(const status of ['CONFIRMED','PREPARING','READY','COMPLETED']){await c.query('update orders set status=$1,updated_at=now() where id=$2',[status,orderId]);await c.query('insert into order_history(order_id,status,note) values($1,$2,$3)',[orderId,status,'startup self-test'])}
   const q=(await c.query('select status,payment from orders where id=$1',[orderId])).rows[0];
   if(!q||q.status!=='COMPLETED'||q.payment!=='cod')throw Error('Order/COD workflow self-test failed');
@@ -375,6 +362,19 @@ async function startupHttpSelfTest(){
   x=await adminJson('/api/admin/session');if(!x.r.ok||x.j?.authenticated!==true||x.j?.admin?.email!==qaAdminEmail)throw Error('HTTP authenticated admin session probe failed');
   x=await adminJson('/api/admin/me');if(!x.r.ok||x.j?.admin?.email!==qaAdminEmail)throw Error('HTTP admin session self-test failed');
   x=await adminJson('/api/admin/dashboard');if(!x.r.ok||+x.j?.products<63||!x.j?.photoCoverage)throw Error('HTTP admin dashboard self-test failed');
+
+  x=await adminJson('/api/admin/orders?status=PENDING&q='+encodeURIComponent(qaCustomerOrderNumber));
+  if(!x.r.ok||!x.j?.orders?.some(o=>o.id===customerOrder.id))throw Error('Customer order missing from staff queue');
+  x=await adminJson('/api/admin/orders/'+customerOrder.id);
+  if(!x.r.ok||+x.j?.order?.delivery_latitude!==24.7136||+x.j?.order?.delivery_longitude!==46.6753||x.j?.items?.length!==1)throw Error('Staff delivery order details or pin failed');
+  for(const status of ['CONFIRMED','PREPARING','READY','COMPLETED']){
+    x=await adminJson('/api/admin/orders/'+customerOrder.id+'/status',{method:'PATCH',headers:{'content-type':'application/json'},body:JSON.stringify({status,estimatedMinutes:status==='CONFIRMED'?30:undefined,note:'AUTO QA customer delivery'})});
+    if(!x.r.ok||x.j?.order?.status!==status)throw Error('Staff customer order workflow failed at '+status);
+    const customerView=await getJson('/api/customer/me',{headers:{cookie:qaCustomerCookie}});
+    if(!customerView.r.ok||customerView.j?.orders?.find(o=>o.order_no===qaCustomerOrderNumber)?.status!==status)throw Error('Customer order history did not reflect '+status);
+  }
+  x=await getJson('/api/orders/track/'+encodeURIComponent(qaCustomerTrackingToken)+'?phone='+qaCustomerPhone);
+  if(!x.r.ok||x.j?.order?.status!=='COMPLETED'||x.j?.order?.history?.length!==5)throw Error('Customer completed order tracking failed');
 
   for(const status of ['CONFIRMED','PREPARING','READY','COMPLETED']){
     x=await adminJson('/api/admin/orders/'+cod.id+'/status',{method:'PATCH',headers:{'content-type':'application/json'},body:JSON.stringify({status,estimatedMinutes:status==='CONFIRMED'?25:undefined,note:'AUTO QA'})});
