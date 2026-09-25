@@ -270,8 +270,8 @@ async function startupSelfTest(){
     (select count(*) from products where available=true and image_source='OWNER_EXCEL') owner_excel_photos`)).rows[0];
   const st=(await pool.query('select data from settings where id=1')).rows[0]?.data||{};
   if(+stats.products<menuProducts.length||+stats.product_images<menuProducts.length||+stats.offers<8||+stats.offer_images<8||+stats.calories_populated<40||+stats.market_price_items<1||+stats.owner_excel_photos<50)throw Error('Menu completeness self-test failed: '+JSON.stringify(stats));
-  if(st.phone!=='0541064143'||!st.whatsapp||!st.restaurantNameAr||!st.addressAr||st.heroImage!=='/assets/shrimp-fins-promo.webp'||st.storefrontImage!=='/assets/storefront.svg'||st.cashOnDelivery!==true||st.infoRevision!=='google-maps-2026-09-24-v1'||st.googleRating!==4.8||!st.mapUrl||!st.openingHoursAr)throw Error('Restaurant settings self-test failed');
-  console.log('STARTUP_QA_PASS '+JSON.stringify({products:+stats.products,productImages:+stats.product_images,offers:+stats.offers,offerImages:+stats.offer_images,categories:+stats.categories,caloriesPopulated:+stats.calories_populated,marketPriceItems:+stats.market_price_items,ownerExcelPhotos:+stats.owner_excel_photos,phone:st.phone,menuRevision:st.menuRevision,infoRevision:st.infoRevision,openingHours:st.openingHoursEn,googleRating:st.googleRating,transactionRollback:true,orderWorkflow:true,frontendDom:true,promoAsset:true,storefrontAsset:true,cashOnDelivery:true}));
+  if(st.phone!=='0541064143'||!st.whatsapp||!st.restaurantNameAr||!st.addressAr||st.heroImage!=='/assets/shrimp-fins-promo.webp'||st.storefrontImage!=='/assets/storefront.svg'||st.cashOnDelivery!==true||st.cardOnDelivery!==true||st.infoRevision!=='google-maps-2026-09-25-v2'||st.photoRevision!=='owner-excel-photos-2026-09-25-v2'||st.googleRating!==4.8||!st.mapUrl||!st.openingHoursAr||!st.reservationsAr||!Array.isArray(st.heroPhotos)||st.heroPhotos.length<8)throw Error('Restaurant settings self-test failed');
+  console.log('STARTUP_QA_PASS '+JSON.stringify({products:+stats.products,productImages:+stats.product_images,offers:+stats.offers,offerImages:+stats.offer_images,categories:+stats.categories,caloriesPopulated:+stats.calories_populated,marketPriceItems:+stats.market_price_items,ownerExcelPhotos:+stats.owner_excel_photos,missingRealPhotos:+(st.missingRealPhotoCount||0),phone:st.phone,menuRevision:st.menuRevision,photoRevision:st.photoRevision,infoRevision:st.infoRevision,openingHours:st.openingHoursEn,googleRating:st.googleRating,transactionRollback:true,orderWorkflow:true,frontendDom:true,promoAsset:true,storefrontAsset:true,cashOnDelivery:true}));
  }catch(e){try{await c.query('ROLLBACK')}catch{}throw e}finally{c.release()}
 }
 async function startupHttpSelfTest(){
@@ -297,7 +297,7 @@ async function startupHttpSelfTest(){
   if((pub.products||[]).length<63||(pub.categories||[]).length<13||(pub.offers||[]).length<8)throw Error('HTTP public catalog self-test failed');
   const realPhotos=(pub.products||[]).filter(p=>p.image_source==='OWNER_EXCEL');
   if(realPhotos.length<50)throw Error('HTTP owner Excel photo coverage failed: '+realPhotos.length);
-  if(st.photoRevision!=='owner-excel-photos-2026-09-25-v1'||!Array.isArray(st.heroPhotos)||st.heroPhotos.length<6)throw Error('HTTP photo settings self-test failed');
+  if(st.photoRevision!=='owner-excel-photos-2026-09-25-v2'||!Array.isArray(st.heroPhotos)||st.heroPhotos.length<8)throw Error('HTTP photo settings self-test failed');
   if(st.phone!=='0541064143'||st.cashOnDelivery!==true||st.cardOnDelivery!==true||!String(st.mapUrl||'').includes('google.com/maps')||st.openingHoursEn!=='Daily 12:00 PM – 12:00 AM')throw Error('HTTP public settings self-test failed');
 
   let home=await fetch(base+'/'),html=await home.text();
