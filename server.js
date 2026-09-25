@@ -197,7 +197,7 @@ if(st.menuRevision!=='excel-2026-09-v5'){
     await client.query('COMMIT');
   }catch(e){await client.query('ROLLBACK').catch(()=>{});throw e}finally{client.release()}
 }
-if(st.photoRevision!=='owner-excel-photos-2026-09-25-v2'){
+if(st.photoRevision!=='owner-excel-photos-2026-09-25-v3'){
   const client=await pool.connect();
   try{
     await client.query('BEGIN');
@@ -205,17 +205,17 @@ if(st.photoRevision!=='owner-excel-photos-2026-09-25-v2'){
       await client.query(`UPDATE products SET image=$1,image_source='OWNER_EXCEL',updated_at=NOW()
         WHERE id=$2 AND COALESCE(image,'') NOT LIKE '/api/images/%'`,[url,id]);
     }
-    await client.query(`UPDATE products SET image_source='MISSING',updated_at=NOW()
+    await client.query(`UPDATE products SET image='/assets/product-placeholder.svg',image_source='MISSING',updated_at=NOW()
       WHERE available=TRUE AND id NOT IN (SELECT unnest($1::text[])) AND COALESCE(image,'') NOT LIKE '/api/images/%'`,[Object.keys(excelRealImages)]);
     await client.query(`UPDATE products SET image_source='ADMIN_UPLOAD',updated_at=NOW() WHERE image LIKE '/api/images/%'`);
     for(const [id,url] of Object.entries(excelRealOfferImages)){
       await client.query(`UPDATE offers SET image=$1,image_source='OWNER_EXCEL',updated_at=NOW()
         WHERE id=$2 AND COALESCE(image,'') NOT LIKE '/api/images/%'`,[url,id]);
     }
-    await client.query(`UPDATE offers SET image_source='MISSING',updated_at=NOW()
+    await client.query(`UPDATE offers SET image='/assets/product-placeholder.svg',image_source='MISSING',updated_at=NOW()
       WHERE active=TRUE AND id NOT IN (SELECT unnest($1::text[])) AND COALESCE(image,'') NOT LIKE '/api/images/%'`,[Object.keys(excelRealOfferImages)]);
     await client.query(`UPDATE offers SET image_source='ADMIN_UPLOAD',updated_at=NOW() WHERE image LIKE '/api/images/%'`);
-    st.photoRevision='owner-excel-photos-2026-09-25-v2';
+    st.photoRevision='owner-excel-photos-2026-09-25-v3';
     st.realMenuPhotoCount=Object.keys(excelRealImages).length;st.missingRealPhotoCount=menuProducts.length-Object.keys(excelRealImages).length;
     st.heroPhotos=[
       {src:'/assets/storefront.svg',ar:'واجهة مطعم زعانف الروبيان',en:'Shrimp Fins storefront',source:'OWNER'},
@@ -228,7 +228,7 @@ if(st.photoRevision!=='owner-excel-photos-2026-09-25-v2'){
       {src:'/assets/menu-real/m039.webp',ar:'صينية الدنيس بالبطاطس من ملف المطعم',en:'Sea bream & potato tray from the restaurant file',source:'OWNER_EXCEL'},
       {src:'/assets/shrimp-fins-promo.webp',ar:'الهوية الرسمية لزعانف الروبيان',en:'Official Shrimp Fins artwork',source:'OWNER'}
     ];
-    st.imageCredit='Owner-supplied Excel photos are used for all menu items that include a real photo. Items without an owner photo use the branded placeholder until the restaurant uploads the real dish photo.';
+    st.imageCredit='Owner-supplied Excel photos are used wherever available. Items without a supplied real photo use the Shrimp Fins branded placeholder until restaurant staff upload the real dish photo.';
     await client.query('UPDATE settings SET data=$1 WHERE id=1',[st]);
     await client.query('COMMIT');
   }catch(e){await client.query('ROLLBACK').catch(()=>{});throw e}finally{client.release()}
@@ -270,7 +270,7 @@ async function startupSelfTest(){
     (select count(*) from products where available=true and image_source='OWNER_EXCEL') owner_excel_photos`)).rows[0];
   const st=(await pool.query('select data from settings where id=1')).rows[0]?.data||{};
   if(+stats.products<menuProducts.length||+stats.product_images<menuProducts.length||+stats.offers<8||+stats.offer_images<8||+stats.calories_populated<40||+stats.market_price_items<1||+stats.owner_excel_photos<50)throw Error('Menu completeness self-test failed: '+JSON.stringify(stats));
-  if(st.phone!=='0541064143'||!st.whatsapp||!st.restaurantNameAr||!st.addressAr||st.heroImage!=='/assets/shrimp-fins-promo.webp'||st.storefrontImage!=='/assets/storefront.svg'||st.cashOnDelivery!==true||st.cardOnDelivery!==true||st.infoRevision!=='google-maps-2026-09-25-v2'||st.photoRevision!=='owner-excel-photos-2026-09-25-v2'||st.googleRating!==4.8||!st.mapUrl||!st.openingHoursAr||!st.reservationsAr||!Array.isArray(st.heroPhotos)||st.heroPhotos.length<8)throw Error('Restaurant settings self-test failed');
+  if(st.phone!=='0541064143'||!st.whatsapp||!st.restaurantNameAr||!st.addressAr||st.heroImage!=='/assets/shrimp-fins-promo.webp'||st.storefrontImage!=='/assets/storefront.svg'||st.cashOnDelivery!==true||st.cardOnDelivery!==true||st.infoRevision!=='google-maps-2026-09-25-v2'||st.photoRevision!=='owner-excel-photos-2026-09-25-v3'||st.googleRating!==4.8||!st.mapUrl||!st.openingHoursAr||!st.reservationsAr||!Array.isArray(st.heroPhotos)||st.heroPhotos.length<8)throw Error('Restaurant settings self-test failed');
   console.log('STARTUP_QA_PASS '+JSON.stringify({products:+stats.products,productImages:+stats.product_images,offers:+stats.offers,offerImages:+stats.offer_images,categories:+stats.categories,caloriesPopulated:+stats.calories_populated,marketPriceItems:+stats.market_price_items,ownerExcelPhotos:+stats.owner_excel_photos,missingRealPhotos:+(st.missingRealPhotoCount||0),phone:st.phone,menuRevision:st.menuRevision,photoRevision:st.photoRevision,infoRevision:st.infoRevision,openingHours:st.openingHoursEn,googleRating:st.googleRating,transactionRollback:true,orderWorkflow:true,frontendDom:true,promoAsset:true,storefrontAsset:true,cashOnDelivery:true}));
  }catch(e){try{await c.query('ROLLBACK')}catch{}throw e}finally{c.release()}
 }
@@ -297,7 +297,7 @@ async function startupHttpSelfTest(){
   if((pub.products||[]).length<63||(pub.categories||[]).length<13||(pub.offers||[]).length<8)throw Error('HTTP public catalog self-test failed');
   const realPhotos=(pub.products||[]).filter(p=>p.image_source==='OWNER_EXCEL');
   if(realPhotos.length<50)throw Error('HTTP owner Excel photo coverage failed: '+realPhotos.length);
-  if(st.photoRevision!=='owner-excel-photos-2026-09-25-v2'||!Array.isArray(st.heroPhotos)||st.heroPhotos.length<8)throw Error('HTTP photo settings self-test failed');
+  if(st.photoRevision!=='owner-excel-photos-2026-09-25-v3'||!Array.isArray(st.heroPhotos)||st.heroPhotos.length<8)throw Error('HTTP photo settings self-test failed');
   if(st.phone!=='0541064143'||st.cashOnDelivery!==true||st.cardOnDelivery!==true||!String(st.mapUrl||'').includes('google.com/maps')||st.openingHoursEn!=='Daily 12:00 PM – 12:00 AM')throw Error('HTTP public settings self-test failed');
 
   let home=await fetch(base+'/'),html=await home.text();
