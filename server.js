@@ -197,7 +197,7 @@ if(st.menuRevision!=='excel-2026-09-v5'){
     await client.query('COMMIT');
   }catch(e){await client.query('ROLLBACK').catch(()=>{});throw e}finally{client.release()}
 }
-if(st.photoRevision!=='owner-excel-photos-2026-09-25-v1'){
+if(st.photoRevision!=='owner-excel-photos-2026-09-25-v2'){
   const client=await pool.connect();
   try{
     await client.query('BEGIN');
@@ -205,34 +205,36 @@ if(st.photoRevision!=='owner-excel-photos-2026-09-25-v1'){
       await client.query(`UPDATE products SET image=$1,image_source='OWNER_EXCEL',updated_at=NOW()
         WHERE id=$2 AND COALESCE(image,'') NOT LIKE '/api/images/%'`,[url,id]);
     }
-    await client.query(`UPDATE products SET image_source='ILLUSTRATIVE',updated_at=NOW()
+    await client.query(`UPDATE products SET image_source='MISSING',updated_at=NOW()
       WHERE available=TRUE AND id NOT IN (SELECT unnest($1::text[])) AND COALESCE(image,'') NOT LIKE '/api/images/%'`,[Object.keys(excelRealImages)]);
     await client.query(`UPDATE products SET image_source='ADMIN_UPLOAD',updated_at=NOW() WHERE image LIKE '/api/images/%'`);
     for(const [id,url] of Object.entries(excelRealOfferImages)){
       await client.query(`UPDATE offers SET image=$1,image_source='OWNER_EXCEL',updated_at=NOW()
         WHERE id=$2 AND COALESCE(image,'') NOT LIKE '/api/images/%'`,[url,id]);
     }
-    await client.query(`UPDATE offers SET image_source='ILLUSTRATIVE',updated_at=NOW()
+    await client.query(`UPDATE offers SET image_source='MISSING',updated_at=NOW()
       WHERE active=TRUE AND id NOT IN (SELECT unnest($1::text[])) AND COALESCE(image,'') NOT LIKE '/api/images/%'`,[Object.keys(excelRealOfferImages)]);
     await client.query(`UPDATE offers SET image_source='ADMIN_UPLOAD',updated_at=NOW() WHERE image LIKE '/api/images/%'`);
-    st.photoRevision='owner-excel-photos-2026-09-25-v1';
-    st.realMenuPhotoCount=Object.keys(excelRealImages).length;
+    st.photoRevision='owner-excel-photos-2026-09-25-v2';
+    st.realMenuPhotoCount=Object.keys(excelRealImages).length;st.missingRealPhotoCount=menuProducts.length-Object.keys(excelRealImages).length;
     st.heroPhotos=[
       {src:'/assets/storefront.svg',ar:'واجهة مطعم زعانف الروبيان',en:'Shrimp Fins storefront',source:'OWNER'},
       {src:'/assets/menu-real/m035.webp',ar:'صحن المزاجنجية من ملف المطعم',en:'Mazagangia platter from the restaurant file',source:'OWNER_EXCEL'},
       {src:'/assets/menu-real/m038.webp',ar:'صينية العريس من ملف المطعم',en:'Al Arees tray from the restaurant file',source:'OWNER_EXCEL'},
       {src:'/assets/menu-real/m031.webp',ar:'استكوزا مشوي من ملف المطعم',en:'Grilled lobster from the restaurant file',source:'OWNER_EXCEL'},
-      {src:'/assets/menu-real/m037.webp',ar:'صينية الكيف الحلو من ملف المطعم',en:'Al Kaif tray from the restaurant file',source:'OWNER_EXCEL'},
+      {src:'/assets/menu-real/m025.webp',ar:'طاجين فيليه من ملف المطعم',en:'Fish fillet casserole from the restaurant file',source:'OWNER_EXCEL'},
+      {src:'/assets/menu-real/m027.webp',ar:'روبيان وسط من ملف المطعم',en:'Medium shrimp from the restaurant file',source:'OWNER_EXCEL'},
+      {src:'/assets/menu-real/m045.webp',ar:'وجبة فيليه من ملف المطعم',en:'Fish fillet meal from the restaurant file',source:'OWNER_EXCEL'},
       {src:'/assets/menu-real/m039.webp',ar:'صينية الدنيس بالبطاطس من ملف المطعم',en:'Sea bream & potato tray from the restaurant file',source:'OWNER_EXCEL'},
       {src:'/assets/shrimp-fins-promo.webp',ar:'الهوية الرسمية لزعانف الروبيان',en:'Official Shrimp Fins artwork',source:'OWNER'}
     ];
-    st.imageCredit='Real menu photos are extracted from the restaurant Excel supplied by the owner. Illustrative photos are used only for items without an owner photo.';
+    st.imageCredit='Owner-supplied Excel photos are used for all menu items that include a real photo. Items without an owner photo use the branded placeholder until the restaurant uploads the real dish photo.';
     await client.query('UPDATE settings SET data=$1 WHERE id=1',[st]);
     await client.query('COMMIT');
   }catch(e){await client.query('ROLLBACK').catch(()=>{});throw e}finally{client.release()}
 }
 st={restaurantNameAr:'زعانف الروبيان',restaurantNameEn:'Shrimp Fins',phone:'0541064143',whatsapp:'966541064143',addressAr:'شارع حسان بن ثابت، حي النسيم الغربي، الرياض 14232',addressEn:'Hassan Ibn Thabet, An Nasim Al Gharbi, Riyadh 14232, Saudi Arabia',deliveryFee:10,minimumOrder:30,acceptingOrders:true,currency:'SAR',heroMessageAr:'أشهى المأكولات البحرية الطازجة في مكان واحد',heroMessageEn:'Premium fresh seafood, prepared to order',openingHoursAr:'يومياً 12:00 ظهراً – 12:00 منتصف الليل',openingHoursEn:'Daily 12:00 PM – 12:00 AM',mapQuery:'24.7358191,46.8310771',mapUrl:'https://www.google.com/maps/search/?api=1&query=24.7358191,46.8310771',googleRating:4.8,googleReviewCount:251,serviceModesAr:'توصيل • سفري • تناول داخل المطعم',serviceModesEn:'Delivery • Takeaway • Dine-in',amenitiesAr:'مناسب للعائلات • مواقف مجانية • يقبل البطاقات والدفع بالجوال',amenitiesEn:'Family-friendly • Free parking • Cards & NFC payments',googleInfoCheckedAt:'2026-09-24',heroImage:'/assets/shrimp-fins-promo.webp',storefrontImage:'/assets/storefront.svg',cashOnDelivery:true,cardOnDelivery:true,imageCredit:'Licensed Pexels stock photography is used where real restaurant dish photos are not yet available.',...st};
-if(st.infoRevision!=='google-maps-2026-09-24-v1'){Object.assign(st,{addressAr:'شارع حسان بن ثابت، حي النسيم الغربي، الرياض 14232',addressEn:'Hassan Ibn Thabet, An Nasim Al Gharbi, Riyadh 14232, Saudi Arabia',openingHoursAr:'يومياً 12:00 ظهراً – 12:00 منتصف الليل',openingHoursEn:'Daily 12:00 PM – 12:00 AM',mapQuery:'24.7358191,46.8310771',mapUrl:'https://www.google.com/maps/search/?api=1&query=24.7358191,46.8310771',googleRating:4.8,googleReviewCount:251,serviceModesAr:'توصيل • سفري • تناول داخل المطعم',serviceModesEn:'Delivery • Takeaway • Dine-in',amenitiesAr:'مناسب للعائلات • مواقف مجانية • يقبل البطاقات والدفع بالجوال',amenitiesEn:'Family-friendly • Free parking • Cards & NFC payments',googleInfoCheckedAt:'2026-09-24',heroImage:'/assets/shrimp-fins-promo.webp',storefrontImage:'/assets/storefront.svg',cashOnDelivery:true,infoRevision:'google-maps-2026-09-24-v1'});}
+if(st.infoRevision!=='google-maps-2026-09-25-v2'){Object.assign(st,{addressAr:'شارع حسان بن ثابت، حي النسيم الغربي، الرياض 14232',addressEn:'Hassan Ibn Thabet, An Nasim Al Gharbi, Riyadh 14232, Saudi Arabia',openingHoursAr:'يومياً 12:00 ظهراً – 12:00 منتصف الليل',openingHoursEn:'Daily 12:00 PM – 12:00 AM',mapQuery:'24.7358191,46.8310771',mapUrl:'https://www.google.com/maps/search/?api=1&query=24.7358191,46.8310771',googleRating:4.8,googleReviewCount:251,serviceModesAr:'توصيل بدون تلامس • توصيل • سفري • تناول داخل المطعم',serviceModesEn:'No-contact delivery • Delivery • Takeaway • Dine-in',amenitiesAr:'مناسب للعائلات • يقبل الحجز • مواقف مجانية • بطاقات ائتمان وخصم • دفع بالجوال',amenitiesEn:'Family-friendly • Reservations • Free parking • Credit/debit cards • NFC mobile payments',reservationsAr:'الحجز متاح — تواصل مع المطعم على 0541064143',reservationsEn:'Reservations available — call 0541064143',googleInfoCheckedAt:'2026-09-25',heroImage:'/assets/shrimp-fins-promo.webp',storefrontImage:'/assets/storefront.svg',cashOnDelivery:true,infoRevision:'google-maps-2026-09-25-v2'});}
 await pool.query('update settings set data=$1 where id=1',[st]);}
 async function startupSelfTest(){
  const c=await pool.connect(),tag='qa_'+crypto.randomBytes(6).toString('hex');
@@ -300,22 +302,22 @@ async function startupHttpSelfTest(){
 
   let home=await fetch(base+'/'),html=await home.text();
   if(!home.ok||!html.includes('value="cod"')||!html.includes('id="googleRating"')||!html.includes('class="hero-visual"')||!html.includes('id="loadError"')||!html.includes('href="/admin"'))throw Error('Homepage self-test failed');
-  let css=await fetch(base+'/styles.css?v=18'),cssText=await css.text();
+  let css=await fetch(base+'/styles.css?v=19'),cssText=await css.text();
   if(!css.ok||!String(css.headers.get('content-type')).includes('text/css')||!cssText.includes('.photo-origin')||!cssText.includes('.mobile-nav'))throw Error('Customer CSS self-test failed');
-  let js=await fetch(base+'/app.js?v=18'),jsText=await js.text();
+  let js=await fetch(base+'/app.js?v=19'),jsText=await js.text();
   if(!js.ok||!jsText.includes('function renderProducts')||!jsText.includes('function photoOrigin')||!jsText.includes('st.heroPhotos')||!jsText.includes('cashOnDelivery'))throw Error('Customer JS self-test failed');
   let admin=await fetch(base+'/admin'),adminHtml=await admin.text();
   if(!admin.ok||!adminHtml.includes('id="loginForm"')||!adminHtml.includes('id="mRealPhotos"')||!adminHtml.includes('id="sCashOnDelivery"')||!adminHtml.includes('id="sMapUrl"')||adminHtml.includes('data:audio/'))throw Error('Admin HTML self-test failed');
   let adminJs=await fetch(base+'/admin.js'),adminJsText=await adminJs.text();
   if(!adminJs.ok||!adminJsText.includes('photoSourcePill')||!adminJsText.includes('todayStatusBreakdown')||!adminJsText.includes('loadSettings')||!adminJsText.includes('/api/admin/session'))throw Error('Admin JS self-test failed');
   x=await getJson('/api/admin/session');if(!x.r.ok||x.j?.authenticated!==false)throw Error('Anonymous admin session probe self-test failed');
-  let sw=await fetch(base+'/sw.js?v=18'),swText=await sw.text();
-  if(!sw.ok||!swText.includes("shrimp-fins-v18")||!swText.includes('/favicon.svg?v=18'))throw Error('PWA service worker self-test failed');
+  let sw=await fetch(base+'/sw.js?v=19'),swText=await sw.text();
+  if(!sw.ok||!swText.includes("shrimp-fins-v19")||!swText.includes('/favicon.svg?v=19'))throw Error('PWA service worker self-test failed');
   let manifest=await fetch(base+'/manifest.webmanifest'),manifestText=await manifest.text();
-  if(!manifest.ok||!manifestText.includes('/favicon.svg?v=18')||!manifestText.includes('"display": "standalone"'))throw Error('PWA manifest self-test failed');
-  let promo=await fetch(base+'/assets/shrimp-fins-promo.webp?v=18'),promoBytes=(await promo.arrayBuffer()).byteLength;
+  if(!manifest.ok||!manifestText.includes('/favicon.svg?v=19')||!manifestText.includes('"display": "standalone"'))throw Error('PWA manifest self-test failed');
+  let promo=await fetch(base+'/assets/shrimp-fins-promo.webp?v=19'),promoBytes=(await promo.arrayBuffer()).byteLength;
   if(!promo.ok||!String(promo.headers.get('content-type')).includes('image/webp')||promoBytes<10000)throw Error('Promo asset HTTP self-test failed');
-  let store=await fetch(base+'/assets/storefront.svg?v=18'),storeText=await store.text();
+  let store=await fetch(base+'/assets/storefront.svg?v=19'),storeText=await store.text();
   if(!store.ok||!String(store.headers.get('content-type')).includes('image/svg')||storeText.length<1000)throw Error('Storefront asset HTTP self-test failed');
   for(const p of realPhotos.slice(0,5)){const ir=await fetch(base+p.image);if(!ir.ok||!String(ir.headers.get('content-type')).includes('image/webp')||+(ir.headers.get('content-length')||0)===0)throw Error('Owner Excel image asset failed: '+p.image)}
 
