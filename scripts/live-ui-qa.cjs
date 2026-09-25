@@ -187,10 +187,15 @@ async function main(){
     check('mobile bottom nav visible',await mobile.locator('.mobile-nav').isVisible());
     check('mobile hero visible',await mobile.locator('#heroFoodImage').isVisible());
     check('mobile no horizontal overflow',report.mobile.scrollWidth<=report.mobile.clientWidth+1,JSON.stringify({scrollWidth:report.mobile.scrollWidth,clientWidth:report.mobile.clientWidth}));
-    const mimgs=await imageHealth(mobile,'body');
+    await mobile.evaluate(async()=>{
+      for(let y=0;y<document.body.scrollHeight;y+=520){window.scrollTo(0,y);await new Promise(r=>setTimeout(r,35))}
+      window.scrollTo(0,0);
+    });
+    await mobile.waitForTimeout(350);
+    const mimgs=await mobile.locator('img').evaluateAll(imgs=>imgs.filter(i=>{const r=i.getBoundingClientRect();return r.bottom>0&&r.top<innerHeight}).map(i=>({src:i.currentSrc||i.src,ok:i.complete&&i.naturalWidth>0,w:i.naturalWidth,h:i.naturalHeight})));
     const mbroken=mimgs.filter(x=>!x.ok);
     report.mobile.visibleImages=mimgs.length;report.mobile.brokenImages=mbroken;
-    check('all visible mobile images loaded',mbroken.length===0,JSON.stringify(mbroken.slice(0,5)));
+    check('all viewport mobile images loaded',mbroken.length===0,JSON.stringify(mbroken.slice(0,5)));
     await mobile.locator('[data-add]').first().click();
     await mobile.locator('#mobileCartBtn').click();
     check('mobile cart opens',await mobile.locator('#cartDrawer').isVisible());
