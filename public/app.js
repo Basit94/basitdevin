@@ -117,7 +117,7 @@ function renderOffers(){
 function renderCategories(){
  if(!state.data)return;const all={id:'all',name_ar:'الكل',name_en:'All',icon:'✨'},arr=[all,...state.data.categories];
  $('#cats').innerHTML=arr.map(c=>`<button class="${state.category===c.id?'active':''}" data-cat="${esc(c.id)}">${esc(c.icon||'')} ${esc(txt(c,'name_ar','name_en'))}</button>`).join('');
- $('[data-cat]').forEach(b=>b.onclick=()=>{state.category=b.dataset.cat;state.mobileMenuExpanded=false;renderCategories();renderProducts();if(innerWidth<=760)document.querySelector('#products')?.scrollIntoView({behavior:'smooth',block:'start'})});
+ $$('[data-cat]').forEach(b=>b.onclick=()=>{state.category=b.dataset.cat;state.mobileMenuExpanded=false;renderCategories();renderProducts();if(innerWidth<=760)document.querySelector('#products')?.scrollIntoView({behavior:'smooth',block:'start'})});
 }
 function filteredProducts(){
  let arr=(state.data?.products||[]).filter(p=>state.category==='all'||(p.category_id||p.categoryId)===state.category);
@@ -136,8 +136,8 @@ function renderProducts(){
  <div class="product-image" data-view="${esc(p.id)}">${remoteImg(image,txt(p,'name_ar','name_en'))}${p.featured?`<span class="featured-badge">★ ${state.lang==='ar'?'مميز':'Featured'}</span>`:''}${photoBadge(p)}${calorieTag(p)}</div>
  <div class="product-body"><span class="product-cat">${esc(txt(c,'name_ar','name_en'))}</span><h3>${esc(txt(p,'name_ar','name_en'))}</h3><p class="product-desc">${esc(txt(p,'description_ar','description_en'))}</p>
  <div class="product-footer"><div class="price"><b class="${canOrder?'':'market-price'}">${esc(productPrice(p))}</b>${canOrder?`<small>/ ${esc(txt(p,'unit_ar','unit_en'))}</small>`:''}</div>${canOrder?`<button class="add-btn" aria-label="${tr('add')}" data-add="${esc(p.id)}">+</button>`:`<button class="call-btn" data-view="${esc(p.id)}">☎</button>`}</div><button class="view-btn" data-view="${esc(p.id)}">${tr('view')}</button></div></article>`}).join('');
- $('[data-add]').forEach(b=>b.onclick=e=>{e.stopPropagation();addToCart(b.dataset.add)});
- $('[data-view]').forEach(b=>b.onclick=()=>showProduct(b.dataset.view));
+ $$('[data-add]').forEach(b=>b.onclick=e=>{e.stopPropagation();addToCart(b.dataset.add)});
+ $$('[data-view]').forEach(b=>b.onclick=()=>showProduct(b.dataset.view));
  hydrateRemoteImages($('#products'));
 }
 function showProduct(id){
