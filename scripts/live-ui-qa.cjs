@@ -104,11 +104,27 @@ async function main(){
     const duplicates=ids.filter((id,i,a)=>id&&a.indexOf(id)!==i);
     check('no duplicate element IDs',duplicates.length===0,JSON.stringify([...new Set(duplicates)]));
 
-    const images=await imageHealth(page,'body');
-    const broken=images.filter(x=>!x.ok);
-    report.desktop.visibleImages=images.length;
-    report.desktop.brokenImages=broken;
-    check('all visible desktop images loaded',broken.length===0,JSON.stringify(broken.slice(0,5)));
+    // Trigger native lazy loading by moving through the page before checking images.
+    await page.evaluate(async()=>{
+      for(let y=0;y<document.body.scrollHeight;y+=650){window.scrollTo(0,y);await new Promise(r=>setTimeout(r,35))}
+      window.scrollTo(0,0);
+    });
+    await page.waitForTimeout(400);
+    const viewportImages=await page.locator('img').evaluateAll(imgs=>imgs.filter(i=>{const r=i.getBoundingClientRect();return r.bottom>0&&r.top<innerHeight}).map(i=>({src:i.currentSrc||i.src,ok:i.complete&&i.naturalWidth>0,w:i.naturalWidth,h:i.naturalHeight})));
+    const brokenViewport=viewportImages.filter(x=>!x.ok);
+    report.desktop.visibleImages=viewportImages.length;
+    report.desktop.brokenImages=brokenViewport;
+    check('all viewport desktop images loaded',brokenViewport.length===0,JSON.stringify(brokenViewport.slice(0,5)));
+
+    const ownerUrls=await page.locator('#products .product-card.owner-photo img').evaluateAll(imgs=>[...new Set(imgs.map(i=>i.getAttribute('src')).filter(Boolean))]);
+    const ownerFailures=[];
+    for(const src of ownerUrls){
+      const u=new URL(src,base).href;
+      const rr=await page.request.get(u,{timeout:20000});
+      if(!rr.ok()||!String(rr.headers()['content-type']||'').startsWith('image/'))ownerFailures.push({src,status:rr.status(),type:rr.headers()['content-type']||''});
+    }
+    report.desktop.ownerImageAssetChecks=ownerUrls.length;
+    check('all owner Excel image assets respond as images',ownerFailures.length===0,JSON.stringify(ownerFailures.slice(0,5)));
 
     await page.locator('#searchInput').fill('روبيان');
     await page.waitForTimeout(150);
