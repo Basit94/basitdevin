@@ -69,7 +69,7 @@ function showHeroPhoto(index,manual=false){
  if(img){img.classList.add('changing');const probe=new Image();probe.onload=()=>{img.src=p.src;img.alt=state.lang==='ar'?p.ar:p.en;requestAnimationFrame(()=>img.classList.remove('changing'))};probe.onerror=()=>{img.src=st.storefrontImage||'/assets/storefront.svg';img.classList.remove('changing')};probe.src=p.src}
  const cap=$('#heroPhotoCaption');if(cap)cap.textContent=state.lang==='ar'?p.ar:p.en;
  const dots=$('#heroPhotoDots');if(dots)dots.innerHTML=photos.map((_,i)=>`<button type="button" aria-label="Photo ${i+1}" class="${i===heroPhotoIndex?'active':''}" data-hero-dot="${i}"></button>`).join('');
- $('[data-hero-dot]').forEach(b=>b.onclick=()=>showHeroPhoto(+b.dataset.heroDot,true));
+ $$('[data-hero-dot]').forEach(b=>b.onclick=()=>showHeroPhoto(+b.dataset.heroDot,true));
  if(manual)restartHeroPhotos();
 }
 function restartHeroPhotos(){clearInterval(heroPhotoTimer);heroPhotoTimer=setInterval(()=>showHeroPhoto(heroPhotoIndex+1),6500)}
