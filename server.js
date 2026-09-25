@@ -304,9 +304,10 @@ async function startupHttpSelfTest(){
   let js=await fetch(base+'/app.js?v=15'),jsText=await js.text();
   if(!js.ok||!jsText.includes('function renderProducts')||!jsText.includes('function photoOrigin')||!jsText.includes('st.heroPhotos')||!jsText.includes('cashOnDelivery'))throw Error('Customer JS self-test failed');
   let admin=await fetch(base+'/admin'),adminHtml=await admin.text();
-  if(!admin.ok||!adminHtml.includes('id="loginForm"')||!adminHtml.includes('id="mRealPhotos"')||!adminHtml.includes('id="sCashOnDelivery"')||!adminHtml.includes('id="sMapUrl"'))throw Error('Admin HTML self-test failed');
+  if(!admin.ok||!adminHtml.includes('id="loginForm"')||!adminHtml.includes('id="mRealPhotos"')||!adminHtml.includes('id="sCashOnDelivery"')||!adminHtml.includes('id="sMapUrl"')||adminHtml.includes('data:audio/'))throw Error('Admin HTML self-test failed');
   let adminJs=await fetch(base+'/admin.js'),adminJsText=await adminJs.text();
-  if(!adminJs.ok||!adminJsText.includes('photoSourcePill')||!adminJsText.includes('todayStatusBreakdown')||!adminJsText.includes('loadSettings'))throw Error('Admin JS self-test failed');
+  if(!adminJs.ok||!adminJsText.includes('photoSourcePill')||!adminJsText.includes('todayStatusBreakdown')||!adminJsText.includes('loadSettings')||!adminJsText.includes('/api/admin/session'))throw Error('Admin JS self-test failed');
+  x=await getJson('/api/admin/session');if(!x.r.ok||x.j?.authenticated!==false)throw Error('Anonymous admin session probe self-test failed');
   let sw=await fetch(base+'/sw.js?v=15'),swText=await sw.text();
   if(!sw.ok||!swText.includes("shrimp-fins-v15")||!swText.includes('/favicon.svg?v=15'))throw Error('PWA service worker self-test failed');
   let manifest=await fetch(base+'/manifest.webmanifest'),manifestText=await manifest.text();
@@ -333,6 +334,7 @@ async function startupHttpSelfTest(){
   x=await getJson('/api/admin/login',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({email:qaAdminEmail,password:qaAdminPassword})});
   if(!x.r.ok||!x.j?.ok)throw Error('HTTP admin login self-test failed');
   adminCookie=String(x.r.headers.get('set-cookie')||'').split(';')[0];if(!adminCookie.startsWith('sf_admin='))throw Error('HTTP admin cookie self-test failed');
+  x=await adminJson('/api/admin/session');if(!x.r.ok||x.j?.authenticated!==true||x.j?.admin?.email!==qaAdminEmail)throw Error('HTTP authenticated admin session probe failed');
   x=await adminJson('/api/admin/me');if(!x.r.ok||x.j?.admin?.email!==qaAdminEmail)throw Error('HTTP admin session self-test failed');
   x=await adminJson('/api/admin/dashboard');if(!x.r.ok||+x.j?.products<63||!x.j?.photoCoverage)throw Error('HTTP admin dashboard self-test failed');
 
@@ -348,7 +350,7 @@ async function startupHttpSelfTest(){
   x=await getJson('/api/orders/track/'+encodeURIComponent(card.public.trackingToken)+'?phone='+qaPhone);
   if(!x.r.ok||x.j?.order?.status!=='REJECTED')throw Error('HTTP rejected tracking self-test failed');
 
-  console.log('HTTP_QA_PASS '+JSON.stringify({health:true,homepage:true,customerCss:true,customerJs:true,adminHtml:true,adminJs:true,adminLogin:true,adminDashboard:true,adminApprovalWorkflow:true,adminRejectWorkflow:true,pwa:true,manifest:true,promoAsset:true,storefrontAsset:true,ownerExcelPhotos:realPhotos.length,publicApi:true,products:(pub.products||[]).length,categories:(pub.categories||[]).length,offers:(pub.offers||[]).length,cashOnDelivery:true,cardOnDelivery:true,codDeliveryOrder:true,cardPickupOrder:true,tracking:true,marketPriceProtection:true,map:true,hours:true,rating:st.googleRating}));
+  console.log('HTTP_QA_PASS '+JSON.stringify({health:true,homepage:true,customerCss:true,customerJs:true,adminHtml:true,adminJs:true,adminAnonymousSession:true,adminLogin:true,adminAuthenticatedSession:true,adminDashboard:true,adminApprovalWorkflow:true,adminRejectWorkflow:true,pwa:true,manifest:true,promoAsset:true,storefrontAsset:true,ownerExcelPhotos:realPhotos.length,publicApi:true,products:(pub.products||[]).length,categories:(pub.categories||[]).length,offers:(pub.offers||[]).length,cashOnDelivery:true,cardOnDelivery:true,codDeliveryOrder:true,cardPickupOrder:true,tracking:true,marketPriceProtection:true,map:true,hours:true,rating:st.googleRating}));
  }finally{
   for(const id of createdIds){try{await pool.query('delete from order_history where order_id=$1',[id]);await pool.query('delete from order_items where order_id=$1',[id]);await pool.query('delete from orders where id=$1',[id])}catch(e){console.error('QA cleanup failed',e)}}
   try{await pool.query('delete from audit_log where actor=$1',[qaAdminEmail]);await pool.query('delete from admins where email=$1',[qaAdminEmail])}catch(e){console.error('QA admin cleanup failed',e)}
