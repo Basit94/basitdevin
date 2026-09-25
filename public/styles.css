@@ -349,3 +349,13 @@ html,body{width:100%;max-width:100%;overflow-x:hidden}
   .product-image{height:100%!important;min-height:124px!important}
   .product-body h3{min-height:auto}
 }
+
+
+/* === Progressive mobile menu browsing === */
+.menu-expand{display:none}
+@media(max-width:760px){
+  .menu-expand{display:block;width:100%;min-height:46px;margin:14px 0 4px;border:1px solid rgba(5,46,76,.14);border-radius:14px;background:#fff;color:var(--navy);font:800 12px/1.2 Tajawal,system-ui,sans-serif;box-shadow:0 6px 18px rgba(5,46,76,.06);cursor:pointer}
+  .menu-expand.hidden{display:none!important}
+  .menu-toolbar{display:flex;align-items:center;justify-content:space-between;gap:8px}
+  .menu-toolbar span{font-weight:800;color:var(--navy)}
+}
