@@ -30,7 +30,7 @@ async function main(){
  check('8 offers',pub.offers.length===8,String(pub.offers.length));
  check('63 product images',pub.products.every(p=>p.image),String(pub.products.filter(p=>!p.image).length));
  check('50+ owner Excel product photos',pub.products.filter(p=>p.image_source==='OWNER_EXCEL').length>=50,String(pub.products.filter(p=>p.image_source==='OWNER_EXCEL').length));
- check('real photo revision',pub.settings.photoRevision==='owner-excel-photos-2026-09-25-v2',String(pub.settings.photoRevision));
+ check('real photo revision',pub.settings.photoRevision==='owner-excel-photos-2026-09-25-v3',String(pub.settings.photoRevision));
  check('real hero photo carousel',Array.isArray(pub.settings.heroPhotos)&&pub.settings.heroPhotos.length>=6,String(pub.settings.heroPhotos?.length||0));
  check('8 offer images',pub.offers.every(o=>o.image),String(pub.offers.filter(o=>!o.image).length));
  check('calories populated',pub.products.filter(p=>p.calories!=null).length>=52,String(pub.products.filter(p=>p.calories!=null).length));
