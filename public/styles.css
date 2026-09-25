@@ -359,3 +359,9 @@ html,body{width:100%;max-width:100%;overflow-x:hidden}
   .menu-toolbar{display:flex;align-items:center;justify-content:space-between;gap:8px}
   .menu-toolbar span{font-weight:800;color:var(--navy)}
 }
+
+
+/* Staff access is visible without competing with customer ordering. */
+.staff-top{display:inline-flex;align-items:center;gap:5px;min-height:38px;padding:0 10px;border:1px solid var(--line);border-radius:12px;background:#fff;color:var(--navy);text-decoration:none;font-size:10px;font-weight:800}
+.staff-top:hover{border-color:#c7d5de;background:#f8fafb}
+@media(max-width:760px){.staff-top{display:none}}
