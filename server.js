@@ -282,7 +282,7 @@ async function startupSelfTest(){
 async function startupHttpSelfTest(){
  const base='http://127.0.0.1:'+PORT,qaPhone='0500000000',createdIds=[];
  const qaAdminEmail='qa-http-'+crypto.randomBytes(6).toString('hex')+'@shrimpfins.test',qaAdminPassword='QA!'+crypto.randomBytes(12).toString('base64url');
- let adminCookie='';
+ let adminCookie='',qaCustomerId=null;
  const getJson=async(url,opts={})=>{const r=await fetch(base+url,opts);let j=null;try{j=await r.json()}catch{}return{r,j}};
  const adminJson=async(url,opts={})=>{const headers={...(opts.headers||{}),cookie:adminCookie};return getJson(url,{...opts,headers})};
  const createOrder=async(payload,expectedPayment,expectedType)=>{
@@ -334,6 +334,22 @@ async function startupHttpSelfTest(){
   const card=await createOrder({customerName:'QA CARD PICKUP',phone:qaPhone,orderType:'pickup',notes:'AUTO QA - DELETE',paymentMethod:'card_on_delivery',items:[{productId:prod.id,qty}]},'card_on_delivery','pickup');
   const expectedPickup=+(prod.price)*qty;if(Math.abs(+card.public.total-expectedPickup)>.01)throw Error('HTTP card pickup total self-test failed');
 
+  const qaCustomerPhone='05'+String(crypto.randomInt(10000000,99999999)),qaCustomerPassword='QA!'+crypto.randomBytes(10).toString('base64url');
+  x=await getJson('/api/customer/register',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({name:'QA Customer',phone:qaCustomerPhone,password:qaCustomerPassword})});
+  if(x.r.status!==201||!x.j?.customer?.id)throw Error('HTTP customer registration self-test failed');
+  qaCustomerId=x.j.customer.id;
+  const qaCustomerCookie=String(x.r.headers.get('set-cookie')||'').split(';')[0],customerHeaders={'content-type':'application/json',cookie:qaCustomerCookie};
+  x=await getJson('/api/customer/me',{headers:{cookie:qaCustomerCookie}});if(!x.r.ok||x.j?.customer?.phone!==qaCustomerPhone)throw Error('HTTP customer session self-test failed');
+  x=await getJson('/api/customer/addresses',{method:'POST',headers:customerHeaders,body:JSON.stringify({label:'QA',address:'QA delivery address Riyadh',latitude:24.7136,longitude:46.6753})});
+  if(x.r.status!==201||+x.j?.address?.latitude!==24.7136)throw Error('HTTP saved delivery pin self-test failed');
+  x=await getJson('/api/orders',{method:'POST',headers:{...customerHeaders,'idempotency-key':'qa-'+crypto.randomUUID()},body:JSON.stringify({customerName:'QA Customer',phone:qaCustomerPhone,orderType:'delivery',address:'QA delivery address Riyadh',latitude:24.7136,longitude:46.6753,paymentMethod:'cod',items:[{productId:prod.id,qty}]})});
+  if(x.r.status!==201||!x.j?.order?.orderNumber)throw Error('HTTP customer delivery order self-test failed');
+  const customerOrder=(await pool.query('select id,customer_id,delivery_latitude,delivery_longitude from orders where order_no=$1',[x.j.order.orderNumber])).rows[0];
+  if(!customerOrder||+customerOrder.customer_id!==+qaCustomerId||+customerOrder.delivery_latitude!==24.7136)throw Error('HTTP customer order pin persistence self-test failed');createdIds.push(customerOrder.id);
+  x=await getJson('/api/customer/me',{headers:{cookie:qaCustomerCookie}});if(!x.r.ok||!x.j?.orders?.some(o=>o.order_no))throw Error('HTTP customer order history self-test failed');
+  x=await getJson('/api/customer/login',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({phone:qaCustomerPhone,password:qaCustomerPassword})});if(!x.r.ok)throw Error('HTTP customer login self-test failed');
+  x=await getJson('/api/admin/me',{headers:{cookie:qaCustomerCookie}});if(x.r.status!==401)throw Error('Customer cookie crossed staff auth boundary');
+
   const market=(pub.products||[]).find(p=>p.orderable===false);
   if(market){x=await getJson('/api/orders',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({customerName:'QA MARKET',phone:qaPhone,orderType:'pickup',paymentMethod:'cod',items:[{productId:market.id,qty:1}]})});if(x.r.status!==409)throw Error('Market-price protection self-test failed')}
 
@@ -358,9 +374,10 @@ async function startupHttpSelfTest(){
   x=await getJson('/api/orders/track/'+encodeURIComponent(card.public.trackingToken)+'?phone='+qaPhone);
   if(!x.r.ok||x.j?.order?.status!=='REJECTED')throw Error('HTTP rejected tracking self-test failed');
 
-  console.log('HTTP_QA_PASS '+JSON.stringify({health:true,homepage:true,customerCss:true,customerJs:true,adminHtml:true,adminJs:true,adminAnonymousSession:true,adminLogin:true,adminAuthenticatedSession:true,adminDashboard:true,adminApprovalWorkflow:true,adminRejectWorkflow:true,pwa:true,manifest:true,promoAsset:true,storefrontAsset:true,ownerExcelPhotos:realPhotos.length,publicApi:true,products:(pub.products||[]).length,categories:(pub.categories||[]).length,offers:(pub.offers||[]).length,cashOnDelivery:true,cardOnDelivery:true,codDeliveryOrder:true,cardPickupOrder:true,tracking:true,marketPriceProtection:true,map:true,hours:true,rating:st.googleRating}));
+  console.log('HTTP_QA_PASS '+JSON.stringify({health:true,homepage:true,customerCss:true,customerJs:true,adminHtml:true,adminJs:true,adminAnonymousSession:true,adminLogin:true,adminAuthenticatedSession:true,adminDashboard:true,adminApprovalWorkflow:true,adminRejectWorkflow:true,pwa:true,manifest:true,promoAsset:true,storefrontAsset:true,ownerExcelPhotos:realPhotos.length,publicApi:true,products:(pub.products||[]).length,categories:(pub.categories||[]).length,offers:(pub.offers||[]).length,cashOnDelivery:true,cardOnDelivery:true,codDeliveryOrder:true,cardPickupOrder:true,tracking:true,marketPriceProtection:true,map:true,hours:true,rating:st.googleRating,customerRegistration:true,customerLogin:true,savedDeliveryPin:true,customerOrderHistory:true,customerStaffIsolation:true}));
  }finally{
   for(const id of createdIds){try{await pool.query('delete from order_history where order_id=$1',[id]);await pool.query('delete from order_items where order_id=$1',[id]);await pool.query('delete from orders where id=$1',[id])}catch(e){console.error('QA cleanup failed',e)}}
+  if(qaCustomerId)try{await pool.query('delete from customers where id=$1',[qaCustomerId])}catch(e){console.error('QA customer cleanup failed',e)}
   try{await pool.query('delete from audit_log where actor=$1',[qaAdminEmail]);await pool.query('delete from admins where email=$1',[qaAdminEmail])}catch(e){console.error('QA admin cleanup failed',e)}
  }
 }
