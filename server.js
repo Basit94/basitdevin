@@ -324,22 +324,22 @@ async function startupHttpSelfTest(){
 
   let home=await fetch(base+'/'),html=await home.text();
   if(!home.ok||!html.includes('value="cod"')||!html.includes('id="googleRating"')||!html.includes('class="hero-visual"')||!html.includes('id="loadError"')||!html.includes('href="/admin"'))throw Error('Homepage self-test failed');
-  let css=await fetch(base+'/styles.css?v=20'),cssText=await css.text();
+  let css=await fetch(base+'/styles.css?v=21'),cssText=await css.text();
   if(!css.ok||!String(css.headers.get('content-type')).includes('text/css')||!cssText.includes('.photo-origin')||!cssText.includes('.mobile-nav'))throw Error('Customer CSS self-test failed');
-  let js=await fetch(base+'/app.js?v=20'),jsText=await js.text();
+  let js=await fetch(base+'/app.js?v=21'),jsText=await js.text();
   if(!js.ok||!jsText.includes('function renderProducts')||!jsText.includes('function photoOrigin')||!jsText.includes('st.heroPhotos')||!jsText.includes('cashOnDelivery'))throw Error('Customer JS self-test failed');
   let admin=await fetch(base+'/admin'),adminHtml=await admin.text();
   if(!admin.ok||!adminHtml.includes('id="loginForm"')||!adminHtml.includes('id="mRealPhotos"')||!adminHtml.includes('id="sCashOnDelivery"')||!adminHtml.includes('id="sMapUrl"')||adminHtml.includes('data:audio/'))throw Error('Admin HTML self-test failed');
   let adminJs=await fetch(base+'/admin.js'),adminJsText=await adminJs.text();
   if(!adminJs.ok||!adminJsText.includes('photoSourcePill')||!adminJsText.includes('todayStatusBreakdown')||!adminJsText.includes('loadSettings')||!adminJsText.includes('/api/admin/session'))throw Error('Admin JS self-test failed');
   x=await getJson('/api/admin/session');if(!x.r.ok||x.j?.authenticated!==false)throw Error('Anonymous admin session probe self-test failed');
-  let sw=await fetch(base+'/sw.js?v=20'),swText=await sw.text();
-  if(!sw.ok||!swText.includes("shrimp-fins-v20")||!swText.includes('/favicon.svg?v=20'))throw Error('PWA service worker self-test failed');
+  let sw=await fetch(base+'/sw.js?v=21'),swText=await sw.text();
+  if(!sw.ok||!swText.includes("shrimp-fins-v21")||!swText.includes('/favicon.svg?v=21'))throw Error('PWA service worker self-test failed');
   let manifest=await fetch(base+'/manifest.webmanifest'),manifestText=await manifest.text();
-  if(!manifest.ok||!manifestText.includes('/favicon.svg?v=20')||!manifestText.includes('"display": "standalone"'))throw Error('PWA manifest self-test failed');
-  let promo=await fetch(base+'/assets/shrimp-fins-promo.webp?v=20'),promoBytes=(await promo.arrayBuffer()).byteLength;
+  if(!manifest.ok||!manifestText.includes('/favicon.svg?v=21')||!manifestText.includes('"display": "standalone"'))throw Error('PWA manifest self-test failed');
+  let promo=await fetch(base+'/assets/shrimp-fins-promo.webp?v=21'),promoBytes=(await promo.arrayBuffer()).byteLength;
   if(!promo.ok||!String(promo.headers.get('content-type')).includes('image/webp')||promoBytes<10000)throw Error('Promo asset HTTP self-test failed');
-  let store=await fetch(base+'/assets/storefront.svg?v=20'),storeText=await store.text();
+  let store=await fetch(base+'/assets/storefront.svg?v=21'),storeText=await store.text();
   if(!store.ok||!String(store.headers.get('content-type')).includes('image/svg')||storeText.length<1000)throw Error('Storefront asset HTTP self-test failed');
   for(const p of realPhotos.slice(0,5)){const ir=await fetch(base+p.image);if(!ir.ok||!String(ir.headers.get('content-type')).includes('image/webp')||+(ir.headers.get('content-length')||0)===0)throw Error('Owner Excel image asset failed: '+p.image)}
   for(const p of illustrations){const ir=await fetch(base+p.image);if(!ir.ok||!String(ir.headers.get('content-type')).includes('image/webp')||(await ir.arrayBuffer()).byteLength<10000)throw Error('Illustration asset failed: '+p.image)}
