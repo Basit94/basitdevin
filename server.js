@@ -389,7 +389,7 @@ app.get('/api/admin/dashboard',async(req,res)=>{
   pool.query("select status,count(*)::int c from orders where created_at::date=current_date group by status"),
   pool.query("select order_type,payment,count(*)::int c from orders where created_at::date=current_date group by order_type,payment"),
   pool.query("select count(*)::int orders,coalesce(sum(case when status='COMPLETED' then total else 0 end),0)::numeric(12,2) sales from orders where created_at>=current_date-interval '6 days'"),
-  pool.query("select count(*) filter(where image_source='OWNER_EXCEL')::int real_products,count(*) filter(where image_source='ILLUSTRATIVE')::int illustrative_products from products where available=true")
+  pool.query("select count(*) filter(where image_source in ('OWNER_EXCEL','ADMIN_UPLOAD','CUSTOM'))::int real_products,count(*) filter(where image_source='MISSING' or image_source is null)::int missing_products from products where available=true")
  ]);
  res.json({todayOrders:+today.rows[0].c,todaySales:+today.rows[0].sales,pending:+pending.rows[0].c,products:+pc.rows[0].c,offers:+oc.rows[0].c,monthSales:+month.rows[0].sales,recent:recent.rows,topItems:top.rows,todayStatuses:statuses.rows,todayMix:mix.rows,weekOrders:+week.rows[0].orders,weekSales:+week.rows[0].sales,photoCoverage:photos.rows[0]});
 });
