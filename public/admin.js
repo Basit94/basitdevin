@@ -1,7 +1,7 @@
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
 const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 const money=n=>new Intl.NumberFormat('en-US',{minimumFractionDigits:0,maximumFractionDigits:2}).format(+n||0)+' SAR';
-const state={admin:null,products:[],categories:[],offers:[],orders:[],settings:null,events:null,productQuery:'',productCategory:'',orderQuery:'',orderStatus:''};
+const state={admin:null,products:[],categories:[],offers:[],orders:[],settings:null,events:null,productQuery:'',productCategory:'',productPhoto:'',orderQuery:'',orderStatus:''};
 function toast(msg,error=false){const x=$('#toast');x.textContent=msg;x.className='toast show'+(error?' error':'');clearTimeout(toast.t);toast.t=setTimeout(()=>x.className='toast',2600)}
 async function api(url,opt={}){
  const options={...opt,headers:{...(opt.headers||{})}};
@@ -73,7 +73,7 @@ async function viewOrder(id){
  }catch(e){toast(e.message,true)}
 }
 function productRows(){
- let arr=state.products.filter(p=>(!state.productCategory||p.category_id===state.productCategory)&&(!state.productQuery||(p.name_en+' '+p.name_ar).toLowerCase().includes(state.productQuery.toLowerCase())));
+ let arr=state.products.filter(p=>(!state.productCategory||p.category_id===state.productCategory)&&(!state.productPhoto||String(p.image_source||'')===state.productPhoto)&&(!state.productQuery||(p.name_en+' '+p.name_ar).toLowerCase().includes(state.productQuery.toLowerCase())));
  if(!arr.length)return '<div class="empty">No products found.</div>';
  return '<table><thead><tr><th>Product</th><th>Category</th><th>Price</th><th>Calories</th><th>Online</th><th>Availability</th><th>Photo</th><th>Featured</th><th>Actions</th></tr></thead><tbody>'+arr.map(p=>'<tr><td><div class="product-cell"><div class="product-thumb">'+(p.image?'<img src="'+esc(p.image)+'">':'🦐')+'</div><div><b>'+esc(p.name_en||p.name_ar)+'</b><small>'+esc(p.name_ar)+'</small></div></div></td><td>'+esc(p.category_en||p.category_ar||p.category_id)+'</td><td><b>'+(p.orderable===false?esc(p.price_note_en||'Market price'):money(p.price))+'</b></td><td>'+(p.calories==null?'—':esc(p.calories)+' cal')+'</td><td><span class="'+(p.orderable===false?'pill-no':'pill-yes')+'">'+(p.orderable===false?'Call':'Order')+'</span></td><td><span class="'+(p.available?'pill-yes':'pill-no')+'">'+(p.available?'Available':'Sold out')+'</span></td><td>'+photoSourcePill(p.image_source)+'</td><td>'+(p.featured?'★':'—')+'</td><td><div class="row-actions"><button data-product-toggle="'+p.id+'">'+(p.available?'Mark sold out':'Enable')+'</button><button data-product-edit="'+p.id+'">Edit</button><button class="danger" data-product-delete="'+p.id+'">Delete</button></div></td></tr>').join('')+'</tbody></table>'
 }
@@ -86,7 +86,7 @@ async function loadProducts(){
 function fillCategoryControls(){
  const opts=state.categories.map(c=>'<option value="'+esc(c.id)+'">'+esc(c.icon||'')+' '+esc(c.name_en||c.name_ar)+'</option>').join('');$('#pCategory').innerHTML=opts;$('#productCategoryFilter').innerHTML='<option value="">All categories</option>'+opts
 }
-$('#productSearch').oninput=e=>{state.productQuery=e.target.value;$('#productsTable').innerHTML=productRows();bindProductRows()};$('#productCategoryFilter').onchange=e=>{state.productCategory=e.target.value;$('#productsTable').innerHTML=productRows();bindProductRows()};
+$('#productSearch').oninput=e=>{state.productQuery=e.target.value;$('#productsTable').innerHTML=productRows();bindProductRows()};$('#productCategoryFilter').onchange=e=>{state.productCategory=e.target.value;$('#productsTable').innerHTML=productRows();bindProductRows()};$('#productPhotoFilter').onchange=e=>{state.productPhoto=e.target.value;$('#productsTable').innerHTML=productRows();bindProductRows()};
 $('#newProductBtn').onclick=()=>{if(!state.categories.length)return loadProducts().then(()=>$('#newProductBtn').click());$('#productForm').reset();$('#pId').value='';$('#pAvailable').checked=true;$('#pOrderable').checked=true;$('#pFeatured').checked=false;$('#pSort').value=999;$('#pPreview').classList.add('hidden');$('#pPreviewEmpty').classList.remove('hidden');$('#productModalTitle').textContent='Add product';open('#productModal')};
 function editProduct(id){const p=state.products.find(x=>x.id===id);if(!p)return;$('#pId').value=p.id;$('#pNameAr').value=p.name_ar||'';$('#pNameEn').value=p.name_en||'';$('#pCategory').value=p.category_id;$('#pPrice').value=+p.price;$('#pCalories').value=p.calories??'';$('#pUnitAr').value=p.unit_ar||'';$('#pUnitEn').value=p.unit_en||'';$('#pDescAr').value=p.description_ar||'';$('#pDescEn').value=p.description_en||'';$('#pImage').value=p.image||'';$('#pAvailable').checked=!!p.available;$('#pOrderable').checked=p.orderable!==false;$('#pFeatured').checked=!!p.featured;$('#pSort').value=p.sort_order??999;preview('#pPreview','#pPreviewEmpty',p.image);$('#productModalTitle').textContent='Edit product';open('#productModal')}
 function preview(img,empty,url){if(url){$(img).src=url;$(img).classList.remove('hidden');$(empty).classList.add('hidden')}else{$(img).classList.add('hidden');$(empty).classList.remove('hidden')}}
