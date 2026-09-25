@@ -309,7 +309,9 @@ html,body{width:100%;max-width:100%;overflow-x:hidden}
 .photo-origin.owner{background:rgba(8,107,76,.9)}
 .photo-origin.owner:before{content:"✓"}
 .photo-origin.custom{background:rgba(5,46,76,.9)}
-.photo-origin.illustrative{background:rgba(2,29,49,.7);color:#eef4f7}
+.photo-origin.missing{background:rgba(5,46,76,.9);color:#eef4f7}
+.missing-photo .product-image img,.missing-photo.offer-card img{object-fit:cover;filter:none;opacity:.96}
+.missing-photo .product-image{background:#063b60}
 .market-card .photo-origin{top:42px}
 .product-detail-copy .photo-origin{position:static;width:max-content;margin:0 0 10px;padding:6px 9px;font-size:9px}
 .offer-card .photo-origin{top:11px;inset-inline-start:11px;inset-inline-end:auto}
