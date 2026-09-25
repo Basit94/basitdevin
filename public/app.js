@@ -112,7 +112,7 @@ function renderSettings(){
 }
 function renderOffers(){
  if(!state.data)return;const arr=state.data.offers||[];
- $('#offersGrid').innerHTML=arr.map(o=>`<article class="offer-card ${photoOrigin(o).cls}-photo">${remoteImg(displayImage(o),txt(o,'title_ar','title_en'))}<span class="offer-price">${money(o.price)}</span>${photoBadge(o)}<div class="offer-copy"><h3>${esc(txt(o,'title_ar','title_en'))}</h3><p>${esc(txt(o,'description_ar','description_en')||'')}</p></div></article>`).join('');hydrateRemoteImages($('#offersGrid'));
+ $('#offersGrid').innerHTML=arr.map(o=>`<article class="offer-card ${photoOrigin(o).cls}-photo">${remoteImg(displayImage(o),txt(o,'title_ar','title_en'))}<span class="offer-price">${money(o.price)}</span><div class="offer-copy"><h3>${esc(txt(o,'title_ar','title_en'))}</h3><p>${esc(txt(o,'description_ar','description_en')||'')}</p></div></article>`).join('');hydrateRemoteImages($('#offersGrid'));
 }
 function renderCategories(){
  if(!state.data)return;const all={id:'all',name_ar:'الكل',name_en:'All',icon:'✨'},arr=[all,...state.data.categories];
@@ -133,7 +133,7 @@ function renderProducts(){
  $('#resultCount').textContent=(shown.length===all.length?all.length:(shown.length+' / '+all.length))+' '+tr('items');$('#noProducts').classList.toggle('hidden',!!all.length);
  const expand=$('#menuExpandBtn');if(expand){expand.classList.toggle('hidden',!canCollapse||all.length<=12);expand.textContent=state.mobileMenuExpanded?(state.lang==='ar'?'عرض أقل':'Show less'):(state.lang==='ar'?('عرض كل '+all.length+' صنف'):('Show all '+all.length+' items'))}
  $('#products').innerHTML=shown.map(p=>{const c=cat(p.category_id||p.categoryId),image=displayImage(p),canOrder=p.orderable!==false,origin=photoOrigin(p);return `<article class="product-card ${canOrder?'':'market-card'} ${origin.cls}-photo">
- <div class="product-image" data-view="${esc(p.id)}">${remoteImg(image,txt(p,'name_ar','name_en'))}${p.featured?`<span class="featured-badge">★ ${state.lang==='ar'?'مميز':'Featured'}</span>`:''}${photoBadge(p)}${calorieTag(p)}</div>
+ <div class="product-image" data-view="${esc(p.id)}">${remoteImg(image,txt(p,'name_ar','name_en'))}${p.featured?`<span class="featured-badge">★ ${state.lang==='ar'?'مميز':'Featured'}</span>`:''}${calorieTag(p)}</div>
  <div class="product-body"><span class="product-cat">${esc(txt(c,'name_ar','name_en'))}</span><h3>${esc(txt(p,'name_ar','name_en'))}</h3><p class="product-desc">${esc(txt(p,'description_ar','description_en'))}</p>
  <div class="product-footer"><div class="price"><b class="${canOrder?'':'market-price'}">${esc(productPrice(p))}</b>${canOrder?`<small>/ ${esc(txt(p,'unit_ar','unit_en'))}</small>`:''}</div>${canOrder?`<button class="add-btn" aria-label="${tr('add')}" data-add="${esc(p.id)}">+</button>`:`<button class="call-btn" data-view="${esc(p.id)}">☎</button>`}</div><button class="view-btn" data-view="${esc(p.id)}">${tr('view')}</button></div></article>`}).join('');
  $$('[data-add]').forEach(b=>b.onclick=e=>{e.stopPropagation();addToCart(b.dataset.add)});
@@ -142,7 +142,7 @@ function renderProducts(){
 }
 function showProduct(id){
  const p=product(id);if(!p)return;const c=cat(p.category_id||p.categoryId),canOrder=p.orderable!==false,image=displayImage(p);
- $('#productModalBody').innerHTML=`<div class="product-detail"><div class="product-detail-image">${remoteImg(image,txt(p,'name_ar','name_en'),false)}</div><div class="product-detail-copy"><span class="kicker">${esc(txt(c,'name_ar','name_en'))}</span><h2>${esc(txt(p,'name_ar','name_en'))}</h2>${photoBadge(p)}${p.calories!=null?`<div class="detail-calories">🔥 ${esc(p.calories)} ${state.lang==='ar'?'سعرة حرارية':'calories'}</div>`:''}<p>${esc(txt(p,'description_ar','description_en'))}</p><div class="price"><b>${esc(productPrice(p))}</b>${canOrder?`<small>/ ${esc(txt(p,'unit_ar','unit_en'))}</small>`:''}</div>${canOrder?`<button class="checkout add-detail" data-detail-add="${esc(p.id)}">${tr('add')}</button>`:`<a class="checkout market-contact" href="tel:${esc(state.data.settings?.phone||'0541064143')}">${state.lang==='ar'?'اتصل لمعرفة سعر اليوم':'Call for today’s price'}</a>`}</div></div>`;
+ $('#productModalBody').innerHTML=`<div class="product-detail"><div class="product-detail-image">${remoteImg(image,txt(p,'name_ar','name_en'),false)}</div><div class="product-detail-copy"><span class="kicker">${esc(txt(c,'name_ar','name_en'))}</span><h2>${esc(txt(p,'name_ar','name_en'))}</h2>${p.calories!=null?`<div class="detail-calories">🔥 ${esc(p.calories)} ${state.lang==='ar'?'سعرة حرارية':'calories'}</div>`:''}<p>${esc(txt(p,'description_ar','description_en'))}</p><div class="price"><b>${esc(productPrice(p))}</b>${canOrder?`<small>/ ${esc(txt(p,'unit_ar','unit_en'))}</small>`:''}</div>${canOrder?`<button class="checkout add-detail" data-detail-add="${esc(p.id)}">${tr('add')}</button>`:`<a class="checkout market-contact" href="tel:${esc(state.data.settings?.phone||'0541064143')}">${state.lang==='ar'?'اتصل لمعرفة سعر اليوم':'Call for today’s price'}</a>`}</div></div>`;
  hydrateRemoteImages($('#productModalBody'));
  const add=$('[data-detail-add]');if(add)add.onclick=()=>{addToCart(id);closeAll();open('#cartDrawer')};open('#productModal');
 }
