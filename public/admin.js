@@ -44,7 +44,7 @@ function ordersTable(arr){
 }
 function bindOrderActions(root=document){
  root.querySelectorAll('[data-status]').forEach(b=>b.onclick=()=>setStatus(b.dataset.order,b.dataset.status));
- root.querySelectorAll('[data-order-view]').forEach(b=>b.onclick=()=>viewOrder(b.dataset.order))
+ root.querySelectorAll('[data-order-view]').forEach(b=>b.onclick=()=>viewOrder(b.dataset.orderView))
 }
 async function loadDash(){
  try{const d=await api('/api/admin/dashboard');$('#mTodayOrders').textContent=d.todayOrders;$('#mTodaySales').textContent=money(d.todaySales);$('#mPending').textContent=d.pending;$('#mMonthSales').textContent=money(d.monthSales);$('#mProducts').textContent=d.products;$('#mOffers').textContent=d.offers;
@@ -62,13 +62,15 @@ async function loadOrders(){
 }
 $('#refreshOrders').onclick=loadOrders;let orderTimer;$('#orderSearch').oninput=e=>{state.orderQuery=e.target.value;clearTimeout(orderTimer);orderTimer=setTimeout(loadOrders,300)};$('#orderStatus').onchange=e=>{state.orderStatus=e.target.value;loadOrders()};
 async function setStatus(id,status){
+ if(!id||id==='undefined'||id==='null'){toast('Order reference missing. Refreshing orders…',true);return loadOrders()}
  let body={status};
  if(status==='CONFIRMED'){const v=prompt('Estimated preparation time in minutes:','35');if(v===null)return;body.estimatedMinutes=Math.max(1,+v||35)}
  if(status==='REJECTED'||status==='CANCELLED'){const v=prompt('Reason shown to customer:',status==='REJECTED'?'Item unavailable':'Order cancelled');if(v===null)return;body.note=v}
  try{await api('/api/admin/orders/'+id+'/status',{method:'PATCH',body:JSON.stringify(body)});toast('Order moved to '+status);await loadOrders();await loadDash();if(!$('#orderModal').classList.contains('hidden'))viewOrder(id)}catch(e){toast(e.message,true)}
 }
 async function viewOrder(id){
- try{const d=await api('/api/admin/orders/'+id),o=d.order,items=d.items||[],history=d.history||[];const actions=orderActions(o);
+ if(!id||id==='undefined'||id==='null'){toast('Order reference missing. Refreshing orders…',true);return loadOrders()}
+ try{const d=await api('/api/admin/orders/'+encodeURIComponent(id)),o=d.order,items=d.items||[],history=d.history||[];const actions=orderActions(o);
  $('#orderDetail').innerHTML='<div class="order-detail-head"><div><span class="eyebrow">ORDER DETAIL</span><h2>'+esc(o.order_no)+'</h2></div>'+statusPill(o.status)+'</div><div class="order-meta"><div><small>Customer</small><b>'+esc(o.customer_name)+'</b></div><div><small>Phone</small><b><a href="tel:'+esc(o.phone)+'">'+esc(o.phone)+'</a></b></div><div><small>Type</small><b>'+esc(o.order_type)+'</b></div><div><small>Payment</small><b>'+esc(o.payment==='cod'?'Cash on Delivery':o.payment==='card_on_delivery'?'Card on Delivery':o.payment||'')+'</b></div><div><small>Created</small><b>'+new Date(o.created_at).toLocaleString()+'</b></div><div><small>Estimate</small><b>'+(o.estimated_minutes?o.estimated_minutes+' min':'—')+'</b></div></div>'+(o.address?'<p><b>Address:</b> '+esc(o.address)+'</p>':'')+(o.delivery_latitude!=null&&o.delivery_longitude!=null?'<p><a target="_blank" rel="noopener" href="https://www.google.com/maps/search/?api=1&amp;query='+encodeURIComponent(o.delivery_latitude+','+o.delivery_longitude)+'">📍 Open delivery pin in Maps</a></p>':'')+(o.notes?'<p><b>Notes:</b> '+esc(o.notes)+'</p>':'')+'<div class="order-items">'+items.map(i=>'<div class="order-item"><span><b>'+i.qty+' × '+esc(i.name_en||i.name_ar)+'</b><br><small>'+money(i.price)+' each</small></span><b>'+money(i.total)+'</b></div>').join('')+'</div><div class="order-total"><span>Total</span><b>'+money(o.total)+'</b></div><div class="status-flow">'+actions+'</div><h3>Status history</h3><div>'+history.map(h=>'<p><small>'+new Date(h.created_at).toLocaleString()+'</small> · <b>'+esc(h.status)+'</b> '+esc(h.note||'')+'</p>').join('')+'</div>';bindOrderActions($('#orderDetail'));open('#orderModal')
  }catch(e){toast(e.message,true)}
 }
