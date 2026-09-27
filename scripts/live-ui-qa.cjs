@@ -78,10 +78,10 @@ async function main(){
     report.desktop.offerCount=await page.locator('#offersGrid .offer-card').count();
     report.desktop.categoryCount=await page.locator('#cats button').count();
     report.desktop.dir=await page.locator('html').getAttribute('dir');
-    check('desktop 63 products',report.desktop.productCount===63,String(report.desktop.productCount));
+    check('desktop 64 products',report.desktop.productCount===64,String(report.desktop.productCount));
     const ownerCards=page.locator('#products .product-card.owner-photo');
     report.desktop.ownerPhotoProducts=await ownerCards.count();
-    check('at least 50 owner Excel product photos',report.desktop.ownerPhotoProducts>=50,String(report.desktop.ownerPhotoProducts));
+    check('at least 57 owner Excel product photos',report.desktop.ownerPhotoProducts>=57,String(report.desktop.ownerPhotoProducts));
     check('staff login link visible',await page.locator('a.staff-link[href="/admin"]').isVisible());
     const heroDots=page.locator('#heroPhotoDots [data-hero-dot]');
     report.desktop.heroPhotoCount=await heroDots.count();
@@ -90,7 +90,7 @@ async function main(){
       await heroDots.nth(1).click();
       await page.waitForTimeout(500);
       const heroSrc=await page.locator('#heroFoodImage').getAttribute('src');
-      check('carousel uses owner Excel food photo',String(heroSrc||'').includes('/assets/menu-real/'),String(heroSrc||''));
+      check('carousel uses owner Excel food photo',String(heroSrc||'').includes('/assets/menu-owner-2026-09-27-v2/'),String(heroSrc||''));
     }
     check('desktop 8 offers',report.desktop.offerCount===8,String(report.desktop.offerCount));
     check('desktop 14 category buttons including All',report.desktop.categoryCount===14,String(report.desktop.categoryCount));
@@ -129,12 +129,12 @@ async function main(){
     await page.locator('#searchInput').fill('روبيان');
     await page.waitForTimeout(150);
     const searched=await page.locator('#products .product-card').count();
-    check('menu search filters results',searched>0&&searched<63,String(searched));
+    check('menu search filters results',searched>0&&searched<64,String(searched));
     await page.locator('#searchInput').fill('');
     await page.locator('#cats button').nth(1).click();
     await page.waitForTimeout(100);
     const categoryCount=await page.locator('#products .product-card').count();
-    check('category filter works',categoryCount>0&&categoryCount<63,String(categoryCount));
+    check('category filter works',categoryCount>0&&categoryCount<64,String(categoryCount));
     await page.locator('#cats button').first().click();
 
     const firstAdd=page.locator('[data-add]').first();
@@ -183,23 +183,23 @@ async function main(){
     report.mobile.clientWidth=await mobile.evaluate(()=>document.documentElement.clientWidth);
     check('mobile starts with 12 products for easier browsing',report.mobile.initialProductCount===12,String(report.mobile.initialProductCount));
     check('mobile show-all menu button visible',await mobile.locator('#menuExpandBtn').isVisible());
-    check('mobile show-all menu button mentions full catalog',(await mobile.locator('#menuExpandBtn').innerText()).includes('63'));
+    check('mobile show-all menu button mentions full catalog',(await mobile.locator('#menuExpandBtn').innerText()).includes('64'));
     report.mobile.initialOwnerPhotoProducts=await mobile.locator('#products .product-card.owner-photo').count();
     check('mobile initial menu uses owner photos',report.mobile.initialOwnerPhotoProducts>=8,String(report.mobile.initialOwnerPhotoProducts));
     check('mobile bottom nav visible',await mobile.locator('.mobile-nav').isVisible());
     check('mobile hero visible',await mobile.locator('#heroFoodImage').isVisible());
     check('mobile no horizontal overflow',report.mobile.scrollWidth<=report.mobile.clientWidth+1,JSON.stringify({scrollWidth:report.mobile.scrollWidth,clientWidth:report.mobile.clientWidth}));
     await mobile.locator('#menuExpandBtn').click();
-    await mobile.waitForFunction(()=>document.querySelectorAll('#products .product-card').length===63);
+    await mobile.waitForFunction(()=>document.querySelectorAll('#products .product-card').length===64);
     report.mobile.expandedProductCount=await mobile.locator('#products .product-card').count();
     report.mobile.ownerPhotoProducts=await mobile.locator('#products .product-card.owner-photo').count();
-    check('mobile show-all expands to 63 products',report.mobile.expandedProductCount===63,String(report.mobile.expandedProductCount));
-    check('mobile expanded menu shows 50 owner photos',report.mobile.ownerPhotoProducts>=50,String(report.mobile.ownerPhotoProducts));
+    check('mobile show-all expands to 64 products',report.mobile.expandedProductCount===64,String(report.mobile.expandedProductCount));
+    check('mobile expanded menu shows 57 owner photos',report.mobile.ownerPhotoProducts>=57,String(report.mobile.ownerPhotoProducts));
     const firstCategory=mobile.locator('#cats [data-cat]').nth(1);
     const firstCategoryId=await firstCategory.getAttribute('data-cat');
     await firstCategory.click();
     const filteredCount=await mobile.locator('#products .product-card').count();
-    check('mobile category filter narrows menu',filteredCount>0&&filteredCount<63,JSON.stringify({firstCategoryId,filteredCount}));
+    check('mobile category filter narrows menu',filteredCount>0&&filteredCount<64,JSON.stringify({firstCategoryId,filteredCount}));
     check('mobile show-all button hides inside category',!(await mobile.locator('#menuExpandBtn').isVisible()));
     await mobile.locator('#cats [data-cat="all"]').click();
     await mobile.locator('#menuExpandBtn').click();

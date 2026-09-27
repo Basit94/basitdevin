@@ -1,5 +1,5 @@
-const CACHE='shrimp-fins-v21';
-const CORE=['/','/styles.css?v=21','/app.js?v=21','/manifest.webmanifest','/admin','/admin.css','/admin.js','/assets/storefront.svg?v=21','/assets/shrimp-fins-promo.webp?v=21','/favicon.svg?v=21'];
+const CACHE='shrimp-fins-v22';
+const CORE=['/','/styles.css?v=22','/app.js?v=22','/manifest.webmanifest','/admin','/admin.css','/admin.js','/assets/storefront.svg?v=22','/assets/shrimp-fins-promo.webp?v=22','/favicon.svg?v=22'];
 self.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE).then(c=>c.addAll(CORE)).catch(()=>{}));self.skipWaiting()});
 self.addEventListener('activate',e=>{e.waitUntil((async()=>{
  const keys=await caches.keys();

@@ -55,7 +55,7 @@ const products=[
 ['p021','rice','أرز صيادية','Sayadiya Rice',8,'طبق','dish',0],['p022','rice','أرز أبيض','White Rice',7,'طبق','dish',0],['p023','rice','أرز بالروبيان','Shrimp Rice',25,'طبق','dish',1],['p024','rice','أرز زعانف الروبيان','Shrimp Fins Rice',30,'طبق','dish',0],['p025','rice','اسباجيتي سي فود صوص كريمة','Seafood Spaghetti - Cream Sauce',30,'طبق','dish',0],['p026','rice','اسباجيتي روبيان صوص أحمر','Shrimp Spaghetti - Red Sauce',30,'طبق','dish',0],['p027','rice','اسباجيتي روبيان وايت صوص','Shrimp Spaghetti - White Sauce',35,'طبق','dish',0],['p028','rice','فوتوتشيني سي فود بالكريم','Creamy Seafood Fettuccine',35,'طبق','dish',1],
 ['p029','starters','سلطة طحينة','Tahini Salad',5,'طبق','dish',0],['p030','starters','سلطة طماطم متبلة','Seasoned Tomato Salad',5,'طبق','dish',0],['p031','starters','سلطة خضار','Green Salad',5,'طبق','dish',0],['p032','starters','سلطة حارة','Spicy Salad',5,'طبق','dish',0],['p051','starters','سلطة رنجة','Herring Salad',12,'طبق','dish',0],['p033','starters','باذنجان مخلل','Pickled Eggplant',5,'طبق','dish',0],['p034','starters','خبز','Bread',1,'حبة','piece',0],['p035','starters','شوربة زعانف الروبيان','Shrimp Fins Soup',35,'طبق','dish',1],['p036','starters','شوربة سي فود بالعظم','Bone-in Seafood Soup',25,'طبق','dish',0],['p037','starters','شوربة سي فود مخلي','Boneless Seafood Soup',25,'طبق','dish',0],['p038','starters','شوربة روبيان','Shrimp Soup',25,'طبق','dish',0],['p052','starters','ملوخية بالروبيان','Molokhia with Shrimp',25,'طبق','dish',0],
 ['p039','drinks','بيبسي','Pepsi',3,'علبة','can',0],['p040','drinks','سفن أب','7UP',3,'علبة','can',0],['p041','drinks','حمضيات','Citrus Drink',3,'علبة','can',0],['p042','drinks','كنزا','Kinza',2.5,'علبة','can',0],['p053','drinks','استريم','Stream Drink',2.5,'علبة','can',0],['p043','drinks','مياه','Water',1,'عبوة','bottle',0],['p044','drinks','عصير برتقال','Orange Juice',10,'كوب','cup',0],['p045','drinks','عصير مانجو','Mango Juice',12,'كوب','cup',0],['p046','drinks','عصير فراولة','Strawberry Juice',10,'كوب','cup',0],['p047','drinks','عصير ليمون','Lemon Juice',10,'كوب','cup',0],['p048','drinks','أرز بلبن','Rice Pudding',10,'طبق','dish',0],['p049','drinks','كريم كراميل','Crème Caramel',7,'طبق','dish',0]];
-const offers=[['o001','صحن التوفير من 3 إلى 4 فرد','Saving Platter - 3 to 4 People',150],['o002','صينية الكيف الحلو','Al Kaif Seafood Tray',120],['o003','صينية العريس','Al Arees Seafood Tray',250],['o008','صينية الدنيس بالبطاطس','Sea Bream & Potato Tray',120],['o004','صحن زعانف الروبيان 12-14 فرد','Grand Platter - 12 to 14 People',600],['o005','صحن الشيف من 8 إلى 12 فرد','Chef Platter - 8 to 12 People',500],['o006','صحن وسط من 6 إلى 8 أفراد','Medium Platter - 6 to 8 People',300],['o007','صحن المزاجنجية من 5 إلى 6 فرد','Mood Platter - 5 to 6 People',200]];
+const offers=[['o001','صحن التوفير من 3 إلى 4 فرد','Saving Platter - 3 to 4 People',150],['o002','صينية الكيف الحلو','Al Kaif Seafood Tray',120],['o003','صينية العريس','Al Arees Seafood Tray',250],['o008','صينية الدنيس بالبطاطس','Sea Bream & Potato Tray',120],['o004','صحن زعانف الروبيان 12-14 فرد','Grand Platter - 12 to 14 People',600],['o005','صحن الشيف من 8 إلى 12 فرد','Chef Platter - 8 to 12 People',500],['o006','صحن وسط من 6 إلى 8 أفراد','Medium Platter - 6 to 8 People',300],['o007','صحن المزاجنجية من 4 إلى 5 فرد','Mazagangia Platter - 4 to 5 People',250],['o009','صحن اللمه','Gathering Platter',400]];
 const px=(id,w=900,h=650)=>'https://images.pexels.com/photos/'+id+'/pexels-photo-'+id+'.jpeg?auto=compress&cs=tinysrgb&w='+w+'&h='+h+'&fit=crop';
 const productImages={p001:px(39035466),p002:px(36720618),p003:px(4869328),p004:px(4869328),p005:px(9328460),p006:px(566343),p007:px(6262224),p008:px(17600198),p009:px(4869328),p010:px(6046671),p050:px(39035466),p011:px(6046671),p012:px(19106459),p013:px(31235406),p014:px(25004921),p015:px(17010947),p016:px(32668760),p017:px(30749023),p018:px(8352805),p019:px(566343),p020:px(32668760),p021:px(15362105),p022:px(8423376),p023:px(37215009),p024:px(8352805),p025:px(33323283),p026:px(33323283),p027:px(33323283),p028:px(33323283),p029:px(4989069),p030:px(4989069),p031:px(4989069),p032:px(4989069),p051:px(4989069),p033:px(10563268),p034:px(6419753),p035:px(18510254),p036:px(23627792),p037:px(23627792),p038:px(14856117),p052:px(6262224),p039:px(4113632),p040:px(8880742),p041:px(4871113),p042:px(8880742),p053:px(8880742),p043:px(15624409),p044:px(12222086),p045:px(7656388),p046:px(4871113),p047:px(8215113),p048:px(116725),p049:px(34468155)};
 const offerImages={o001:px(37215009,1100,700),o002:px(32668760,1100,700),o003:px(566343,1100,700),o008:px(25004921,1100,700),o004:px(8352805,1100,700),o005:px(566345,1100,700),o006:px(30749023,1100,700),o007:px(4869328,1100,700)};
@@ -74,7 +74,7 @@ const menuProducts=[
 ['m032','platters','صحن زعانف الروبيان من 10 إلي 12 فرد','Shrimp Fins Platter - 10 to 12 People',600,'صحن','platter',2000,'سلمون - كنعد - روبيان - شعور - قاروص - هامور حسب الاختيار، مع السلطات والأرز والصوص الحار + 2 لتر مشروب غازي','Choice of salmon, kingfish, shrimp, emperor fish, sea bass or hammour with salads, rice, hot sauce and 2L soft drink',1],
 ['m033','platters','صحن الشيف من 8 إلي 10 فرد','Chef Platter - 8 to 10 People',500,'صحن','platter',1500,'كنعد - روبيان - شعور - قاروص حسب الاختيار، شوي أو قلي مع الأرز والسلطات والصوص الحار','Choice of kingfish, shrimp, emperor fish or sea bass, grilled or fried, with rice, salads and hot sauce',1],
 ['m034','platters','صحن وسط من 6 إلي 8 أفراد','Medium Platter - 6 to 8 People',300,'صحن','platter',1000,'سيباس - دنيس - روبيان - شعور، شوي أو قلي مع الأرز والسلطات والصوص الحار','Sea bass, sea bream, shrimp and emperor fish, grilled or fried, with rice, salads and hot sauce',1],
-['m035','platters','صحن المزاجنجية من 4 إلي 5 فرد','Mazagangia Platter - 4 to 5 People',200,'صحن','platter',null,'عدد 2 حبة دنيس + نصف كيلو روبيان + نصف كيلو سلمون + نصف كيلو كنعد، مع فرش الأرز والسلطات','2 sea bream + 0.5kg shrimp + 0.5kg salmon + 0.5kg kingfish with rice and salads',1],
+['m035','platters','صحن المزاجنجية من 4 إلي 5 فرد','Mazagangia Platter - 4 to 5 People',250,'صحن','platter',null,'عدد 2 حبة دنيس + نصف كيلو روبيان + نصف كيلو سلمون + نصف كيلو كنعد، مع فرش الأرز والسلطات','2 sea bream + 0.5kg shrimp + 0.5kg salmon + 0.5kg kingfish with rice and salads',1],
 ['m036','platters','صحن التوفير 150 من 3 إلي 4 فرد','Saving Platter - 3 to 4 People',150,'صحن','platter',null,'حبة دنيس + 2 حبة بلطي + نصف كيلو روبيان مع فرش الأرز والسلطات','1 sea bream + 2 tilapia + 0.5kg shrimp with rice and salads',1],
 ['m037','platters','صينية الكيف الحلو','Al Kaif Seafood Tray',120,'صينية','tray',null,'روبيان + سبيط + بلح بحر + دنيس، مع فرش الأرز والمقبلات','Shrimp, squid, mussels and sea bream with rice and starters',1],
 ['m038','platters','صينية العريس','Al Arees Seafood Tray',250,'صينية','tray',null,'إستاكوزه + روبيان + بلح البحر + كابوريا، مع فرش الأرز والسلطات','Lobster, shrimp, mussels and crab with rice and salads',1],
@@ -84,30 +84,20 @@ const menuProducts=[
 ['m052','drinks2','بيبسي','Pepsi',3,'علبة','can',140],['m053','drinks2','سفن','7UP',3,'علبة','can',140],['m054','drinks2','حمضيات','Citrus Drink',3,'علبة','can',140],['m055','drinks2','كنزا','Kinza',2.5,'علبة','can',150],['m056','drinks2','مياه','Water',1,'عبوة','bottle',0],
 ['m057','juices','برتقال','Orange Juice',10,'كوب','cup',112],['m058','juices','مانجو','Mango Juice',12,'كوب','cup',120],['m059','juices','فروله','Strawberry Juice',10,'كوب','cup',150],['m060','juices','ليمون','Lemon Juice',10,'كوب','cup',99],
 ['m061','desserts','أرز بلبن','Rice Pudding',9,'طبق','dish',210],['m062','desserts','كريم كراميل','Crème Caramel',9,'طبق','dish',150],
-['m063','fish','أسماك طازجة حسب سعر اليوم','Fresh Fish - Market Price',0,'حسب سعر اليوم','market price',null,'هامور - شعور - دنيس - بلطي - قاروص - مرجان - سلطان ابراهيم - كنعد - سلمون. السعر حسب سعر اليوم.','Hammour, emperor fish, sea bream, tilapia, sea bass, coral fish, Sultan Ibrahim, kingfish and salmon. Price changes daily.',0]
+['m063','fish','أسماك طازجة حسب سعر اليوم','Fresh Fish - Market Price',0,'حسب سعر اليوم','market price',null,'هامور - شعور - دنيس - بلطي - قاروص - مرجان - سلطان ابراهيم - كنعد - سلمون. السعر حسب سعر اليوم.','Hammour, emperor fish, sea bream, tilapia, sea bass, coral fish, Sultan Ibrahim, kingfish and salmon. Price changes daily.',0],
+['m064','platters','صحن اللمه','Gathering Platter',400,'صحن','platter',null,'صحن للمشاركة','Sharing platter',1]
 ];
 const menuImagePools={
 starters:[4989069,10563268,6419753],soup:[18510254,23627792,14856117],rice2:[15362105,8423376,37215009],pasta:[33323283],casseroles:[6262224,17600198,6046671],shellfish2:[39035466,36720618,4869328,9328460,566343],platters:[8352805,32668760,30749023,566345],sandwiches:[6046671,30749023,39035466],meals2:[6046671,19106459,31235406,25004921,17010947],drinks2:[4113632,8880742,15624409],juices:[12222086,7656388,4871113,8215113],desserts:[116725,34468155],fish:[17010947,25004921]
 };
 function menuImage(cat,i){const a=menuImagePools[cat]||[8352805];return px(a[i%a.length],900,650)}
-const excelRealImages={
- m001:'/assets/menu-real/m001.webp',m002:'/assets/menu-real/m002.webp',m003:'/assets/menu-real/m003.webp',m004:'/assets/menu-real/m004.webp',
- m006:'/assets/menu-real/m006.webp',m007:'/assets/menu-real/m007.webp',m008:'/assets/menu-real/m008.webp',m009:'/assets/menu-real/m009.webp',
- m010:'/assets/menu-real/m010.webp',m011:'/assets/menu-real/m011.webp',m013:'/assets/menu-real/m013.webp',m014:'/assets/menu-real/m014.webp',
- m015:'/assets/menu-real/m015.webp',m016:'/assets/menu-real/m016.webp',m017:'/assets/menu-real/m017.webp',m018:'/assets/menu-real/m018.webp',
- m019:'/assets/menu-real/m019.webp',m020:'/assets/menu-real/m020.webp',m021:'/assets/menu-real/m021.webp',m022:'/assets/menu-real/m022.webp',
- m023:'/assets/menu-real/m023.webp',m024:'/assets/menu-real/m024.webp',m025:'/assets/menu-real/m025.webp',m027:'/assets/menu-real/m027.webp',
- m028:'/assets/menu-real/m028.webp',m029:'/assets/menu-real/m029.webp',m030:'/assets/menu-real/m030.webp',m031:'/assets/menu-real/m031.webp',
- m035:'/assets/menu-real/m035.webp',m036:'/assets/menu-real/m036.webp',m037:'/assets/menu-real/m037.webp',m038:'/assets/menu-real/m038.webp',
- m039:'/assets/menu-real/m039.webp',m040:'/assets/menu-real/m040.webp',m041:'/assets/menu-real/m041.webp',m043:'/assets/menu-real/m043.webp',
- m044:'/assets/menu-real/m044.webp',m045:'/assets/menu-real/m045.webp',m046:'/assets/menu-real/m046.webp',m047:'/assets/menu-real/m047.webp',
- m048:'/assets/menu-real/m048.webp',m049:'/assets/menu-real/m049.webp',m050:'/assets/menu-real/m050.webp',m051:'/assets/menu-real/m051.webp',
- m057:'/assets/menu-real/m057.webp',m058:'/assets/menu-real/m058.webp',m059:'/assets/menu-real/m059.webp',m060:'/assets/menu-real/m060.webp',
- m061:'/assets/menu-real/m061.webp',m062:'/assets/menu-real/m062.webp'
-};
-const excelRealOfferImages={o001:excelRealImages.m036,o002:excelRealImages.m037,o003:excelRealImages.m038,o007:excelRealImages.m035,o008:excelRealImages.m039};
-const illustrativeImages=Object.fromEntries(['m005','m012','m026','m032','m033','m034','m042','m052','m053','m054','m055','m056','m063'].map(id=>[id,`/assets/menu-illustrative/${id}.webp`]));
-const illustrativeOfferImages={o004:illustrativeImages.m032,o005:illustrativeImages.m033,o006:illustrativeImages.m034};
+const ownerPhotoDir='/assets/menu-owner-2026-09-27-v2/';
+const excelRealImages=Object.fromEntries(fs.readdirSync(path.join(__dirname,'public',ownerPhotoDir)).filter(name=>/^m\d{3}\.webp$/.test(name)).map(name=>[name.slice(0,4),ownerPhotoDir+name]));
+const excelRealOfferImages={o001:excelRealImages.m036,o002:excelRealImages.m037,o003:excelRealImages.m038,o004:excelRealImages.m032,o005:excelRealImages.m033,o006:excelRealImages.m034,o007:excelRealImages.m035,o008:excelRealImages.m039,o009:excelRealImages.m064};
+const illustrativeImages=Object.fromEntries(['m005','m012','m026','m032','m033','m034','m042','m052','m053','m054','m055','m056','m063'].filter(id=>!excelRealImages[id]).map(id=>[id,`/assets/menu-illustrative/${id}.webp`]));
+const illustrativeOfferImages={};
+const OWNER_PHOTO_REVISION='owner-menu-2026-09-27-v2';
+const ILLUSTRATION_REVISION='menu-illustrations-2026-09-27-v2';
 
 async function init(){await pool.query(`
 CREATE TABLE IF NOT EXISTS settings(id int primary key,data jsonb not null);
@@ -167,7 +157,7 @@ c=+(await pool.query('select count(*) c from admins')).rows[0].c;if(!c){let e=pr
 for(const p of products){const d=categoryDescriptions[p[1]]||['محضر طازجاً حسب الطلب.','Freshly prepared to order.'];await pool.query("update products set image=case when coalesce(image,'')='' then $1 else image end,description_ar=case when coalesce(description_ar,'')='' then $2 else description_ar end,description_en=case when coalesce(description_en,'')='' then $3 else description_en end where id=$4",[productImages[p[0]]||'',d[0],d[1],p[0]])}
 for(const o of offers){await pool.query("update offers set image=case when coalesce(image,'')='' then $1 else image end,description_ar=case when coalesce(description_ar,'')='' then 'عرض خاص من زعانف الروبيان للمشاركة والعزائم.' else description_ar end,description_en=case when coalesce(description_en,'')='' then 'A special Shrimp Fins offer for sharing and gatherings.' else description_en end where id=$2",[offerImages[o[0]]||'',o[0]])}
 let st=(await pool.query('select data from settings where id=1')).rows[0]?.data||{};
-if(st.menuRevision!=='excel-2026-09-v5'){
+if(st.menuRevision!=='owner-menu-2026-09-27-v6'){
   const client=await pool.connect();
   try{
     await client.query('BEGIN');
@@ -182,10 +172,9 @@ if(st.menuRevision!=='excel-2026-09-v5'){
       const p=menuProducts[i],cat=p[1],generic=categoryDescriptions[cat]||['محضر طازجاً حسب الطلب.','Freshly prepared to order.'],descAr=p[8]??generic[0],descEn=p[9]??generic[1],featured=!!p[10],orderable=p[0]!=='m063';
       await client.query(`INSERT INTO products(id,category_id,name_ar,name_en,description_ar,description_en,price,unit_ar,unit_en,image,available,featured,sort_order,calories,orderable,price_note_ar,price_note_en)
       VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,TRUE,$11,$12,$13,$14,$15,$16)
-      ON CONFLICT(id) DO UPDATE SET category_id=EXCLUDED.category_id,name_ar=EXCLUDED.name_ar,name_en=EXCLUDED.name_en,description_ar=EXCLUDED.description_ar,description_en=EXCLUDED.description_en,price=EXCLUDED.price,unit_ar=EXCLUDED.unit_ar,unit_en=EXCLUDED.unit_en,image=CASE WHEN COALESCE(products.image,'')='' THEN EXCLUDED.image ELSE products.image END,available=TRUE,featured=EXCLUDED.featured,sort_order=EXCLUDED.sort_order,calories=EXCLUDED.calories,orderable=EXCLUDED.orderable,price_note_ar=EXCLUDED.price_note_ar,price_note_en=EXCLUDED.price_note_en,updated_at=NOW()`,
+      ON CONFLICT(id) DO UPDATE SET category_id=EXCLUDED.category_id,name_ar=EXCLUDED.name_ar,name_en=EXCLUDED.name_en,description_ar=EXCLUDED.description_ar,description_en=EXCLUDED.description_en,price=EXCLUDED.price,unit_ar=EXCLUDED.unit_ar,unit_en=EXCLUDED.unit_en,image=CASE WHEN COALESCE(products.image,'')='' THEN EXCLUDED.image ELSE products.image END,available=products.available,featured=EXCLUDED.featured,sort_order=EXCLUDED.sort_order,calories=EXCLUDED.calories,orderable=EXCLUDED.orderable,price_note_ar=EXCLUDED.price_note_ar,price_note_en=EXCLUDED.price_note_en,updated_at=NOW()`,
       [p[0],p[1],p[2],p[3],descAr,descEn,p[4],p[5],p[6],menuImage(cat,i),featured,i,p[7],orderable,orderable?'':'حسب سعر اليوم',orderable?'':'Market price']);
     }
-    await client.query("UPDATE offers SET active=FALSE,updated_at=NOW() WHERE id ~ '^o[0-9]+$'");
     const canonicalOffers=[
       ['o001','صحن التوفير من 3 إلى 4 فرد','Saving Platter - 3 to 4 People',150,'حبة دنيس + 2 حبة بلطي + نصف كيلو روبيان مع فرش الأرز والسلطات'],
       ['o002','صينية الكيف الحلو','Al Kaif Seafood Tray',120,'روبيان + سبيط + بلح بحر + دنيس مع فرش الأرز والمقبلات'],
@@ -193,46 +182,48 @@ if(st.menuRevision!=='excel-2026-09-v5'){
       ['o004','صحن زعانف الروبيان من 10 إلى 12 فرد','Shrimp Fins Platter - 10 to 12 People',600,'اختيار من الأسماك والروبيان مع الأرز والسلطات والصوص الحار + 2 لتر مشروب غازي'],
       ['o005','صحن الشيف من 8 إلى 10 فرد','Chef Platter - 8 to 10 People',500,'كنعد - روبيان - شعور - قاروص حسب الاختيار، شوي أو قلي مع الأرز والسلطات'],
       ['o006','صحن وسط من 6 إلى 8 أفراد','Medium Platter - 6 to 8 People',300,'سيباس - دنيس - روبيان - شعور مع الأرز والسلطات والصوص الحار'],
-      ['o007','صحن المزاجنجية من 4 إلى 5 فرد','Mazagangia Platter - 4 to 5 People',200,'دنيس + روبيان + سلمون + كنعد مع الأرز والسلطات'],
-      ['o008','صينية الدنيس بالبطاطس','Sea Bream & Potato Tray',120,'صينية دنيس بالبطاطس']
+      ['o007','صحن المزاجنجية من 4 إلى 5 فرد','Mazagangia Platter - 4 to 5 People',250,'دنيس + روبيان + سلمون + كنعد مع الأرز والسلطات'],
+      ['o008','صينية الدنيس بالبطاطس','Sea Bream & Potato Tray',120,'صينية دنيس بالبطاطس'],
+      ['o009','صحن اللمه','Gathering Platter',400,'صحن للمشاركة']
     ];
     for(let i=0;i<canonicalOffers.length;i++){const o=canonicalOffers[i];await client.query(`INSERT INTO offers(id,title_ar,title_en,description_ar,description_en,price,image,active,sort_order) VALUES($1,$2,$3,$4,$5,$6,$7,TRUE,$8)
-      ON CONFLICT(id) DO UPDATE SET title_ar=EXCLUDED.title_ar,title_en=EXCLUDED.title_en,description_ar=EXCLUDED.description_ar,description_en=EXCLUDED.description_en,price=EXCLUDED.price,image=CASE WHEN COALESCE(offers.image,'')='' THEN EXCLUDED.image ELSE offers.image END,active=TRUE,sort_order=EXCLUDED.sort_order,updated_at=NOW()`,
+      ON CONFLICT(id) DO UPDATE SET title_ar=EXCLUDED.title_ar,title_en=EXCLUDED.title_en,description_ar=EXCLUDED.description_ar,description_en=EXCLUDED.description_en,price=EXCLUDED.price,image=CASE WHEN COALESCE(offers.image,'')='' THEN EXCLUDED.image ELSE offers.image END,active=offers.active,sort_order=EXCLUDED.sort_order,updated_at=NOW()`,
       [o[0],o[1],o[2],o[4],'Shrimp Fins sharing offer based on the restaurant menu.',o[3],offerImages[o[0]]||px(8352805,1100,700),i])}
-    st.menuRevision='excel-2026-09-v5';st.menuSource='Owner Excel menu';st.menuProductCount=menuProducts.length;st.menuOfferCount=canonicalOffers.length;st.storefrontImage='/assets/storefront.svg';st.heroImage='/assets/shrimp-fins-promo.webp';st.officialPromoImage='/assets/shrimp-fins-promo.webp';st.cashOnDelivery=true;
+    st.menuRevision='owner-menu-2026-09-27-v6';st.menuSource='Owner Excel menu';st.menuProductCount=menuProducts.length;st.menuOfferCount=canonicalOffers.length;st.storefrontImage='/assets/storefront.svg';st.heroImage='/assets/shrimp-fins-promo.webp';st.officialPromoImage='/assets/shrimp-fins-promo.webp';st.cashOnDelivery=true;
     await client.query('UPDATE settings SET data=$1 WHERE id=1',[st]);
     await client.query('COMMIT');
   }catch(e){await client.query('ROLLBACK').catch(()=>{});throw e}finally{client.release()}
 }
-if(st.photoRevision!=='owner-excel-photos-2026-09-25-v3'){
+if(st.photoRevision!==OWNER_PHOTO_REVISION){
   const client=await pool.connect();
   try{
     await client.query('BEGIN');
     for(const [id,url] of Object.entries(excelRealImages)){
       await client.query(`UPDATE products SET image=$1,image_source='OWNER_EXCEL',updated_at=NOW()
-        WHERE id=$2 AND COALESCE(image,'') NOT LIKE '/api/images/%'`,[url,id]);
+        WHERE id=$2 AND image_source NOT IN ('ADMIN_UPLOAD','CUSTOM') AND COALESCE(image,'') NOT LIKE '/api/images/%'`,[url,id]);
     }
     await client.query(`UPDATE products SET image='/assets/product-placeholder.svg',image_source='MISSING',updated_at=NOW()
-      WHERE available=TRUE AND id NOT IN (SELECT unnest($1::text[])) AND COALESCE(image,'') NOT LIKE '/api/images/%'`,[Object.keys(excelRealImages)]);
+      WHERE available=TRUE AND id NOT IN (SELECT unnest($1::text[])) AND image_source NOT IN ('ADMIN_UPLOAD','CUSTOM') AND COALESCE(image,'') NOT LIKE '/api/images/%'`,[Object.keys(excelRealImages)]);
     await client.query(`UPDATE products SET image_source='ADMIN_UPLOAD',updated_at=NOW() WHERE image LIKE '/api/images/%'`);
     for(const [id,url] of Object.entries(excelRealOfferImages)){
       await client.query(`UPDATE offers SET image=$1,image_source='OWNER_EXCEL',updated_at=NOW()
-        WHERE id=$2 AND COALESCE(image,'') NOT LIKE '/api/images/%'`,[url,id]);
+        WHERE id=$2 AND image_source NOT IN ('ADMIN_UPLOAD','CUSTOM') AND COALESCE(image,'') NOT LIKE '/api/images/%'`,[url,id]);
     }
     await client.query(`UPDATE offers SET image='/assets/product-placeholder.svg',image_source='MISSING',updated_at=NOW()
-      WHERE active=TRUE AND id NOT IN (SELECT unnest($1::text[])) AND COALESCE(image,'') NOT LIKE '/api/images/%'`,[Object.keys(excelRealOfferImages)]);
+      WHERE active=TRUE AND id NOT IN (SELECT unnest($1::text[])) AND image_source NOT IN ('ADMIN_UPLOAD','CUSTOM') AND COALESCE(image,'') NOT LIKE '/api/images/%'`,[Object.keys(excelRealOfferImages)]);
     await client.query(`UPDATE offers SET image_source='ADMIN_UPLOAD',updated_at=NOW() WHERE image LIKE '/api/images/%'`);
-    st.photoRevision='owner-excel-photos-2026-09-25-v3';
+    st.photoRevision=OWNER_PHOTO_REVISION;
     st.realMenuPhotoCount=Object.keys(excelRealImages).length;st.missingRealPhotoCount=menuProducts.length-Object.keys(excelRealImages).length;
     st.heroPhotos=[
+      {src:excelRealImages.m034,ar:'صحن وسط',en:'Medium platter',source:'OWNER_EXCEL'},
+      {src:excelRealImages.m033,ar:'صحن الشيف',en:'Chef platter',source:'OWNER_EXCEL'},
+      {src:excelRealImages.m032,ar:'صحن زعانف الروبيان',en:'Shrimp Fins platter',source:'OWNER_EXCEL'},
+      {src:excelRealImages.m035,ar:'صحن المزاجنجية',en:'Mazagangia platter',source:'OWNER_EXCEL'},
+      {src:excelRealImages.m064,ar:'صحن اللمه',en:'Gathering platter',source:'OWNER_EXCEL'},
+      {src:excelRealImages.m036,ar:'صحن التوفير',en:'Saving platter',source:'OWNER_EXCEL'},
+      {src:excelRealImages.m039,ar:'صينية الدنيس بالبطاطس',en:'Sea bream and potato tray',source:'OWNER_EXCEL'},
+      {src:excelRealImages.m038,ar:'صينية العريس',en:'Al Arees tray',source:'OWNER_EXCEL'},
       {src:'/assets/storefront.svg',ar:'واجهة مطعم زعانف الروبيان',en:'Shrimp Fins storefront',source:'OWNER'},
-      {src:'/assets/menu-real/m035.webp',ar:'صحن المزاجنجية من ملف المطعم',en:'Mazagangia platter from the restaurant file',source:'OWNER_EXCEL'},
-      {src:'/assets/menu-real/m038.webp',ar:'صينية العريس من ملف المطعم',en:'Al Arees tray from the restaurant file',source:'OWNER_EXCEL'},
-      {src:'/assets/menu-real/m031.webp',ar:'استكوزا مشوي من ملف المطعم',en:'Grilled lobster from the restaurant file',source:'OWNER_EXCEL'},
-      {src:'/assets/menu-real/m025.webp',ar:'طاجين فيليه من ملف المطعم',en:'Fish fillet casserole from the restaurant file',source:'OWNER_EXCEL'},
-      {src:'/assets/menu-real/m027.webp',ar:'روبيان وسط من ملف المطعم',en:'Medium shrimp from the restaurant file',source:'OWNER_EXCEL'},
-      {src:'/assets/menu-real/m045.webp',ar:'وجبة فيليه من ملف المطعم',en:'Fish fillet meal from the restaurant file',source:'OWNER_EXCEL'},
-      {src:'/assets/menu-real/m039.webp',ar:'صينية الدنيس بالبطاطس من ملف المطعم',en:'Sea bream & potato tray from the restaurant file',source:'OWNER_EXCEL'},
       {src:'/assets/shrimp-fins-promo.webp',ar:'الهوية الرسمية لزعانف الروبيان',en:'Official Shrimp Fins artwork',source:'OWNER'}
     ];
     st.imageCredit='Owner-supplied Excel photos are used wherever available. Items without a supplied real photo use the Shrimp Fins branded placeholder until restaurant staff upload the real dish photo.';
@@ -240,15 +231,15 @@ if(st.photoRevision!=='owner-excel-photos-2026-09-25-v3'){
     await client.query('COMMIT');
   }catch(e){await client.query('ROLLBACK').catch(()=>{});throw e}finally{client.release()}
 }
-if(st.illustrativeRevision!=='menu-illustrations-2026-09-25-v1'){
+if(st.illustrativeRevision!==ILLUSTRATION_REVISION){
   const client=await pool.connect();
   try{
     await client.query('BEGIN');
     for(const [id,url] of Object.entries(illustrativeImages))await client.query(`UPDATE products SET image=$1,image_source='ILLUSTRATIVE',updated_at=NOW() WHERE id=$2 AND image_source='MISSING'`,[url,id]);
     for(const [id,url] of Object.entries(illustrativeOfferImages))await client.query(`UPDATE offers SET image=$1,image_source='ILLUSTRATIVE',updated_at=NOW() WHERE id=$2 AND image_source='MISSING'`,[url,id]);
-    st.illustrativeRevision='menu-illustrations-2026-09-25-v1';
+    st.illustrativeRevision=ILLUSTRATION_REVISION;
     st.illustrativeMenuCount=Object.keys(illustrativeImages).length;
-    st.imageCredit='Restaurant-supplied Excel photos are used for 50 menu items. The remaining 13 menu items and three matching offers use clearly labeled generated illustrations until staff upload actual product photos.';
+    st.imageCredit='Restaurant-supplied Excel photos are used for 57 menu items. The remaining 7 menu items use labeled illustrations until staff upload actual product photos.';
     await client.query('UPDATE settings SET data=$1 WHERE id=1',[st]);
     await client.query('COMMIT');
   }catch(e){await client.query('ROLLBACK').catch(()=>{});throw e}finally{client.release()}
@@ -289,8 +280,8 @@ async function startupSelfTest(){
     (select count(*) from products where available=true and orderable=false) market_price_items,
     (select count(*) from products where available=true and image_source='OWNER_EXCEL') owner_excel_photos`)).rows[0];
   const st=(await pool.query('select data from settings where id=1')).rows[0]?.data||{};
-  if(+stats.products<menuProducts.length||+stats.product_images<menuProducts.length||+stats.offers<8||+stats.offer_images<8||+stats.calories_populated<40||+stats.market_price_items<1||+stats.owner_excel_photos<50)throw Error('Menu completeness self-test failed: '+JSON.stringify(stats));
-  if(st.phone!=='0541064143'||!st.whatsapp||!st.restaurantNameAr||!st.addressAr||st.heroImage!=='/assets/shrimp-fins-promo.webp'||st.storefrontImage!=='/assets/storefront.svg'||st.cashOnDelivery!==true||st.cardOnDelivery!==true||st.infoRevision!=='google-maps-2026-09-25-v2'||st.photoRevision!=='owner-excel-photos-2026-09-25-v3'||st.googleRating!==4.8||!st.mapUrl||!st.openingHoursAr||!st.reservationsAr||!Array.isArray(st.heroPhotos)||st.heroPhotos.length<8)throw Error('Restaurant settings self-test failed');
+  if(+stats.products<menuProducts.length||+stats.product_images<menuProducts.length||+stats.offers<9||+stats.offer_images<9||+stats.calories_populated<40||+stats.market_price_items<1||+stats.owner_excel_photos<57)throw Error('Menu completeness self-test failed: '+JSON.stringify(stats));
+  if(st.phone!=='0541064143'||!st.whatsapp||!st.restaurantNameAr||!st.addressAr||st.heroImage!=='/assets/shrimp-fins-promo.webp'||st.storefrontImage!=='/assets/storefront.svg'||st.cashOnDelivery!==true||st.cardOnDelivery!==true||st.infoRevision!=='google-maps-2026-09-25-v2'||st.photoRevision!==OWNER_PHOTO_REVISION||st.googleRating!==4.8||!st.mapUrl||!st.openingHoursAr||!st.reservationsAr||!Array.isArray(st.heroPhotos)||st.heroPhotos.length<8)throw Error('Restaurant settings self-test failed');
   console.log('STARTUP_QA_PASS '+JSON.stringify({products:+stats.products,productImages:+stats.product_images,offers:+stats.offers,offerImages:+stats.offer_images,categories:+stats.categories,caloriesPopulated:+stats.calories_populated,marketPriceItems:+stats.market_price_items,ownerExcelPhotos:+stats.owner_excel_photos,missingRealPhotos:+(st.missingRealPhotoCount||0),phone:st.phone,menuRevision:st.menuRevision,photoRevision:st.photoRevision,infoRevision:st.infoRevision,openingHours:st.openingHoursEn,googleRating:st.googleRating,transactionRollback:true,orderWorkflow:true,frontendDom:true,promoAsset:true,storefrontAsset:true,cashOnDelivery:true}));
  }catch(e){try{await c.query('ROLLBACK')}catch{}throw e}finally{c.release()}
 }
@@ -314,34 +305,34 @@ async function startupHttpSelfTest(){
   let x=await getJson('/api/health');if(!x.r.ok||!x.j?.ok)throw Error('HTTP health self-test failed');
   x=await getJson('/api/public');if(!x.r.ok)throw Error('HTTP public API self-test failed');
   const pub=x.j||{},st=pub.settings||{};
-  if((pub.products||[]).length<63||(pub.categories||[]).length<13||(pub.offers||[]).length<8)throw Error('HTTP public catalog self-test failed');
+  if((pub.products||[]).length<64||(pub.categories||[]).length<13||(pub.offers||[]).length<9)throw Error('HTTP public catalog self-test failed');
   const realPhotos=(pub.products||[]).filter(p=>p.image_source==='OWNER_EXCEL');
   const illustrations=(pub.products||[]).filter(p=>p.image_source==='ILLUSTRATIVE');
-  if(realPhotos.length<50)throw Error('HTTP owner Excel photo coverage failed: '+realPhotos.length);
-  if(illustrations.length!==13||(pub.products||[]).some(p=>p.image_source==='MISSING')||(pub.offers||[]).some(o=>o.image_source==='MISSING'))throw Error('Illustrative catalog coverage failed');
-  if(st.photoRevision!=='owner-excel-photos-2026-09-25-v3'||!Array.isArray(st.heroPhotos)||st.heroPhotos.length<8)throw Error('HTTP photo settings self-test failed');
+  if(realPhotos.length<57)throw Error('HTTP owner Excel photo coverage failed: '+realPhotos.length);
+  if(illustrations.length!==menuProducts.length-Object.keys(excelRealImages).length||(pub.products||[]).some(p=>p.image_source==='MISSING')||(pub.offers||[]).some(o=>o.image_source==='MISSING'))throw Error('Illustrative catalog coverage failed');
+  if(st.photoRevision!==OWNER_PHOTO_REVISION||!Array.isArray(st.heroPhotos)||st.heroPhotos.length<8)throw Error('HTTP photo settings self-test failed');
   if(st.phone!=='0541064143'||st.cashOnDelivery!==true||st.cardOnDelivery!==true||!String(st.mapUrl||'').includes('google.com/maps')||st.openingHoursEn!=='Daily 12:00 PM – 12:00 AM')throw Error('HTTP public settings self-test failed');
 
   let home=await fetch(base+'/'),html=await home.text();
   if(!home.ok||!html.includes('value="cod"')||!html.includes('id="googleRating"')||!html.includes('class="hero-visual"')||!html.includes('id="loadError"')||!html.includes('href="/admin"'))throw Error('Homepage self-test failed');
-  let css=await fetch(base+'/styles.css?v=21'),cssText=await css.text();
+  let css=await fetch(base+'/styles.css?v=22'),cssText=await css.text();
   if(!css.ok||!String(css.headers.get('content-type')).includes('text/css')||!cssText.includes('.photo-origin')||!cssText.includes('.mobile-nav'))throw Error('Customer CSS self-test failed');
-  let js=await fetch(base+'/app.js?v=21'),jsText=await js.text();
+  let js=await fetch(base+'/app.js?v=22'),jsText=await js.text();
   if(!js.ok||!jsText.includes('function renderProducts')||!jsText.includes('function photoOrigin')||!jsText.includes('st.heroPhotos')||!jsText.includes('cashOnDelivery'))throw Error('Customer JS self-test failed');
   let admin=await fetch(base+'/admin'),adminHtml=await admin.text();
   if(!admin.ok||!adminHtml.includes('id="loginForm"')||!adminHtml.includes('id="mRealPhotos"')||!adminHtml.includes('id="sCashOnDelivery"')||!adminHtml.includes('id="sMapUrl"')||adminHtml.includes('data:audio/'))throw Error('Admin HTML self-test failed');
   let adminJs=await fetch(base+'/admin.js'),adminJsText=await adminJs.text();
   if(!adminJs.ok||!adminJsText.includes('photoSourcePill')||!adminJsText.includes('todayStatusBreakdown')||!adminJsText.includes('loadSettings')||!adminJsText.includes('/api/admin/session'))throw Error('Admin JS self-test failed');
   x=await getJson('/api/admin/session');if(!x.r.ok||x.j?.authenticated!==false)throw Error('Anonymous admin session probe self-test failed');
-  let sw=await fetch(base+'/sw.js?v=21'),swText=await sw.text();
-  if(!sw.ok||!swText.includes("shrimp-fins-v21")||!swText.includes('/favicon.svg?v=21'))throw Error('PWA service worker self-test failed');
+  let sw=await fetch(base+'/sw.js?v=22'),swText=await sw.text();
+  if(!sw.ok||!swText.includes("shrimp-fins-v22")||!swText.includes('/favicon.svg?v=22'))throw Error('PWA service worker self-test failed');
   let manifest=await fetch(base+'/manifest.webmanifest'),manifestText=await manifest.text();
-  if(!manifest.ok||!manifestText.includes('/favicon.svg?v=21')||!manifestText.includes('"display": "standalone"'))throw Error('PWA manifest self-test failed');
-  let promo=await fetch(base+'/assets/shrimp-fins-promo.webp?v=21'),promoBytes=(await promo.arrayBuffer()).byteLength;
+  if(!manifest.ok||!manifestText.includes('/favicon.svg?v=22')||!manifestText.includes('"display": "standalone"'))throw Error('PWA manifest self-test failed');
+  let promo=await fetch(base+'/assets/shrimp-fins-promo.webp?v=22'),promoBytes=(await promo.arrayBuffer()).byteLength;
   if(!promo.ok||!String(promo.headers.get('content-type')).includes('image/webp')||promoBytes<10000)throw Error('Promo asset HTTP self-test failed');
-  let store=await fetch(base+'/assets/storefront.svg?v=21'),storeText=await store.text();
+  let store=await fetch(base+'/assets/storefront.svg?v=22'),storeText=await store.text();
   if(!store.ok||!String(store.headers.get('content-type')).includes('image/svg')||storeText.length<1000)throw Error('Storefront asset HTTP self-test failed');
-  for(const p of realPhotos.slice(0,5)){const ir=await fetch(base+p.image);if(!ir.ok||!String(ir.headers.get('content-type')).includes('image/webp')||+(ir.headers.get('content-length')||0)===0)throw Error('Owner Excel image asset failed: '+p.image)}
+  for(const p of realPhotos){const ir=await fetch(base+p.image);if(!ir.ok||!String(ir.headers.get('content-type')).includes('image/webp')||+(ir.headers.get('content-length')||0)===0)throw Error('Owner Excel image asset failed: '+p.image)}
   for(const p of illustrations){const ir=await fetch(base+p.image);if(!ir.ok||!String(ir.headers.get('content-type')).includes('image/webp')||(await ir.arrayBuffer()).byteLength<10000)throw Error('Illustration asset failed: '+p.image)}
   for(const o of (pub.offers||[]).filter(o=>o.image_source==='ILLUSTRATIVE')){const ir=await fetch(base+o.image);if(!ir.ok)throw Error('Illustrated offer asset failed: '+o.image)}
 
@@ -391,7 +382,7 @@ async function startupHttpSelfTest(){
   adminCookie=String(x.r.headers.get('set-cookie')||'').split(';')[0];if(!adminCookie.startsWith('sf_admin='))throw Error('HTTP admin cookie self-test failed');
   x=await adminJson('/api/admin/session');if(!x.r.ok||x.j?.authenticated!==true||x.j?.admin?.email!==qaAdminEmail)throw Error('HTTP authenticated admin session probe failed');
   x=await adminJson('/api/admin/me');if(!x.r.ok||x.j?.admin?.email!==qaAdminEmail)throw Error('HTTP admin session self-test failed');
-  x=await adminJson('/api/admin/dashboard');if(!x.r.ok||+x.j?.products<63||!x.j?.photoCoverage)throw Error('HTTP admin dashboard self-test failed');
+  x=await adminJson('/api/admin/dashboard');if(!x.r.ok||+x.j?.products<64||!x.j?.photoCoverage)throw Error('HTTP admin dashboard self-test failed');
 
   x=await adminJson('/api/admin/orders?status=PENDING&q='+encodeURIComponent(qaCustomerOrderNumber));
   if(!x.r.ok||!x.j?.orders?.some(o=>o.id===customerOrder.id))throw Error('Customer order missing from staff queue');
@@ -464,7 +455,7 @@ app.get('/api/admin/dashboard',async(req,res)=>{
   pool.query("select status,count(*)::int c from orders where created_at::date=current_date group by status"),
   pool.query("select order_type,payment,count(*)::int c from orders where created_at::date=current_date group by order_type,payment"),
   pool.query("select count(*)::int orders,coalesce(sum(case when status='COMPLETED' then total else 0 end),0)::numeric(12,2) sales from orders where created_at>=current_date-interval '6 days'"),
-  pool.query("select count(*) filter(where image_source in ('OWNER_EXCEL','ADMIN_UPLOAD','CUSTOM'))::int real_products,count(*) filter(where image_source='MISSING' or image_source is null)::int missing_products from products where available=true")
+  pool.query("select count(*) filter(where image_source in ('OWNER_EXCEL','ADMIN_UPLOAD','CUSTOM'))::int real_products,count(*) filter(where image_source='ILLUSTRATIVE')::int illustrative_products,count(*) filter(where image_source='MISSING' or image_source is null)::int missing_products from products where available=true")
  ]);
  res.json({todayOrders:+today.rows[0].c,todaySales:+today.rows[0].sales,pending:+pending.rows[0].c,products:+pc.rows[0].c,offers:+oc.rows[0].c,monthSales:+month.rows[0].sales,recent:recent.rows,topItems:top.rows,todayStatuses:statuses.rows,todayMix:mix.rows,weekOrders:+week.rows[0].orders,weekSales:+week.rows[0].sales,photoCoverage:photos.rows[0]});
 });

@@ -26,13 +26,13 @@ async function main(){
 
  x=await call('/api/public');const pub=x.body;check('public API',x.r.status===200);
  check('13 categories',pub.categories.length===13,String(pub.categories.length));
- check('63 products',pub.products.length===63,String(pub.products.length));
- check('8 offers',pub.offers.length===8,String(pub.offers.length));
- check('63 product images',pub.products.every(p=>p.image),String(pub.products.filter(p=>!p.image).length));
- check('50+ owner Excel product photos',pub.products.filter(p=>p.image_source==='OWNER_EXCEL').length>=50,String(pub.products.filter(p=>p.image_source==='OWNER_EXCEL').length));
- check('real photo revision',pub.settings.photoRevision==='owner-excel-photos-2026-09-25-v3',String(pub.settings.photoRevision));
+ check('64 products',pub.products.length===64,String(pub.products.length));
+ check('9 offers',pub.offers.length===9,String(pub.offers.length));
+ check('64 product images',pub.products.every(p=>p.image),String(pub.products.filter(p=>!p.image).length));
+ check('57 owner Excel product photos',pub.products.filter(p=>p.image_source==='OWNER_EXCEL').length>=57,String(pub.products.filter(p=>p.image_source==='OWNER_EXCEL').length));
+ check('real photo revision',pub.settings.photoRevision==='owner-menu-2026-09-27-v2',String(pub.settings.photoRevision));
  check('real hero photo carousel',Array.isArray(pub.settings.heroPhotos)&&pub.settings.heroPhotos.length>=6,String(pub.settings.heroPhotos?.length||0));
- check('8 offer images',pub.offers.every(o=>o.image),String(pub.offers.filter(o=>!o.image).length));
+ check('9 offer images',pub.offers.every(o=>o.image),String(pub.offers.filter(o=>!o.image).length));
  check('calories populated',pub.products.filter(p=>p.calories!=null).length>=52,String(pub.products.filter(p=>p.calories!=null).length));
  check('market price protection data',pub.products.filter(p=>p.orderable===false).length===1,String(pub.products.filter(p=>p.orderable===false).length));
  check('phone setting',pub.settings.phone==='0541064143',String(pub.settings.phone));
@@ -61,7 +61,7 @@ async function main(){
  x=await call('/api/admin/me');check('unauthenticated admin blocked',x.r.status===401,String(x.r.status));
  x=await call('/api/admin/login',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({email,password:credential})});check('admin login',x.r.status===200&&x.body.ok);cookie=(x.r.headers.get('set-cookie')||'').split(';')[0];check('auth cookie',cookie.startsWith('sf_admin='));
  x=await call('/api/admin/me');check('admin session',x.r.status===200&&x.body.admin.email===email);
- x=await call('/api/admin/dashboard');check('dashboard',x.r.status===200&&Number(x.body.products)===63&&Number(x.body.pending)>=2&&Number(x.body.photoCoverage?.real_products)>=50&&Number(x.body.photoCoverage?.missing_products)===13,JSON.stringify({menuProducts:x.body.products,publicProducts:pub.products.length,pending:x.body.pending,photoCoverage:x.body.photoCoverage,weekOrders:x.body.weekOrders}));
+ x=await call('/api/admin/dashboard');check('dashboard',x.r.status===200&&Number(x.body.products)===64&&Number(x.body.pending)>=2&&Number(x.body.photoCoverage?.real_products)>=57&&Number(x.body.photoCoverage?.missing_products)===0,JSON.stringify({menuProducts:x.body.products,publicProducts:pub.products.length,pending:x.body.pending,photoCoverage:x.body.photoCoverage,weekOrders:x.body.weekOrders}));
 
  x=await call('/api/admin/orders?status=PENDING&q='+encodeURIComponent(codOrder.orderNumber));const o=x.body.orders.find(v=>v.order_no===codOrder.orderNumber);check('order filters',x.r.status===200&&!!o);
  x=await call('/api/admin/orders/'+o.id);check('COD order details/history',x.r.status===200&&x.body.items.length===1&&x.body.history.length>=1&&x.body.order.payment==='cod',x.body.order?.payment||'');

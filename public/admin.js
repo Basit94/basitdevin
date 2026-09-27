@@ -48,7 +48,7 @@ function bindOrderActions(root=document){
 }
 async function loadDash(){
  try{const d=await api('/api/admin/dashboard');$('#mTodayOrders').textContent=d.todayOrders;$('#mTodaySales').textContent=money(d.todaySales);$('#mPending').textContent=d.pending;$('#mMonthSales').textContent=money(d.monthSales);$('#mProducts').textContent=d.products;$('#mOffers').textContent=d.offers;
- $('#mWeekSales').textContent=money(d.weekSales||0);$('#mWeekOrders').textContent=d.weekOrders||0;$('#mRealPhotos').textContent=d.photoCoverage?.real_products||0;$('#mIllustrativePhotos').textContent=d.photoCoverage?.missing_products||0;
+ $('#mWeekSales').textContent=money(d.weekSales||0);$('#mWeekOrders').textContent=d.weekOrders||0;$('#mRealPhotos').textContent=d.photoCoverage?.real_products||0;$('#mIllustrativePhotos').textContent=d.photoCoverage?.illustrative_products||0;
  $('#navPending').textContent=d.pending;$('#navPending').classList.toggle('hidden',!d.pending);
  $('#recentOrders').innerHTML=ordersTable(d.recent||[]);bindOrderActions($('#recentOrders'));
  $('#topProducts').innerHTML=(d.topItems||[]).length?(d.topItems||[]).map((p,i)=>'<div class="top-product"><div><b>'+(i+1)+'. '+esc(p.name_en||p.name_ar)+'</b><small>'+p.qty+' units</small></div><strong>'+money(p.revenue)+'</strong></div>').join(''):'<p class="muted">Completed sales will appear here.</p>';
@@ -73,7 +73,7 @@ async function viewOrder(id){
  }catch(e){toast(e.message,true)}
 }
 function productRows(){
- let arr=state.products.filter(p=>(!state.productCategory||p.category_id===state.productCategory)&&(!state.productPhoto||String(p.image_source||'')===state.productPhoto)&&(!state.productQuery||(p.name_en+' '+p.name_ar).toLowerCase().includes(state.productQuery.toLowerCase())));
+ let arr=state.products.filter(p=>(!state.productCategory||p.category_id===state.productCategory)&&(!state.productPhoto||(state.productPhoto==='MISSING'?['MISSING','ILLUSTRATIVE'].includes(String(p.image_source||'')):String(p.image_source||'')===state.productPhoto))&&(!state.productQuery||(p.name_en+' '+p.name_ar).toLowerCase().includes(state.productQuery.toLowerCase())));
  if(!arr.length)return '<div class="empty">No products found.</div>';
  return '<table><thead><tr><th>Product</th><th>Category</th><th>Price</th><th>Calories</th><th>Online</th><th>Availability</th><th>Photo</th><th>Featured</th><th>Actions</th></tr></thead><tbody>'+arr.map(p=>'<tr><td><div class="product-cell"><div class="product-thumb">'+(p.image?'<img src="'+esc(p.image)+'">':'🦐')+'</div><div><b>'+esc(p.name_en||p.name_ar)+'</b><small>'+esc(p.name_ar)+'</small></div></div></td><td>'+esc(p.category_en||p.category_ar||p.category_id)+'</td><td><b>'+(p.orderable===false?esc(p.price_note_en||'Market price'):money(p.price))+'</b></td><td>'+(p.calories==null?'—':esc(p.calories)+' cal')+'</td><td><span class="'+(p.orderable===false?'pill-no':'pill-yes')+'">'+(p.orderable===false?'Call':'Order')+'</span></td><td><span class="'+(p.available?'pill-yes':'pill-no')+'">'+(p.available?'Available':'Sold out')+'</span></td><td>'+photoSourcePill(p.image_source)+'</td><td>'+(p.featured?'★':'—')+'</td><td><div class="row-actions"><button data-product-toggle="'+p.id+'">'+(p.available?'Mark sold out':'Enable')+'</button><button data-product-edit="'+p.id+'">Edit</button><button class="danger" data-product-delete="'+p.id+'">Delete</button></div></td></tr>').join('')+'</tbody></table>'
 }
