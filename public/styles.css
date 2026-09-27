@@ -384,3 +384,11 @@ html,body{width:100%;max-width:100%;overflow-x:hidden}
 .hero-photo-frame.storefront-slide:before{content:"";position:absolute;z-index:1;inset:0;pointer-events:none;background:linear-gradient(180deg,rgba(2,23,39,.015),transparent 48%,rgba(2,23,39,.08))}
 .hero-photo-frame.storefront-slide figcaption,.hero-photo-frame.storefront-slide .hero-photo-controls{z-index:3}
 @media(max-width:760px){.hero-photo-frame.storefront-slide #heroFoodImage{object-position:center 41%;transform:scale(1.008)}}
+
+.financial-summary{margin-top:14px;border:1px solid var(--line);border-radius:15px;background:#f8fafb;padding:12px 14px}
+.financial-summary>div{display:flex;justify-content:space-between;gap:16px;padding:6px 0;font-size:12px}
+.financial-summary>div span{color:var(--muted)}
+.financial-summary>div b{color:var(--navy)}
+.financial-summary .grand{margin-top:5px;padding-top:11px;border-top:1px dashed var(--line);font-size:17px}
+.financial-summary .grand b{color:var(--orange);font-size:19px}
+.success-breakdown{max-width:420px;margin:14px auto;text-align:start}
