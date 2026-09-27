@@ -249,6 +249,17 @@ if(st.photoRevision!==OWNER_PHOTO_REVISION){
     await client.query('COMMIT');
   }catch(e){await client.query('ROLLBACK').catch(()=>{});throw e}finally{client.release()}
 }
+if(st.heroPresentationRevision!=='real-storefront-first-2026-09-27-v1'){
+  const storefront=st.storefrontImage||'/assets/storefront-owner-enhanced-2026-09-27.webp';
+  const existing=Array.isArray(st.heroPhotos)?st.heroPhotos.filter(p=>p&&p.src&&p.src!==storefront):[];
+  st.heroStorefrontImage=storefront;
+  st.heroPhotos=[
+    {src:storefront,ar:'واجهة مطعم زعانف الروبيان',en:'Shrimp Fins storefront',source:'OWNER_EDITED',kind:'storefront'},
+    ...existing
+  ];
+  st.heroPresentationRevision='real-storefront-first-2026-09-27-v1';
+  await pool.query('UPDATE settings SET data=$1 WHERE id=1',[st]);
+}
 if(st.illustrativeRevision!==ILLUSTRATION_REVISION){
   const client=await pool.connect();
   try{
@@ -318,7 +329,7 @@ async function startupSelfTest(){
   if(+orderability.fixed_price_unorderable!==0||+orderability.market_price_orderable!==0||+orderability.lobster_ok!==1)throw Error('Fixed-price orderability self-test failed: '+JSON.stringify(orderability));
   const st=(await pool.query('select data from settings where id=1')).rows[0]?.data||{};
   if(+stats.products<menuProducts.length||+stats.product_images<menuProducts.length||+stats.offers<9||+stats.offer_images<9||+stats.calories_populated<40||+stats.market_price_items<1||+stats.owner_excel_photos<57)throw Error('Menu completeness self-test failed: '+JSON.stringify(stats));
-  if(st.phone!=='0541064143'||!st.whatsapp||!st.restaurantNameAr||!st.addressAr||st.heroImage!=='/assets/menu-owner-2026-09-27-v2/m032.webp'||st.storefrontImage!=='/assets/storefront-owner-enhanced-2026-09-27.webp'||st.cashOnDelivery!==true||st.cardOnDelivery!==true||st.infoRevision!=='google-maps-2026-09-25-v2'||st.photoRevision!==OWNER_PHOTO_REVISION||st.googleRating!==4.8||!st.mapUrl?.includes('0x4261598a86735704')||!st.openingHoursAr||!st.reservationsAr||!Array.isArray(st.heroPhotos)||st.heroPhotos.length<8)throw Error('Restaurant settings self-test failed');
+  if(st.phone!=='0541064143'||!st.whatsapp||!st.restaurantNameAr||!st.addressAr||st.heroImage!=='/assets/menu-owner-2026-09-27-v2/m032.webp'||st.storefrontImage!=='/assets/storefront-owner-enhanced-2026-09-27.webp'||st.heroStorefrontImage!==st.storefrontImage||st.heroPresentationRevision!=='real-storefront-first-2026-09-27-v1'||st.cashOnDelivery!==true||st.cardOnDelivery!==true||st.infoRevision!=='google-maps-2026-09-25-v2'||st.photoRevision!==OWNER_PHOTO_REVISION||st.googleRating!==4.8||!st.mapUrl?.includes('0x4261598a86735704')||!st.openingHoursAr||!st.reservationsAr||!Array.isArray(st.heroPhotos)||st.heroPhotos.length<8||st.heroPhotos[0]?.src!==st.storefrontImage)throw Error('Restaurant settings self-test failed');
   console.log('STARTUP_QA_PASS '+JSON.stringify({products:+stats.products,productImages:+stats.product_images,offers:+stats.offers,offerImages:+stats.offer_images,categories:+stats.categories,caloriesPopulated:+stats.calories_populated,marketPriceItems:+stats.market_price_items,ownerExcelPhotos:+stats.owner_excel_photos,missingRealPhotos:+(st.missingRealPhotoCount||0),phone:st.phone,menuRevision:st.menuRevision,photoRevision:st.photoRevision,infoRevision:st.infoRevision,openingHours:st.openingHoursEn,googleRating:st.googleRating,transactionRollback:true,orderWorkflow:true,frontendDom:true,promoAsset:true,storefrontAsset:true,cashOnDelivery:true}));
  }catch(e){try{await c.query('ROLLBACK')}catch{}throw e}finally{c.release()}
 }
@@ -351,14 +362,14 @@ async function startupHttpSelfTest(){
   const illustrations=(pub.products||[]).filter(p=>p.image_source==='ILLUSTRATIVE');
   if(realPhotos.length<57)throw Error('HTTP owner Excel photo coverage failed: '+realPhotos.length);
   if(illustrations.length!==menuProducts.length-Object.keys(excelRealImages).length||(pub.products||[]).some(p=>p.image_source==='MISSING')||(pub.offers||[]).some(o=>o.image_source==='MISSING'))throw Error('Illustrative catalog coverage failed');
-  if(st.photoRevision!==OWNER_PHOTO_REVISION||!Array.isArray(st.heroPhotos)||st.heroPhotos.length<8)throw Error('HTTP photo settings self-test failed');
+  if(st.photoRevision!==OWNER_PHOTO_REVISION||st.heroPresentationRevision!=='real-storefront-first-2026-09-27-v1'||!Array.isArray(st.heroPhotos)||st.heroPhotos.length<8||st.heroPhotos[0]?.src!==st.storefrontImage||st.heroStorefrontImage!==st.storefrontImage)throw Error('HTTP photo settings self-test failed');
   if(st.phone!=='0541064143'||st.cashOnDelivery!==true||st.cardOnDelivery!==true||!String(st.mapUrl||'').includes('google.com/maps')||st.openingHoursEn!=='Daily 12:00 PM – 12:00 AM')throw Error('HTTP public settings self-test failed');
 
   let home=await fetch(base+'/'),html=await home.text();
-  if(!home.ok||!html.includes('value="cod"')||!html.includes('id="googleRating"')||!html.includes('class="hero-visual"')||!html.includes('id="loadError"')||!html.includes('href="/admin"'))throw Error('Homepage self-test failed');
-  let css=await fetch(base+'/styles.css?v=27'),cssText=await css.text();
+  if(!home.ok||!html.includes('value="cod"')||!html.includes('id="googleRating"')||!html.includes('class="hero-visual"')||!html.includes('id="loadError"')||!html.includes('id="accountError"')||!html.includes('Staff / Admin sign in')||!html.includes('href="/admin"'))throw Error('Homepage self-test failed');
+  let css=await fetch(base+'/styles.css?v=28'),cssText=await css.text();
   if(!css.ok||!String(css.headers.get('content-type')).includes('text/css')||!cssText.includes('.photo-origin')||!cssText.includes('.mobile-nav'))throw Error('Customer CSS self-test failed');
-  let js=await fetch(base+'/app.js?v=27'),jsText=await js.text();
+  let js=await fetch(base+'/app.js?v=28'),jsText=await js.text();
   if(!js.ok||!jsText.includes('function renderProducts')||!jsText.includes('function photoOrigin')||!jsText.includes('st.heroPhotos')||!jsText.includes('cashOnDelivery'))throw Error('Customer JS self-test failed');
   let admin=await fetch(base+'/admin'),adminHtml=await admin.text();
   if(!admin.ok||!adminHtml.includes('id="loginForm"')||!adminHtml.includes('id="mRealPhotos"')||!adminHtml.includes('id="sCashOnDelivery"')||!adminHtml.includes('id="sMapUrl"')||adminHtml.includes('data:audio/'))throw Error('Admin HTML self-test failed');
@@ -367,13 +378,13 @@ async function startupHttpSelfTest(){
   x=await getJson('/api/admin/session');if(!x.r.ok||x.j?.authenticated!==false)throw Error('Anonymous admin session probe self-test failed');
   const configuredAdminRow=(await pool.query('select email,active,role,password_hash from admins where email=$1',[String(process.env.ADMIN_EMAIL||'').trim().toLowerCase()])).rows[0];
   if(!configuredAdminRow||configuredAdminRow.active!==true||configuredAdminRow.role!=='ADMIN'||configuredAdminRow.password_hash!==String(process.env.ADMIN_PASSWORD_HASH||'').trim())throw Error('Configured admin persistence self-test failed');
-  let sw=await fetch(base+'/sw.js?v=27'),swText=await sw.text();
-  if(!sw.ok||!swText.includes("shrimp-fins-v27")||!swText.includes('/favicon.svg?v=27'))throw Error('PWA service worker self-test failed');
+  let sw=await fetch(base+'/sw.js?v=28'),swText=await sw.text();
+  if(!sw.ok||!swText.includes("shrimp-fins-v28")||!swText.includes('/favicon.svg?v=28'))throw Error('PWA service worker self-test failed');
   let manifest=await fetch(base+'/manifest.webmanifest'),manifestText=await manifest.text();
-  if(!manifest.ok||!manifestText.includes('/favicon.svg?v=27')||!manifestText.includes('"display": "standalone"'))throw Error('PWA manifest self-test failed');
-  let promo=await fetch(base+'/assets/shrimp-fins-promo.webp?v=27'),promoBytes=(await promo.arrayBuffer()).byteLength;
+  if(!manifest.ok||!manifestText.includes('/favicon.svg?v=28')||!manifestText.includes('"display": "standalone"'))throw Error('PWA manifest self-test failed');
+  let promo=await fetch(base+'/assets/shrimp-fins-promo.webp?v=28'),promoBytes=(await promo.arrayBuffer()).byteLength;
   if(!promo.ok||!String(promo.headers.get('content-type')).includes('image/webp')||promoBytes<10000)throw Error('Promo asset HTTP self-test failed');
-  let store=await fetch(base+'/assets/storefront-owner-enhanced-2026-09-27.webp?v=27'),storeBytes=(await store.arrayBuffer()).byteLength;
+  let store=await fetch(base+'/assets/storefront-owner-enhanced-2026-09-27.webp?v=28'),storeBytes=(await store.arrayBuffer()).byteLength;
   if(!store.ok||!String(store.headers.get('content-type')).includes('image/webp')||storeBytes<10000)throw Error('Storefront asset HTTP self-test failed');
   for(const p of realPhotos){const ir=await fetch(base+p.image);if(!ir.ok||!String(ir.headers.get('content-type')).includes('image/webp')||+(ir.headers.get('content-length')||0)===0)throw Error('Owner Excel image asset failed: '+p.image)}
   for(const p of illustrations){const ir=await fetch(base+p.image);if(!ir.ok||!String(ir.headers.get('content-type')).includes('image/webp')||(await ir.arrayBuffer()).byteLength<10000)throw Error('Illustration asset failed: '+p.image)}
