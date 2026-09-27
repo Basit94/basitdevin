@@ -377,3 +377,10 @@ html,body{width:100%;max-width:100%;overflow-x:hidden}
 .storefront img{object-fit:cover;object-position:center center}
 
 .account-error{margin:.75rem 0 0;padding:.7rem .85rem;border-radius:12px;background:#fff1f2;color:#b42318;font-weight:700;font-size:.9rem}.account-error.hidden{display:none}.staff-login-link{display:inline-flex;margin-top:.7rem;font-weight:800;color:#0b4268;text-decoration:none}.staff-login-link:hover{text-decoration:underline}
+
+/* Top hero only: improve the real storefront presentation. The contact/bottom storefront image is intentionally untouched. */
+.hero-photo-frame #heroFoodImage{transition:opacity .28s ease,transform .45s ease,filter .45s ease;will-change:transform,filter}
+.hero-photo-frame.storefront-slide #heroFoodImage{object-position:center 43%;filter:brightness(1.045) contrast(1.075) saturate(1.045);transform:scale(1.012)}
+.hero-photo-frame.storefront-slide:before{content:"";position:absolute;z-index:1;inset:0;pointer-events:none;background:linear-gradient(180deg,rgba(2,23,39,.015),transparent 48%,rgba(2,23,39,.08))}
+.hero-photo-frame.storefront-slide figcaption,.hero-photo-frame.storefront-slide .hero-photo-controls{z-index:3}
+@media(max-width:760px){.hero-photo-frame.storefront-slide #heroFoodImage{object-position:center 41%;transform:scale(1.008)}}
