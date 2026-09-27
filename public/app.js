@@ -47,13 +47,16 @@ function applyLanguage(){
 }
 let heroPhotoIndex=0,heroPhotoTimer=null,heroTouchX=null;
 function heroPhotos(st){
+ const storefront=st.heroStorefrontImage||st.storefrontImage||'/assets/storefront-owner-enhanced-2026-09-27.webp';
  const configured=Array.isArray(st.heroPhotos)?st.heroPhotos.filter(p=>p&&p.src):[];
  const fallback=[
-  {src:st.storefrontImage||'/assets/storefront-owner-enhanced-2026-09-27.webp',ar:'واجهة مطعم زعانف الروبيان',en:'Shrimp Fins storefront',source:'OWNER_EDITED'},
-  {src:st.officialPromoImage||st.heroImage||'/assets/shrimp-fins-promo.webp',ar:'واجهة مطعم زعانف الروبيان',en:'Shrimp Fins storefront',source:'OWNER_EDITED'}
+  {src:storefront,ar:'واجهة مطعم زعانف الروبيان',en:'Shrimp Fins storefront',source:'OWNER_EDITED',kind:'storefront'},
+  {src:st.officialPromoImage||st.heroImage||'/assets/shrimp-fins-promo.webp',ar:'هوية زعانف الروبيان',en:'Shrimp Fins artwork',source:'OWNER_EDITED'}
  ];
+ const ordered=(configured.length?configured:fallback);
+ const storefrontCard={src:storefront,ar:'واجهة مطعم زعانف الروبيان',en:'Shrimp Fins storefront',source:'OWNER_EDITED',kind:'storefront'};
  const googlePhoto=st.mapsPhotoUrl?[{src:st.mapsPhotoUrl,ar:'صورة من موقع المطعم',en:'Restaurant location photo',source:'PUBLIC_LISTING'}]:[];
- return[...(configured.length?configured:fallback),...googlePhoto].filter((x,i,a)=>x.src&&a.findIndex(y=>y.src===x.src)===i);
+ return[storefrontCard,...ordered.filter(p=>p.src!==storefront),...googlePhoto].filter((x,i,a)=>x.src&&a.findIndex(y=>y.src===x.src)===i);
 }
 function photoOrigin(p){
  const src=String(p?.image_source||'');
@@ -67,11 +70,13 @@ function photoBadge(p){const o=photoOrigin(p);return `<span class="photo-origin 
 function displayImage(p){const o=photoOrigin(p);return o.cls==='missing'?PRODUCT_PLACEHOLDER:(p?.image||PRODUCT_PLACEHOLDER)}
 function showHeroPhoto(index,manual=false){
  if(!state.data)return;const st=state.data.settings||{},photos=heroPhotos(st);if(!photos.length)return;
- heroPhotoIndex=(index+photos.length)%photos.length;const p=photos[heroPhotoIndex],img=$('#heroFoodImage');
- if(img){img.classList.add('changing');const probe=new Image();probe.onload=()=>{img.src=p.src;img.alt=state.lang==='ar'?p.ar:p.en;requestAnimationFrame(()=>img.classList.remove('changing'))};probe.onerror=()=>{img.src=st.storefrontImage||'/assets/storefront-owner-enhanced-2026-09-27.webp';img.classList.remove('changing')};probe.src=p.src}
+ heroPhotoIndex=(index+photos.length)%photos.length;const p=photos[heroPhotoIndex],img=$('#heroFoodImage'),frame=$('.hero-photo-frame');
+ const isStorefront=p.kind==='storefront'||p.src===(st.heroStorefrontImage||st.storefrontImage);
+ frame?.classList.toggle('storefront-slide',isStorefront);
+ if(img){img.classList.add('changing');const probe=new Image();probe.onload=()=>{img.src=p.src;img.alt=state.lang==='ar'?p.ar:p.en;requestAnimationFrame(()=>img.classList.remove('changing'))};probe.onerror=()=>{img.src=st.heroStorefrontImage||st.storefrontImage||'/assets/storefront-owner-enhanced-2026-09-27.webp';frame?.classList.add('storefront-slide');img.classList.remove('changing')};probe.src=p.src}
  const cap=$('#heroPhotoCaption');if(cap)cap.textContent=state.lang==='ar'?p.ar:p.en;
  const dots=$('#heroPhotoDots');if(dots)dots.innerHTML=photos.map((_,i)=>`<button type="button" aria-label="Photo ${i+1}" class="${i===heroPhotoIndex?'active':''}" data-hero-dot="${i}"></button>`).join('');
- $$('[data-hero-dot]').forEach(b=>b.onclick=()=>showHeroPhoto(+b.dataset.heroDot,true));
+ $('[data-hero-dot]').forEach(b=>b.onclick=()=>showHeroPhoto(+b.dataset.heroDot,true));
  if(manual)restartHeroPhotos();
 }
 function restartHeroPhotos(){clearInterval(heroPhotoTimer);heroPhotoTimer=setInterval(()=>showHeroPhoto(heroPhotoIndex+1),6500)}
@@ -99,7 +104,7 @@ function renderSettings(){
  setText('#amenitiesText',state.lang==='ar'?(st.amenitiesAr||'مناسب للعائلات • مواقف مجانية'):(st.amenitiesEn||'Family-friendly • Free parking'));
  setText('#reservationText',state.lang==='ar'?(st.reservationsAr||'متاحة بالتواصل مع المطعم'):(st.reservationsEn||'Available by contacting the restaurant'));
  setText('#infoVerifiedText',state.lang==='ar'?('ملف المطعم وخرائط Google · '+(st.googleInfoCheckedAt||'2026-09-24')):('Restaurant file & Google Maps · '+(st.googleInfoCheckedAt||'2026-09-24')));
- setText('#photoSourceNote',state.lang==='ar'?'صور الطعام الأصلية من ملف المطعم. الأصناف بلا صورة أصلية تعرض صورة توضيحية مميزة بوسم.':'Original food photos come from the restaurant file. Items without one show a labeled illustration.');
+ setText('#photoSourceNote',state.lang==='ar'?'واجهة المطعم صورة حقيقية، وصور الطعام الأصلية من ملف المطعم. الأصناف بلا صورة أصلية تعرض صورة توضيحية مميزة بوضوح.':'The storefront is a real restaurant photo, and original food photos come from the restaurant file. Items without one use a clearly labeled illustration.');
  const physical=restaurantOpenNow();setText('#physicalOpenStatus',physical.text);const openIcon=$('#openNowIcon');if(openIcon)openIcon.textContent=physical.open?'🟢':'🕒';
  const badge=$('#orderBadge');if(badge){badge.classList.toggle('closed',st.acceptingOrders===false);const span=badge.querySelector('span');if(span)span.textContent=st.acceptingOrders===false?tr('closed'):tr('open')}
  if($('#heroFoodImage'))showHeroPhoto(heroPhotoIndex);
@@ -178,9 +183,20 @@ function renderTracking(o){
  const timeline=terminal?`<div class="timeline-row done"><i></i><div><b>${statusLabel(o.status)}</b>${o.statusNote?`<small> · ${esc(o.statusNote)}</small>`:''}</div></div>`:statuses.map((s,i)=>`<div class="timeline-row ${i<=current?'done':''}"><i></i><div><b>${statusLabel(s)}</b></div></div>`).join('');
  $('#trackResult').innerHTML=`<div class="track-card"><span class="status-pill">${statusLabel(o.status)}</span><h3>${esc(o.orderNumber)}</h3><p>${tr('total')}: <b>${money(o.total)}</b></p>${o.estimatedMinutes?`<p>${tr('estimated')}: <b>${o.estimatedMinutes} ${tr('minutes')}</b></p>`:''}${o.statusNote?`<p>${esc(o.statusNote)}</p>`:''}<div class="timeline">${timeline}</div></div>`;
 }
+async function fetchPublicWithRetry(){
+ let lastError=null;
+ for(let attempt=1;attempt<=3;attempt++){
+  try{
+   const r=await fetch('/api/public?ts='+(Date.now())+'&try='+attempt,{headers:{accept:'application/json'},cache:'no-store'});
+   if(!r.ok)throw Error('Menu unavailable ('+r.status+')');
+   return await r.json();
+  }catch(e){lastError=e;if(attempt<3)await new Promise(resolve=>setTimeout(resolve,attempt*350))}
+ }
+ throw lastError||Error('Menu unavailable');
+}
 async function load(){
  $('#loadError')?.classList.add('hidden');$('#loading')?.classList.remove('hide');
- try{const r=await fetch('/api/public',{headers:{accept:'application/json'},cache:'no-store'});if(!r.ok)throw Error('Menu unavailable');state.data=await r.json();applyLanguage();renderCart();loadCustomer();const qs=new URLSearchParams(location.search);if(qs.get('track')){open('#trackModal');$('#trackToken').value=qs.get('track');$('#trackPhone').value=qs.get('phone')||'';if(qs.get('phone'))$('#trackForm').requestSubmit()}}
+ try{state.data=await fetchPublicWithRetry();applyLanguage();renderCart();loadCustomer();const qs=new URLSearchParams(location.search);if(qs.get('track')){open('#trackModal');$('#trackToken').value=qs.get('track');$('#trackPhone').value=qs.get('phone')||'';if(qs.get('phone'))$('#trackForm').requestSubmit()}}
  catch(e){console.error('MENU_LOAD_FAILED',e);reportClientError('menu_load_failed',e?.message||String(e),e?.stack||'');toast(e.message,true);$('#loadError')?.classList.remove('hidden')}finally{setTimeout(()=>$('#loading')?.classList.add('hide'),180)}
 }
 async function loadCustomer(){try{const r=await fetch('/api/customer/me',{cache:'no-store'});if(!r.ok){state.customer=null;state.addresses=[];renderAccount();return}const j=await r.json();state.customer=j.customer;state.addresses=j.addresses||[];state.orders=j.orders||[];renderAccount()}catch{state.customer=null;renderAccount()}}
