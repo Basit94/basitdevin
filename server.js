@@ -336,7 +336,7 @@ async function startupSelfTest(){
 async function startupHttpSelfTest(){
  const base='http://127.0.0.1:'+PORT,qaPhone='0500000000',createdIds=[];
  const qaAdminEmail='qa-http-'+crypto.randomBytes(6).toString('hex')+'@shrimpfins.test',qaAdminPassword='QA!'+crypto.randomBytes(12).toString('base64url');
- let adminCookie='',qaCustomerId=null;
+ let adminCookie='',qaCustomerId=null,qaCategoryId=null,qaProductId=null,qaOfferId=null,qaImageId=null;
  const getJson=async(url,opts={})=>{const r=await fetch(base+url,opts);let j=null;try{j=await r.json()}catch{}return{r,j}};
  const adminJson=async(url,opts={})=>{const headers={...(opts.headers||{}),cookie:adminCookie};return getJson(url,{...opts,headers})};
  const createOrder=async(payload,expectedPayment,expectedType)=>{
@@ -372,9 +372,9 @@ async function startupHttpSelfTest(){
   let js=await fetch(base+'/app.js?v=28'),jsText=await js.text();
   if(!js.ok||!jsText.includes('function renderProducts')||!jsText.includes('function photoOrigin')||!jsText.includes('st.heroPhotos')||!jsText.includes('cashOnDelivery'))throw Error('Customer JS self-test failed');
   let admin=await fetch(base+'/admin'),adminHtml=await admin.text();
-  if(!admin.ok||!adminHtml.includes('id="loginForm"')||!adminHtml.includes('id="mRealPhotos"')||!adminHtml.includes('id="sCashOnDelivery"')||!adminHtml.includes('id="sMapUrl"')||adminHtml.includes('data:audio/'))throw Error('Admin HTML self-test failed');
+  if(!admin.ok||!adminHtml.includes('id="loginForm"')||!adminHtml.includes('id="mRealPhotos"')||!adminHtml.includes('id="sCashOnDelivery"')||!adminHtml.includes('id="sMapUrl"')||adminHtml.includes('data:audio/')||!['dashboard','orders','products','offers','categories','settings','security'].every(tab=>adminHtml.includes('data-tab="'+tab+'"')))throw Error('Admin HTML self-test failed');
   let adminJs=await fetch(base+'/admin.js'),adminJsText=await adminJs.text();
-  if(!adminJs.ok||!adminJsText.includes('photoSourcePill')||!adminJsText.includes('todayStatusBreakdown')||!adminJsText.includes('loadSettings')||!adminJsText.includes('/api/admin/session'))throw Error('Admin JS self-test failed');
+  if(!adminJs.ok||!adminJsText.includes('photoSourcePill')||!adminJsText.includes('todayStatusBreakdown')||!adminJsText.includes('loadSettings')||!adminJsText.includes('/api/admin/session')||!adminJsText.includes("dataset.orderView")||adminJsText.includes("viewOrder(b.dataset.order)"))throw Error('Admin JS self-test failed');
   x=await getJson('/api/admin/session');if(!x.r.ok||x.j?.authenticated!==false)throw Error('Anonymous admin session probe self-test failed');
   const configuredAdminRow=(await pool.query('select email,active,role,password_hash from admins where email=$1',[String(process.env.ADMIN_EMAIL||'').trim().toLowerCase()])).rows[0];
   if(!configuredAdminRow||configuredAdminRow.active!==true||configuredAdminRow.role!=='ADMIN'||configuredAdminRow.password_hash!==String(process.env.ADMIN_PASSWORD_HASH||'').trim())throw Error('Configured admin persistence self-test failed');
@@ -438,6 +438,59 @@ async function startupHttpSelfTest(){
   x=await adminJson('/api/admin/me');if(!x.r.ok||x.j?.admin?.email!==qaAdminEmail)throw Error('HTTP admin session self-test failed');
   x=await adminJson('/api/admin/dashboard');if(!x.r.ok||+x.j?.products<64||!x.j?.photoCoverage)throw Error('HTTP admin dashboard self-test failed');
 
+  // Every visible admin tab/API gets exercised with safe temporary data.
+  x=await adminJson('/api/admin/categories');if(!x.r.ok||!Array.isArray(x.j?.categories)||x.j.categories.length<1)throw Error('HTTP admin categories list self-test failed');
+  x=await adminJson('/api/admin/products');if(!x.r.ok||!Array.isArray(x.j?.products)||!Array.isArray(x.j?.categories))throw Error('HTTP admin products list self-test failed');
+  x=await adminJson('/api/admin/offers');if(!x.r.ok||!Array.isArray(x.j?.offers))throw Error('HTTP admin offers list self-test failed');
+  x=await adminJson('/api/admin/settings');if(!x.r.ok||!x.j?.settings?.restaurantNameAr)throw Error('HTTP admin settings load self-test failed');
+  const qaSettings=x.j.settings;
+  x=await adminJson('/api/admin/audit?limit=5');if(!x.r.ok||!Array.isArray(x.j?.audit))throw Error('HTTP admin audit self-test failed');
+  x=await adminJson('/api/admin/export');if(!x.r.ok||!x.j?.settings||!Array.isArray(x.j?.orders)||!Array.isArray(x.j?.products))throw Error('HTTP admin backup export self-test failed');
+
+  qaCategoryId='qa-admin-'+crypto.randomBytes(5).toString('hex');
+  x=await adminJson('/api/admin/categories',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({id:qaCategoryId,name_ar:'تصنيف اختبار',name_en:'QA Category',icon:'✓',active:true,sort_order:9999})});
+  if(x.r.status!==201||x.j?.category?.id!==qaCategoryId)throw Error('HTTP admin category create self-test failed');
+  x=await adminJson('/api/admin/categories/'+encodeURIComponent(qaCategoryId),{method:'PATCH',headers:{'content-type':'application/json'},body:JSON.stringify({name_en:'QA Category Edited',active:true,sort_order:9998})});
+  if(!x.r.ok||x.j?.category?.name_en!=='QA Category Edited')throw Error('HTTP admin category edit self-test failed');
+
+  x=await adminJson('/api/admin/products',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({category_id:qaCategoryId,name_ar:'منتج اختبار الإدارة',name_en:'QA Admin Product',description_ar:'اختبار مؤقت',description_en:'Temporary QA item',price:12.34,calories:123,unit_ar:'قطعة',unit_en:'item',available:true,orderable:true,featured:false,sort_order:9999,image:''})});
+  if(x.r.status!==201||!x.j?.product?.id)throw Error('HTTP admin product create self-test failed');
+  qaProductId=x.j.product.id;
+  x=await adminJson('/api/admin/products/'+encodeURIComponent(qaProductId),{method:'PATCH',headers:{'content-type':'application/json'},body:JSON.stringify({name_en:'QA Admin Product Edited',available:false,price:13.45})});
+  if(!x.r.ok||x.j?.product?.name_en!=='QA Admin Product Edited'||x.j?.product?.available!==false||+x.j?.product?.price!==13.45)throw Error('HTTP admin product edit/toggle self-test failed');
+  x=await adminJson('/api/admin/products/'+encodeURIComponent(qaProductId),{method:'DELETE'});
+  if(!x.r.ok||x.j?.ok!==true)throw Error('HTTP admin product delete self-test failed');qaProductId=null;
+
+  x=await adminJson('/api/admin/categories/'+encodeURIComponent(qaCategoryId),{method:'DELETE'});
+  if(!x.r.ok||x.j?.ok!==true)throw Error('HTTP admin category delete self-test failed');qaCategoryId=null;
+
+  x=await adminJson('/api/admin/offers',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({title_ar:'عرض اختبار الإدارة',title_en:'QA Admin Offer',description_ar:'اختبار مؤقت',description_en:'Temporary QA offer',price:44.55,active:true,sort_order:9999,image:''})});
+  if(x.r.status!==201||!x.j?.offer?.id)throw Error('HTTP admin offer create self-test failed');
+  qaOfferId=x.j.offer.id;
+  x=await adminJson('/api/admin/offers/'+encodeURIComponent(qaOfferId),{method:'PATCH',headers:{'content-type':'application/json'},body:JSON.stringify({title_en:'QA Admin Offer Edited',active:false,price:45.65})});
+  if(!x.r.ok||x.j?.offer?.title_en!=='QA Admin Offer Edited'||x.j?.offer?.active!==false||+x.j?.offer?.price!==45.65)throw Error('HTTP admin offer edit self-test failed');
+  x=await adminJson('/api/admin/offers/'+encodeURIComponent(qaOfferId),{method:'DELETE'});
+  if(!x.r.ok||x.j?.ok!==true)throw Error('HTTP admin offer delete self-test failed');qaOfferId=null;
+
+  // Settings Save is tested as an exact no-op, protecting production values.
+  x=await adminJson('/api/admin/settings',{method:'PUT',headers:{'content-type':'application/json'},body:JSON.stringify({deliveryFee:qaSettings.deliveryFee,minimumOrder:qaSettings.minimumOrder,acceptingOrders:qaSettings.acceptingOrders,cashOnDelivery:qaSettings.cashOnDelivery,cardOnDelivery:qaSettings.cardOnDelivery})});
+  if(!x.r.ok||+x.j?.settings?.deliveryFee!==+qaSettings.deliveryFee||+x.j?.settings?.minimumOrder!==+qaSettings.minimumOrder)throw Error('HTTP admin settings save self-test failed');
+
+  // Exercise image upload + serving, then remove the temporary DB image in finally.
+  const imageForm=new FormData();
+  imageForm.append('image',new Blob([Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9Wl2GQAAAABJRU5ErkJggg==','base64')],{type:'image/png'}),'qa-admin.png');
+  x=await adminJson('/api/admin/images',{method:'POST',body:imageForm});
+  if(x.r.status!==201||!x.j?.id||!x.j?.url)throw Error('HTTP admin image upload self-test failed');
+  qaImageId=x.j.id;
+  const imageGet=await fetch(base+x.j.url);if(!imageGet.ok||!String(imageGet.headers.get('content-type')).includes('image/png'))throw Error('HTTP admin uploaded image serving self-test failed');
+
+  // SSE live-order channel must open and emit its ready event.
+  const sseAbort=new AbortController();
+  const sse=await fetch(base+'/api/admin/events',{headers:{cookie:adminCookie},signal:sseAbort.signal});
+  if(!sse.ok||!String(sse.headers.get('content-type')).includes('text/event-stream'))throw Error('HTTP admin live events self-test failed');
+  const sseReader=sse.body.getReader(),sseFirst=await sseReader.read(),sseText=Buffer.from(sseFirst.value||[]).toString('utf8');sseAbort.abort();
+  if(!sseText.includes('event: ready'))throw Error('HTTP admin live events ready self-test failed');
+
   x=await adminJson('/api/admin/orders?status=PENDING&q='+encodeURIComponent(qaCustomerOrderNumber));
   if(!x.r.ok||!x.j?.orders?.some(o=>o.id===customerOrder.id))throw Error('Customer order missing from staff queue');
   x=await adminJson('/api/admin/orders/'+customerOrder.id);
@@ -463,8 +516,21 @@ async function startupHttpSelfTest(){
   x=await getJson('/api/orders/track/'+encodeURIComponent(card.public.trackingToken)+'?phone='+qaPhone);
   if(!x.r.ok||x.j?.order?.status!=='REJECTED')throw Error('HTTP rejected tracking self-test failed');
 
-  console.log('HTTP_QA_PASS '+JSON.stringify({health:true,homepage:true,customerCss:true,customerJs:true,adminHtml:true,adminJs:true,adminAnonymousSession:true,adminLogin:true,adminAuthenticatedSession:true,adminDashboard:true,adminApprovalWorkflow:true,adminRejectWorkflow:true,pwa:true,manifest:true,promoAsset:true,storefrontAsset:true,ownerExcelPhotos:realPhotos.length,illustrations:illustrations.length,illustratedOffers:(pub.offers||[]).filter(o=>o.image_source==='ILLUSTRATIVE').length,publicApi:true,products:(pub.products||[]).length,categories:(pub.categories||[]).length,offers:(pub.offers||[]).length,cashOnDelivery:true,cardOnDelivery:true,codDeliveryOrder:true,cardPickupOrder:true,tracking:true,marketPriceProtection:true,map:true,hours:true,rating:st.googleRating,customerRegistration:true,customerLogin:true,savedDeliveryPin:true,customerOrderHistory:true,customerStaffIsolation:true,customerOrderStaffQueue:true,customerDeliveryPinForStaff:true,customerApprovalToCompletion:true,customerStatusHistory:true,deliveryPinRequired:true,offerCheckout:true,savedAddressDeduplication:true}));
+  const qaAdminPassword2='QA2!'+crypto.randomBytes(12).toString('base64url');
+  x=await adminJson('/api/admin/change-password',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({currentPassword:qaAdminPassword,newPassword:qaAdminPassword2})});
+  if(!x.r.ok||x.j?.relogin!==true)throw Error('HTTP admin change-password self-test failed');
+  x=await getJson('/api/admin/login',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({email:qaAdminEmail,password:qaAdminPassword2})});
+  if(!x.r.ok||!x.j?.ok)throw Error('HTTP admin re-login after password change self-test failed');
+  adminCookie=String(x.r.headers.get('set-cookie')||'').split(';')[0];
+  const logout=await fetch(base+'/api/admin/logout',{method:'POST',headers:{cookie:adminCookie}});
+  if(!logout.ok||!String(logout.headers.get('set-cookie')||'').includes('sf_admin='))throw Error('HTTP admin logout self-test failed');
+
+  console.log('HTTP_QA_PASS '+JSON.stringify({health:true,homepage:true,customerCss:true,customerJs:true,adminHtml:true,adminJs:true,adminAnonymousSession:true,adminLogin:true,adminAuthenticatedSession:true,adminDashboard:true,adminOrdersList:true,adminOrderView:true,adminProductsCrud:true,adminOffersCrud:true,adminCategoriesCrud:true,adminSettingsLoadSave:true,adminImageUpload:true,adminLiveEvents:true,adminBackup:true,adminAudit:true,adminPasswordChange:true,adminLogout:true,adminApprovalWorkflow:true,adminRejectWorkflow:true,pwa:true,manifest:true,promoAsset:true,storefrontAsset:true,ownerExcelPhotos:realPhotos.length,illustrations:illustrations.length,illustratedOffers:(pub.offers||[]).filter(o=>o.image_source==='ILLUSTRATIVE').length,publicApi:true,products:(pub.products||[]).length,categories:(pub.categories||[]).length,offers:(pub.offers||[]).length,cashOnDelivery:true,cardOnDelivery:true,codDeliveryOrder:true,cardPickupOrder:true,tracking:true,marketPriceProtection:true,map:true,hours:true,rating:st.googleRating,customerRegistration:true,customerLogin:true,savedDeliveryPin:true,customerOrderHistory:true,customerStaffIsolation:true,customerOrderStaffQueue:true,customerDeliveryPinForStaff:true,customerApprovalToCompletion:true,customerStatusHistory:true,deliveryPinRequired:true,offerCheckout:true,savedAddressDeduplication:true}));
  }finally{
+  if(qaProductId)try{await pool.query('delete from products where id=$1',[qaProductId])}catch(e){console.error('QA product cleanup failed',e)}
+  if(qaOfferId)try{await pool.query('delete from offers where id=$1',[qaOfferId])}catch(e){console.error('QA offer cleanup failed',e)}
+  if(qaCategoryId)try{await pool.query('delete from categories where id=$1',[qaCategoryId])}catch(e){console.error('QA category cleanup failed',e)}
+  if(qaImageId)try{await pool.query('delete from images where id=$1',[qaImageId])}catch(e){console.error('QA image cleanup failed',e)}
   for(const id of createdIds){try{await pool.query('delete from order_history where order_id=$1',[id]);await pool.query('delete from order_items where order_id=$1',[id]);await pool.query('delete from orders where id=$1',[id])}catch(e){console.error('QA cleanup failed',e)}}
   if(qaCustomerId)try{await pool.query('delete from customers where id=$1',[qaCustomerId])}catch(e){console.error('QA customer cleanup failed',e)}
   try{await pool.query('delete from audit_log where actor=$1',[qaAdminEmail]);await pool.query('delete from admins where email=$1',[qaAdminEmail])}catch(e){console.error('QA admin cleanup failed',e)}
