@@ -12,16 +12,16 @@
 <meta property="og:image" content="/assets/shrimp-fins-promo.webp">
 <title>زعانف الروبيان | Shrimp Fins</title>
 <link rel="manifest" href="/manifest.webmanifest">
-<link rel="icon" type="image/svg+xml" href="/favicon.svg?v=28">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg?v=29">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-<link rel="preload" as="image" href="/assets/menu-owner-2026-09-27-v2/m032.webp?v=28">
-<link rel="preload" as="image" href="/assets/storefront-owner-enhanced-2026-09-27.webp?v=28">
-<link rel="stylesheet" href="/styles.css?v=28">
+<link rel="preload" as="image" href="/assets/menu-owner-2026-09-27-v2/m032.webp?v=29">
+<link rel="preload" as="image" href="/assets/storefront-owner-enhanced-2026-09-27.webp?v=29">
+<link rel="stylesheet" href="/styles.css?v=29">
 </head>
 <body>
-<div id="loading" class="loading"><img src="/favicon.svg?v=28" alt=""><b>زعانف الروبيان</b><span></span></div>
+<div id="loading" class="loading"><img src="/favicon.svg?v=29" alt=""><b>زعانف الروبيان</b><span></span></div>
 <div id="loadError" class="load-error hidden" role="alert">
   <b>تعذر تحميل المنيو · Menu could not load</b>
   <span>تحقق من الاتصال ثم حاول مرة أخرى.</span>
@@ -29,7 +29,7 @@
 </div>
 
 <header class="topbar">
-  <a class="brand" href="#top"><img class="brand-logo" src="/favicon.svg?v=28" alt=""><span><b>زعانف الروبيان</b><small>Shrimp Fins</small></span></a>
+  <a class="brand" href="#top"><img class="brand-logo" src="/favicon.svg?v=29" alt=""><span><b>زعانف الروبيان</b><small>Shrimp Fins</small></span></a>
   <nav>
     <a href="#offers" data-t="offers">العروض</a>
     <a href="#menu" data-t="menu">المنيو</a>
@@ -68,7 +68,7 @@
   </div>
   <div class="hero-visual">
     <figure class="hero-photo-frame">
-      <img id="heroFoodImage" src="/assets/storefront-owner-enhanced-2026-09-27.webp?v=28" alt="واجهة مطعم زعانف الروبيان">
+      <img id="heroFoodImage" src="/assets/storefront-owner-enhanced-2026-09-27.webp?v=29" alt="واجهة مطعم زعانف الروبيان">
       <figcaption><span id="heroPhotoCaption">واجهة المطعم · الرياض</span><b>0541064143</b></figcaption>
       <div class="hero-photo-controls" aria-label="Restaurant photos">
         <button id="heroPhotoPrev" type="button" aria-label="Previous photo">‹</button>
@@ -122,7 +122,7 @@
 
 <section id="contact" class="section contact-section">
   <div class="storefront">
-    <img id="storefrontImg" src="/assets/storefront-owner-enhanced-2026-09-27.webp?v=28" alt="واجهة مطعم زعانف الروبيان">
+    <img id="storefrontImg" src="/assets/storefront-owner-enhanced-2026-09-27.webp?v=29" alt="واجهة مطعم زعانف الروبيان">
   </div>
   <div class="contact-copy">
     <span class="kicker">VISIT SHRIMP FINS</span>
@@ -146,7 +146,7 @@
 </main>
 
 <footer>
-  <div class="brand"><img class="brand-logo" src="/favicon.svg?v=28" alt=""><span><b>زعانف الروبيان</b><small>Shrimp Fins Restaurant</small></span></div>
+  <div class="brand"><img class="brand-logo" src="/favicon.svg?v=29" alt=""><span><b>زعانف الروبيان</b><small>Shrimp Fins Restaurant</small></span></div>
   <p data-t="footer">طلبات الموقع تصل مباشرة إلى نظام المطعم وتنتظر التأكيد.</p>
   <div class="footer-actions"><a id="footerCall" href="tel:0541064143">0541064143</a><a class="staff-link" href="/admin">🔐 <span>دخول إدارة المطعم · Staff Login</span></a></div>
 </footer>
@@ -169,8 +169,9 @@
   <div id="cartItems" class="cart-items"></div>
   <div id="cartEmpty" class="cart-empty">🛒 <b data-t="emptyCart">السلة فارغة</b></div>
   <div id="cartTotals" class="cart-totals hidden">
-    <div><span data-t="subtotal">المجموع</span><b id="subTotal"></b></div>
-    <div><span data-t="deliveryFee">التوصيل</span><b id="deliveryFee">—</b></div>
+    <div><span data-t="subtotal">مجموع الأصناف</span><b id="subTotal"></b></div>
+    <div><span data-t="deliveryFee">رسوم التوصيل</span><b id="deliveryFee">—</b></div>
+    <div><span data-t="vatIncluded">ضريبة القيمة المضافة مشمولة</span><b id="cartVat"></b></div>
     <div class="grand"><span data-t="total">الإجمالي</span><b id="grandTotal"></b></div>
     <button id="checkoutBtn" class="checkout" type="button" data-t="checkout">متابعة الطلب</button>
   </div>
@@ -203,7 +204,12 @@
       <label><input type="radio" name="paymentMethod" value="cod" checked><span>💵 <b data-t="cod">نقداً عند الاستلام</b></span></label>
       <label><input type="radio" name="paymentMethod" value="card_on_delivery"><span>💳 <b data-t="cardOnDelivery">بطاقة عند الاستلام</b></span></label>
     </div>
-    <div class="checkout-total"><span data-t="amountDue">الإجمالي</span><b id="checkoutTotal"></b></div>
+    <div class="checkout-breakdown financial-summary">
+      <div><span data-t="subtotal">مجموع الأصناف</span><b id="checkoutSubTotal"></b></div>
+      <div><span data-t="deliveryFee">رسوم التوصيل</span><b id="checkoutDeliveryFee"></b></div>
+      <div><span data-t="vatIncluded">ضريبة القيمة المضافة مشمولة</span><b id="checkoutVat"></b></div>
+      <div class="grand"><span data-t="amountDue">الإجمالي</span><b id="checkoutTotal"></b></div>
+    </div>
     <button id="placeOrderBtn" class="checkout" type="submit" data-t="placeOrder">إرسال الطلب للمطعم</button>
     <small class="muted" data-t="terms">الطلب ينتظر تأكيد المطعم قبل التحضير.</small>
   </form>
@@ -220,6 +226,7 @@
   <div class="success-icon">✓</div><span class="kicker">ORDER SENT</span><h2 data-t="orderSent">تم إرسال طلبك</h2>
   <p data-t="waitingConfirm">طلبك الآن بانتظار تأكيد المطعم.</p>
   <div class="order-box"><small data-t="orderNumber">رقم الطلب</small><b id="successNo"></b></div>
+  <div id="successBreakdown" class="financial-summary success-breakdown"></div>
   <div class="success-actions"><button id="trackNow" class="primary" type="button" data-t="trackNow">تتبع الآن</button><button class="secondary-dark" type="button" data-close data-t="done">تم</button></div>
 </div>
 
@@ -232,6 +239,6 @@
   <div id="accountSigned" class="hidden"><p id="accountWelcome"></p><h3>عناويني · My addresses</h3><div id="accountAddresses"></div><h3>طلباتي · My orders</h3><div id="accountOrders"></div><button id="accountLogout" type="button">خروج · Sign out</button></div>
 </div>
 <div id="toast" class="toast"></div>
-<script src="/app.js?v=28"></script>
+<script src="/app.js?v=29"></script>
 </body>
 </html>
