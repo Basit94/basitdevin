@@ -49,8 +49,8 @@ let heroPhotoIndex=0,heroPhotoTimer=null,heroTouchX=null;
 function heroPhotos(st){
  const configured=Array.isArray(st.heroPhotos)?st.heroPhotos.filter(p=>p&&p.src):[];
  const fallback=[
-  {src:st.storefrontImage||'/assets/storefront.svg',ar:'واجهة مطعم زعانف الروبيان',en:'Shrimp Fins storefront',source:'OWNER'},
-  {src:st.officialPromoImage||st.heroImage||'/assets/shrimp-fins-promo.webp',ar:'هوية زعانف الروبيان',en:'Shrimp Fins identity',source:'OWNER'}
+  {src:st.storefrontImage||'/assets/storefront-maps-enhanced.webp',ar:'واجهة مطعم زعانف الروبيان',en:'Shrimp Fins storefront',source:'MAPS'},
+  {src:st.officialPromoImage||st.heroImage||'/assets/menu-owner-2026-09-27-v2/m032.webp',ar:'صحن زعانف الروبيان',en:'Shrimp Fins platter',source:'OWNER_EXCEL'}
  ];
  const googlePhoto=st.mapsPhotoUrl?[{src:st.mapsPhotoUrl,ar:'صورة من موقع المطعم',en:'Restaurant location photo',source:'PUBLIC_LISTING'}]:[];
  return[...(configured.length?configured:fallback),...googlePhoto].filter((x,i,a)=>x.src&&a.findIndex(y=>y.src===x.src)===i);
@@ -68,7 +68,7 @@ function displayImage(p){const o=photoOrigin(p);return o.cls==='missing'?PRODUCT
 function showHeroPhoto(index,manual=false){
  if(!state.data)return;const st=state.data.settings||{},photos=heroPhotos(st);if(!photos.length)return;
  heroPhotoIndex=(index+photos.length)%photos.length;const p=photos[heroPhotoIndex],img=$('#heroFoodImage');
- if(img){img.classList.add('changing');const probe=new Image();probe.onload=()=>{img.src=p.src;img.alt=state.lang==='ar'?p.ar:p.en;requestAnimationFrame(()=>img.classList.remove('changing'))};probe.onerror=()=>{img.src=st.storefrontImage||'/assets/storefront.svg';img.classList.remove('changing')};probe.src=p.src}
+ if(img){img.classList.add('changing');const probe=new Image();probe.onload=()=>{img.src=p.src;img.alt=state.lang==='ar'?p.ar:p.en;requestAnimationFrame(()=>img.classList.remove('changing'))};probe.onerror=()=>{img.src=st.storefrontImage||'/assets/storefront-maps-enhanced.webp';img.classList.remove('changing')};probe.src=p.src}
  const cap=$('#heroPhotoCaption');if(cap)cap.textContent=state.lang==='ar'?p.ar:p.en;
  const dots=$('#heroPhotoDots');if(dots)dots.innerHTML=photos.map((_,i)=>`<button type="button" aria-label="Photo ${i+1}" class="${i===heroPhotoIndex?'active':''}" data-hero-dot="${i}"></button>`).join('');
  $$('[data-hero-dot]').forEach(b=>b.onclick=()=>showHeroPhoto(+b.dataset.heroDot,true));

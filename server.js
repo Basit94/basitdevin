@@ -189,7 +189,7 @@ if(st.menuRevision!=='owner-menu-2026-09-27-v6'){
     for(let i=0;i<canonicalOffers.length;i++){const o=canonicalOffers[i];await client.query(`INSERT INTO offers(id,title_ar,title_en,description_ar,description_en,price,image,active,sort_order) VALUES($1,$2,$3,$4,$5,$6,$7,TRUE,$8)
       ON CONFLICT(id) DO UPDATE SET title_ar=EXCLUDED.title_ar,title_en=EXCLUDED.title_en,description_ar=EXCLUDED.description_ar,description_en=EXCLUDED.description_en,price=EXCLUDED.price,image=CASE WHEN COALESCE(offers.image,'')='' THEN EXCLUDED.image ELSE offers.image END,active=offers.active,sort_order=EXCLUDED.sort_order,updated_at=NOW()`,
       [o[0],o[1],o[2],o[4],'Shrimp Fins sharing offer based on the restaurant menu.',o[3],offerImages[o[0]]||px(8352805,1100,700),i])}
-    st.menuRevision='owner-menu-2026-09-27-v6';st.menuSource='Owner Excel menu';st.menuProductCount=menuProducts.length;st.menuOfferCount=canonicalOffers.length;st.storefrontImage='/assets/storefront.svg';st.heroImage='/assets/shrimp-fins-promo.webp';st.officialPromoImage='/assets/shrimp-fins-promo.webp';st.cashOnDelivery=true;
+    st.menuRevision='owner-menu-2026-09-27-v6';st.menuSource='Owner Excel menu';st.menuProductCount=menuProducts.length;st.menuOfferCount=canonicalOffers.length;st.storefrontImage='/assets/storefront-maps-enhanced.webp';st.heroImage='/assets/menu-owner-2026-09-27-v2/m032.webp';st.officialPromoImage='/assets/menu-owner-2026-09-27-v2/m032.webp';st.cashOnDelivery=true;
     await client.query('UPDATE settings SET data=$1 WHERE id=1',[st]);
     await client.query('COMMIT');
   }catch(e){await client.query('ROLLBACK').catch(()=>{});throw e}finally{client.release()}
@@ -223,8 +223,8 @@ if(st.photoRevision!==OWNER_PHOTO_REVISION){
       {src:excelRealImages.m036,ar:'صحن التوفير',en:'Saving platter',source:'OWNER_EXCEL'},
       {src:excelRealImages.m039,ar:'صينية الدنيس بالبطاطس',en:'Sea bream and potato tray',source:'OWNER_EXCEL'},
       {src:excelRealImages.m038,ar:'صينية العريس',en:'Al Arees tray',source:'OWNER_EXCEL'},
-      {src:'/assets/storefront.svg',ar:'واجهة مطعم زعانف الروبيان',en:'Shrimp Fins storefront',source:'OWNER'},
-      {src:'/assets/shrimp-fins-promo.webp',ar:'الهوية الرسمية لزعانف الروبيان',en:'Official Shrimp Fins artwork',source:'OWNER'}
+      {src:'/assets/storefront-maps-enhanced.webp',ar:'واجهة مطعم زعانف الروبيان',en:'Shrimp Fins storefront',source:'MAPS'},
+      {src:'/assets/menu-owner-2026-09-27-v2/m032.webp',ar:'الهوية الرسمية لزعانف الروبيان',en:'Official Shrimp Fins artwork',source:'MAPS'}
     ];
     st.imageCredit='Owner-supplied Excel photos are used wherever available. Items without a supplied real photo use the Shrimp Fins branded placeholder until restaurant staff upload the real dish photo.';
     await client.query('UPDATE settings SET data=$1 WHERE id=1',[st]);
@@ -244,8 +244,17 @@ if(st.illustrativeRevision!==ILLUSTRATION_REVISION){
     await client.query('COMMIT');
   }catch(e){await client.query('ROLLBACK').catch(()=>{});throw e}finally{client.release()}
 }
-st={restaurantNameAr:'زعانف الروبيان',restaurantNameEn:'Shrimp Fins',phone:'0541064143',whatsapp:'966541064143',addressAr:'شارع حسان بن ثابت، حي النسيم الغربي، الرياض 14232',addressEn:'Hassan Ibn Thabet, An Nasim Al Gharbi, Riyadh 14232, Saudi Arabia',deliveryFee:10,minimumOrder:30,acceptingOrders:true,currency:'SAR',heroMessageAr:'أشهى المأكولات البحرية الطازجة في مكان واحد',heroMessageEn:'Premium fresh seafood, prepared to order',openingHoursAr:'يومياً 12:00 ظهراً – 12:00 منتصف الليل',openingHoursEn:'Daily 12:00 PM – 12:00 AM',mapQuery:'24.7358191,46.8310771',mapUrl:'https://www.google.com/maps/search/?api=1&query=24.7358191,46.8310771',googleRating:4.8,googleReviewCount:251,serviceModesAr:'توصيل • سفري • تناول داخل المطعم',serviceModesEn:'Delivery • Takeaway • Dine-in',amenitiesAr:'مناسب للعائلات • مواقف مجانية • يقبل البطاقات والدفع بالجوال',amenitiesEn:'Family-friendly • Free parking • Cards & NFC payments',googleInfoCheckedAt:'2026-09-24',heroImage:'/assets/shrimp-fins-promo.webp',storefrontImage:'/assets/storefront.svg',cashOnDelivery:true,cardOnDelivery:true,imageCredit:'Licensed Pexels stock photography is used where real restaurant dish photos are not yet available.',...st};
-if(st.infoRevision!=='google-maps-2026-09-25-v2'){Object.assign(st,{addressAr:'شارع حسان بن ثابت، حي النسيم الغربي، الرياض 14232',addressEn:'Hassan Ibn Thabet, An Nasim Al Gharbi, Riyadh 14232, Saudi Arabia',openingHoursAr:'يومياً 12:00 ظهراً – 12:00 منتصف الليل',openingHoursEn:'Daily 12:00 PM – 12:00 AM',mapQuery:'24.7358191,46.8310771',mapUrl:'https://www.google.com/maps/search/?api=1&query=24.7358191,46.8310771',googleRating:4.8,googleReviewCount:251,serviceModesAr:'توصيل بدون تلامس • توصيل • سفري • تناول داخل المطعم',serviceModesEn:'No-contact delivery • Delivery • Takeaway • Dine-in',amenitiesAr:'مناسب للعائلات • يقبل الحجز • مواقف مجانية • بطاقات ائتمان وخصم • دفع بالجوال',amenitiesEn:'Family-friendly • Reservations • Free parking • Credit/debit cards • NFC mobile payments',reservationsAr:'الحجز متاح — تواصل مع المطعم على 0541064143',reservationsEn:'Reservations available — call 0541064143',googleInfoCheckedAt:'2026-09-25',heroImage:'/assets/shrimp-fins-promo.webp',storefrontImage:'/assets/storefront.svg',cashOnDelivery:true,infoRevision:'google-maps-2026-09-25-v2'});}
+if(st.visualRevision!=='enhanced-brand-2026-09-27-v1'){
+  const oldStore='/assets/storefront.svg',newStore='/assets/storefront-maps-enhanced.webp';
+  const oldPromo='/assets/shrimp-fins-promo.webp',newPromo='/assets/menu-owner-2026-09-27-v2/m032.webp';
+  if(!st.storefrontImage||st.storefrontImage===oldStore)st.storefrontImage=newStore;
+  if(!st.heroImage||st.heroImage===oldPromo)st.heroImage=newPromo;
+  if(!st.officialPromoImage||st.officialPromoImage===oldPromo)st.officialPromoImage=newPromo;
+  if(Array.isArray(st.heroPhotos))st.heroPhotos=st.heroPhotos.filter(p=>p.src!==oldPromo).map(p=>p.src===oldStore?{...p,src:newStore,source:'MAPS'}:p);
+  st.visualRevision='enhanced-brand-2026-09-27-v1';
+}
+st={restaurantNameAr:'زعانف الروبيان',restaurantNameEn:'Shrimp Fins',phone:'0541064143',whatsapp:'966541064143',addressAr:'شارع حسان بن ثابت، حي النسيم الغربي، الرياض 14232',addressEn:'Hassan Ibn Thabet, An Nasim Al Gharbi, Riyadh 14232, Saudi Arabia',deliveryFee:10,minimumOrder:30,acceptingOrders:true,currency:'SAR',heroMessageAr:'أشهى المأكولات البحرية الطازجة في مكان واحد',heroMessageEn:'Premium fresh seafood, prepared to order',openingHoursAr:'يومياً 12:00 ظهراً – 12:00 منتصف الليل',openingHoursEn:'Daily 12:00 PM – 12:00 AM',mapQuery:'24.7358191,46.8310771',mapUrl:'https://www.google.com/maps/search/?api=1&query=24.7358191,46.8310771',googleRating:4.8,googleReviewCount:251,serviceModesAr:'توصيل • سفري • تناول داخل المطعم',serviceModesEn:'Delivery • Takeaway • Dine-in',amenitiesAr:'مناسب للعائلات • مواقف مجانية • يقبل البطاقات والدفع بالجوال',amenitiesEn:'Family-friendly • Free parking • Cards & NFC payments',googleInfoCheckedAt:'2026-09-24',heroImage:'/assets/menu-owner-2026-09-27-v2/m032.webp',storefrontImage:'/assets/storefront-maps-enhanced.webp',cashOnDelivery:true,cardOnDelivery:true,imageCredit:'Licensed Pexels stock photography is used where real restaurant dish photos are not yet available.',...st};
+if(st.infoRevision!=='google-maps-2026-09-25-v2'){Object.assign(st,{addressAr:'شارع حسان بن ثابت، حي النسيم الغربي، الرياض 14232',addressEn:'Hassan Ibn Thabet, An Nasim Al Gharbi, Riyadh 14232, Saudi Arabia',openingHoursAr:'يومياً 12:00 ظهراً – 12:00 منتصف الليل',openingHoursEn:'Daily 12:00 PM – 12:00 AM',mapQuery:'24.7358191,46.8310771',mapUrl:'https://www.google.com/maps/search/?api=1&query=24.7358191,46.8310771',googleRating:4.8,googleReviewCount:251,serviceModesAr:'توصيل بدون تلامس • توصيل • سفري • تناول داخل المطعم',serviceModesEn:'No-contact delivery • Delivery • Takeaway • Dine-in',amenitiesAr:'مناسب للعائلات • يقبل الحجز • مواقف مجانية • بطاقات ائتمان وخصم • دفع بالجوال',amenitiesEn:'Family-friendly • Reservations • Free parking • Credit/debit cards • NFC mobile payments',reservationsAr:'الحجز متاح — تواصل مع المطعم على 0541064143',reservationsEn:'Reservations available — call 0541064143',googleInfoCheckedAt:'2026-09-25',heroImage:'/assets/menu-owner-2026-09-27-v2/m032.webp',storefrontImage:'/assets/storefront-maps-enhanced.webp',cashOnDelivery:true,infoRevision:'google-maps-2026-09-25-v2'});}
 await pool.query('update settings set data=$1 where id=1',[st]);}
 async function startupSelfTest(){
  const c=await pool.connect(),tag='qa_'+crypto.randomBytes(6).toString('hex');
@@ -262,7 +271,7 @@ async function startupSelfTest(){
   const q=(await c.query('select status,payment from orders where id=$1',[orderId])).rows[0];
   if(!q||q.status!=='COMPLETED'||q.payment!=='cod')throw Error('Order/COD workflow self-test failed');
   await c.query('ROLLBACK');
-  const indexPath=path.join(__dirname,'public','index.html'),promoPath=path.join(__dirname,'public','assets','shrimp-fins-promo.webp'),storePath=path.join(__dirname,'public','assets','storefront.svg');
+  const indexPath=path.join(__dirname,'public','index.html'),promoPath=path.join(__dirname,'public','assets','menu-owner-2026-09-27-v2','m032.webp'),storePath=path.join(__dirname,'public','assets','storefront-maps-enhanced.webp');
   const indexHtml=fs.readFileSync(indexPath,'utf8');
   const requiredIds=['loading','langBtn','trackBtn','cartBtn','heroFoodImage','offersGrid','searchInput','cats','resultCount','products','noProducts','restaurantName','addressText','phoneText','callBtn','waBtn','mapBtn','bannerMapBtn','hoursText','googleRating','googleReviews','serviceModes','amenitiesText','physicalOpenStatus','storefrontImg','checkoutForm','trackForm','productModalBody','toast','mobileCartBtn','mobileTrackBtn'];
   const missingIds=requiredIds.filter(id=>!indexHtml.includes('id="'+id+'"'));
@@ -281,7 +290,7 @@ async function startupSelfTest(){
     (select count(*) from products where available=true and image_source='OWNER_EXCEL') owner_excel_photos`)).rows[0];
   const st=(await pool.query('select data from settings where id=1')).rows[0]?.data||{};
   if(+stats.products<menuProducts.length||+stats.product_images<menuProducts.length||+stats.offers<9||+stats.offer_images<9||+stats.calories_populated<40||+stats.market_price_items<1||+stats.owner_excel_photos<57)throw Error('Menu completeness self-test failed: '+JSON.stringify(stats));
-  if(st.phone!=='0541064143'||!st.whatsapp||!st.restaurantNameAr||!st.addressAr||st.heroImage!=='/assets/shrimp-fins-promo.webp'||st.storefrontImage!=='/assets/storefront.svg'||st.cashOnDelivery!==true||st.cardOnDelivery!==true||st.infoRevision!=='google-maps-2026-09-25-v2'||st.photoRevision!==OWNER_PHOTO_REVISION||st.googleRating!==4.8||!st.mapUrl||!st.openingHoursAr||!st.reservationsAr||!Array.isArray(st.heroPhotos)||st.heroPhotos.length<8)throw Error('Restaurant settings self-test failed');
+  if(st.phone!=='0541064143'||!st.whatsapp||!st.restaurantNameAr||!st.addressAr||st.heroImage!=='/assets/menu-owner-2026-09-27-v2/m032.webp'||st.storefrontImage!=='/assets/storefront-maps-enhanced.webp'||st.cashOnDelivery!==true||st.cardOnDelivery!==true||st.infoRevision!=='google-maps-2026-09-25-v2'||st.photoRevision!==OWNER_PHOTO_REVISION||st.googleRating!==4.8||!st.mapUrl||!st.openingHoursAr||!st.reservationsAr||!Array.isArray(st.heroPhotos)||st.heroPhotos.length<8)throw Error('Restaurant settings self-test failed');
   console.log('STARTUP_QA_PASS '+JSON.stringify({products:+stats.products,productImages:+stats.product_images,offers:+stats.offers,offerImages:+stats.offer_images,categories:+stats.categories,caloriesPopulated:+stats.calories_populated,marketPriceItems:+stats.market_price_items,ownerExcelPhotos:+stats.owner_excel_photos,missingRealPhotos:+(st.missingRealPhotoCount||0),phone:st.phone,menuRevision:st.menuRevision,photoRevision:st.photoRevision,infoRevision:st.infoRevision,openingHours:st.openingHoursEn,googleRating:st.googleRating,transactionRollback:true,orderWorkflow:true,frontendDom:true,promoAsset:true,storefrontAsset:true,cashOnDelivery:true}));
  }catch(e){try{await c.query('ROLLBACK')}catch{}throw e}finally{c.release()}
 }
@@ -315,23 +324,23 @@ async function startupHttpSelfTest(){
 
   let home=await fetch(base+'/'),html=await home.text();
   if(!home.ok||!html.includes('value="cod"')||!html.includes('id="googleRating"')||!html.includes('class="hero-visual"')||!html.includes('id="loadError"')||!html.includes('href="/admin"'))throw Error('Homepage self-test failed');
-  let css=await fetch(base+'/styles.css?v=22'),cssText=await css.text();
+  let css=await fetch(base+'/styles.css?v=23'),cssText=await css.text();
   if(!css.ok||!String(css.headers.get('content-type')).includes('text/css')||!cssText.includes('.photo-origin')||!cssText.includes('.mobile-nav'))throw Error('Customer CSS self-test failed');
-  let js=await fetch(base+'/app.js?v=22'),jsText=await js.text();
+  let js=await fetch(base+'/app.js?v=23'),jsText=await js.text();
   if(!js.ok||!jsText.includes('function renderProducts')||!jsText.includes('function photoOrigin')||!jsText.includes('st.heroPhotos')||!jsText.includes('cashOnDelivery'))throw Error('Customer JS self-test failed');
   let admin=await fetch(base+'/admin'),adminHtml=await admin.text();
   if(!admin.ok||!adminHtml.includes('id="loginForm"')||!adminHtml.includes('id="mRealPhotos"')||!adminHtml.includes('id="sCashOnDelivery"')||!adminHtml.includes('id="sMapUrl"')||adminHtml.includes('data:audio/'))throw Error('Admin HTML self-test failed');
   let adminJs=await fetch(base+'/admin.js'),adminJsText=await adminJs.text();
   if(!adminJs.ok||!adminJsText.includes('photoSourcePill')||!adminJsText.includes('todayStatusBreakdown')||!adminJsText.includes('loadSettings')||!adminJsText.includes('/api/admin/session'))throw Error('Admin JS self-test failed');
   x=await getJson('/api/admin/session');if(!x.r.ok||x.j?.authenticated!==false)throw Error('Anonymous admin session probe self-test failed');
-  let sw=await fetch(base+'/sw.js?v=22'),swText=await sw.text();
-  if(!sw.ok||!swText.includes("shrimp-fins-v22")||!swText.includes('/favicon.svg?v=22'))throw Error('PWA service worker self-test failed');
+  let sw=await fetch(base+'/sw.js?v=23'),swText=await sw.text();
+  if(!sw.ok||!swText.includes("shrimp-fins-v23")||!swText.includes('/favicon.svg?v=23'))throw Error('PWA service worker self-test failed');
   let manifest=await fetch(base+'/manifest.webmanifest'),manifestText=await manifest.text();
-  if(!manifest.ok||!manifestText.includes('/favicon.svg?v=22')||!manifestText.includes('"display": "standalone"'))throw Error('PWA manifest self-test failed');
-  let promo=await fetch(base+'/assets/shrimp-fins-promo.webp?v=22'),promoBytes=(await promo.arrayBuffer()).byteLength;
+  if(!manifest.ok||!manifestText.includes('/favicon.svg?v=23')||!manifestText.includes('"display": "standalone"'))throw Error('PWA manifest self-test failed');
+  let promo=await fetch(base+'/assets/menu-owner-2026-09-27-v2/m032.webp?v=23'),promoBytes=(await promo.arrayBuffer()).byteLength;
   if(!promo.ok||!String(promo.headers.get('content-type')).includes('image/webp')||promoBytes<10000)throw Error('Promo asset HTTP self-test failed');
-  let store=await fetch(base+'/assets/storefront.svg?v=22'),storeText=await store.text();
-  if(!store.ok||!String(store.headers.get('content-type')).includes('image/svg')||storeText.length<1000)throw Error('Storefront asset HTTP self-test failed');
+  let store=await fetch(base+'/assets/storefront-maps-enhanced.webp?v=23'),storeBytes=(await store.arrayBuffer()).byteLength;
+  if(!store.ok||!String(store.headers.get('content-type')).includes('image/webp')||storeBytes<10000)throw Error('Storefront asset HTTP self-test failed');
   for(const p of realPhotos){const ir=await fetch(base+p.image);if(!ir.ok||!String(ir.headers.get('content-type')).includes('image/webp')||+(ir.headers.get('content-length')||0)===0)throw Error('Owner Excel image asset failed: '+p.image)}
   for(const p of illustrations){const ir=await fetch(base+p.image);if(!ir.ok||!String(ir.headers.get('content-type')).includes('image/webp')||(await ir.arrayBuffer()).byteLength<10000)throw Error('Illustration asset failed: '+p.image)}
   for(const o of (pub.offers||[]).filter(o=>o.image_source==='ILLUSTRATIVE')){const ir=await fetch(base+o.image);if(!ir.ok)throw Error('Illustrated offer asset failed: '+o.image)}
