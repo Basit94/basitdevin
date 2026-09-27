@@ -155,15 +155,14 @@ c=+(await pool.query('select count(*) c from products')).rows[0].c;if(!c)for(let
 c=+(await pool.query('select count(*) c from offers')).rows[0].c;if(!c)for(let i=0;i<offers.length;i++)await pool.query('insert into offers values($1,$2,$3,$4,true,$5)',[...offers[i],i]);
 c=+(await pool.query('select count(*) c from admins')).rows[0].c;if(!c){let e=String(process.env.ADMIN_EMAIL||'').trim().toLowerCase(),h=process.env.ADMIN_PASSWORD_HASH;if(!e||!h)throw Error('ADMIN_EMAIL and ADMIN_PASSWORD_HASH required');await pool.query('insert into admins(email,name,password_hash) values($1,$2,$3)',[e,process.env.ADMIN_NAME||'Restaurant Admin',h]);}
 {
-  const resetEmail=String(process.env.ADMIN_EMAIL||'').trim().toLowerCase();
-  const resetPassword=String(process.env.ADMIN_RESET_PASSWORD||'');
-  if(resetEmail&&resetPassword){
-    const resetHash=await bcrypt.hash(resetPassword,12);
+  const configuredEmail=String(process.env.ADMIN_EMAIL||'').trim().toLowerCase();
+  const configuredHash=String(process.env.ADMIN_PASSWORD_HASH||'').trim();
+  if(configuredEmail&&configuredHash){
     await pool.query(`INSERT INTO admins(email,name,password_hash,active,role)
       VALUES($1,$2,$3,TRUE,'ADMIN')
       ON CONFLICT(email) DO UPDATE SET password_hash=EXCLUDED.password_hash,active=TRUE,role='ADMIN',name=COALESCE(NULLIF(admins.name,''),EXCLUDED.name),updated_at=NOW()`,
-      [resetEmail,process.env.ADMIN_NAME||'Restaurant Admin',resetHash]);
-    log('info','admin_credentials_reset',{email:resetEmail});
+      [configuredEmail,process.env.ADMIN_NAME||'Restaurant Admin',configuredHash]);
+    log('info','configured_admin_synced',{email:configuredEmail});
   }
 }
 for(const p of products){const d=categoryDescriptions[p[1]]||['محضر طازجاً حسب الطلب.','Freshly prepared to order.'];await pool.query("update products set image=case when coalesce(image,'')='' then $1 else image end,description_ar=case when coalesce(description_ar,'')='' then $2 else description_ar end,description_en=case when coalesce(description_en,'')='' then $3 else description_en end where id=$4",[productImages[p[0]]||'',d[0],d[1],p[0]])}
@@ -366,10 +365,8 @@ async function startupHttpSelfTest(){
   let adminJs=await fetch(base+'/admin.js'),adminJsText=await adminJs.text();
   if(!adminJs.ok||!adminJsText.includes('photoSourcePill')||!adminJsText.includes('todayStatusBreakdown')||!adminJsText.includes('loadSettings')||!adminJsText.includes('/api/admin/session'))throw Error('Admin JS self-test failed');
   x=await getJson('/api/admin/session');if(!x.r.ok||x.j?.authenticated!==false)throw Error('Anonymous admin session probe self-test failed');
-  if(process.env.ADMIN_RESET_PASSWORD&&process.env.ADMIN_EMAIL){
-    const configuredAdmin=await getJson('/api/admin/login',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({email:process.env.ADMIN_EMAIL,password:process.env.ADMIN_RESET_PASSWORD})});
-    if(!configuredAdmin.r.ok||configuredAdmin.j?.admin?.email!==String(process.env.ADMIN_EMAIL).trim().toLowerCase())throw Error('Configured admin login self-test failed');
-  }
+  const configuredAdminRow=(await pool.query('select email,active,role,password_hash from admins where email=$1',[String(process.env.ADMIN_EMAIL||'').trim().toLowerCase()])).rows[0];
+  if(!configuredAdminRow||configuredAdminRow.active!==true||configuredAdminRow.role!=='ADMIN'||configuredAdminRow.password_hash!==String(process.env.ADMIN_PASSWORD_HASH||'').trim())throw Error('Configured admin persistence self-test failed');
   let sw=await fetch(base+'/sw.js?v=26'),swText=await sw.text();
   if(!sw.ok||!swText.includes("shrimp-fins-v26")||!swText.includes('/favicon.svg?v=26'))throw Error('PWA service worker self-test failed');
   let manifest=await fetch(base+'/manifest.webmanifest'),manifestText=await manifest.text();
