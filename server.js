@@ -43,7 +43,7 @@ app.post('/api/client-errors',clientErrorLimit,(req,res)=>{
 });
 const upload=multer({storage:multer.memoryStorage(),limits:{fileSize:4*1024*1024},fileFilter:(_req,file,cb)=>cb(null,['image/jpeg','image/png','image/webp'].includes(file.mimetype))});
 const sseClients=new Set();
-function broadcast(event,payload){const body='event: '+event+'\ndata: '+JSON.stringify(payload)+'\n\n';for(const res of sseClients){try{res.write(body)}catch{sseClients.delete(res)}}}
+function broadcast(event,payload){const body='event: '+event+'\ndata: '+JSON.stringify(payload)+'\n\n';for(const res of sseClients){try{res.write(body);res.flush?.()}catch{sseClients.delete(res)}}}
 const statusTransitions={PENDING:['CONFIRMED','REJECTED','CANCELLED'],CONFIRMED:['PREPARING','CANCELLED'],PREPARING:['READY','CANCELLED'],READY:['COMPLETED','CANCELLED'],COMPLETED:[],REJECTED:[],CANCELLED:[]};
 const safe=(v,n=500)=>String(v??'').trim().slice(0,n);
 const right8=v=>String(v||'').replace(/\D/g,'').slice(-8);
@@ -488,7 +488,7 @@ async function startupHttpSelfTest(){
   const sseAbort=new AbortController();
   const sse=await fetch(base+'/api/admin/events',{headers:{cookie:adminCookie},signal:sseAbort.signal});
   if(!sse.ok||!String(sse.headers.get('content-type')).includes('text/event-stream'))throw Error('HTTP admin live events self-test failed');
-  const sseReader=sse.body.getReader(),sseFirst=await sseReader.read(),sseText=Buffer.from(sseFirst.value||[]).toString('utf8');sseAbort.abort();
+  const sseReader=sse.body.getReader(),sseFirst=await Promise.race([sseReader.read(),new Promise((_,reject)=>setTimeout(()=>reject(Error('HTTP admin live events timeout')),2000))]),sseText=Buffer.from(sseFirst.value||[]).toString('utf8');sseAbort.abort();
   if(!sseText.includes('event: ready'))throw Error('HTTP admin live events ready self-test failed');
 
   x=await adminJson('/api/admin/orders?status=PENDING&q='+encodeURIComponent(qaCustomerOrderNumber));
@@ -562,7 +562,7 @@ app.use('/api/admin',(req,res,next)=>{
  next();
 });
 app.get('/api/admin/audit',async(req,res)=>{const limit=Math.max(1,Math.min(200,Number(req.query.limit)||100));const rows=(await pool.query('select id,actor,action,path,status,request_id,created_at from audit_log order by id desc limit $1',[limit])).rows;res.json({audit:rows})});
-app.get('/api/admin/events',(req,res)=>{res.set({'Content-Type':'text/event-stream','Cache-Control':'no-cache','Connection':'keep-alive'});res.flushHeaders?.();sseClients.add(res);res.write('event: ready\ndata: {}\n\n');req.on('close',()=>sseClients.delete(res))});
+app.get('/api/admin/events',(req,res)=>{res.set({'Content-Type':'text/event-stream','Cache-Control':'no-cache, no-transform','Connection':'keep-alive','X-Accel-Buffering':'no'});res.flushHeaders?.();sseClients.add(res);res.write('event: ready\ndata: {}\n\n');res.flush?.();req.on('close',()=>sseClients.delete(res))});
 app.get('/api/admin/dashboard',async(req,res)=>{
  let [today,pending,pc,oc,recent,month,top,statuses,mix,week,photos]=await Promise.all([
   pool.query("select count(*) c,coalesce(sum(case when status='COMPLETED' then total else 0 end),0) sales from orders where created_at::date=current_date"),
