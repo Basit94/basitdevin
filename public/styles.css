@@ -375,3 +375,5 @@ html,body{width:100%;max-width:100%;overflow-x:hidden}
 /* Show the full sign without the previous dark caption overlay. */
 .storefront:after{display:none}
 .storefront img{object-fit:cover;object-position:center center}
+
+.account-error{margin:.75rem 0 0;padding:.7rem .85rem;border-radius:12px;background:#fff1f2;color:#b42318;font-weight:700;font-size:.9rem}.account-error.hidden{display:none}.staff-login-link{display:inline-flex;margin-top:.7rem;font-weight:800;color:#0b4268;text-decoration:none}.staff-login-link:hover{text-decoration:underline}
