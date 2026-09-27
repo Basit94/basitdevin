@@ -194,6 +194,13 @@ if(st.menuRevision!=='owner-menu-2026-09-27-v6'){
     await client.query('COMMIT');
   }catch(e){await client.query('ROLLBACK').catch(()=>{});throw e}finally{client.release()}
 }
+if(st.orderabilityRevision!=='fixed-price-orderability-2026-09-27-v1'){
+  const fixedPriceIds=menuProducts.filter(p=>p[0]!=='m063'&&+p[4]>0).map(p=>p[0]);
+  await pool.query('UPDATE products SET orderable=TRUE,updated_at=NOW() WHERE id=ANY($1::text[])',[fixedPriceIds]);
+  await pool.query("UPDATE products SET orderable=FALSE,updated_at=NOW(),price_note_ar='حسب سعر اليوم',price_note_en='Market price' WHERE id='m063'");
+  st.orderabilityRevision='fixed-price-orderability-2026-09-27-v1';
+  await pool.query('UPDATE settings SET data=$1 WHERE id=1',[st]);
+}
 if(st.photoRevision!==OWNER_PHOTO_REVISION){
   const client=await pool.connect();
   try{
@@ -292,6 +299,12 @@ async function startupSelfTest(){
     (select count(*) from products where available=true and calories is not null) calories_populated,
     (select count(*) from products where available=true and orderable=false) market_price_items,
     (select count(*) from products where available=true and image_source='OWNER_EXCEL') owner_excel_photos`)).rows[0];
+  const orderability=(await pool.query(`select
+    count(*) filter (where id<>'m063' and available=true and price>0 and orderable=false) fixed_price_unorderable,
+    count(*) filter (where id='m063' and orderable=true) market_price_orderable,
+    count(*) filter (where id='m031' and available=true and orderable=true and price=140) lobster_ok
+    from products where id like 'm%'`)).rows[0];
+  if(+orderability.fixed_price_unorderable!==0||+orderability.market_price_orderable!==0||+orderability.lobster_ok!==1)throw Error('Fixed-price orderability self-test failed: '+JSON.stringify(orderability));
   const st=(await pool.query('select data from settings where id=1')).rows[0]?.data||{};
   if(+stats.products<menuProducts.length||+stats.product_images<menuProducts.length||+stats.offers<9||+stats.offer_images<9||+stats.calories_populated<40||+stats.market_price_items<1||+stats.owner_excel_photos<57)throw Error('Menu completeness self-test failed: '+JSON.stringify(stats));
   if(st.phone!=='0541064143'||!st.whatsapp||!st.restaurantNameAr||!st.addressAr||st.heroImage!=='/assets/menu-owner-2026-09-27-v2/m032.webp'||st.storefrontImage!=='/assets/storefront-owner-enhanced-2026-09-27.webp'||st.cashOnDelivery!==true||st.cardOnDelivery!==true||st.infoRevision!=='google-maps-2026-09-25-v2'||st.photoRevision!==OWNER_PHOTO_REVISION||st.googleRating!==4.8||!st.mapUrl?.includes('0x4261598a86735704')||!st.openingHoursAr||!st.reservationsAr||!Array.isArray(st.heroPhotos)||st.heroPhotos.length<8)throw Error('Restaurant settings self-test failed');
@@ -319,6 +332,10 @@ async function startupHttpSelfTest(){
   x=await getJson('/api/public');if(!x.r.ok)throw Error('HTTP public API self-test failed');
   const pub=x.j||{},st=pub.settings||{};
   if((pub.products||[]).length<64||(pub.categories||[]).length<13||(pub.offers||[]).length<9)throw Error('HTTP public catalog self-test failed');
+  const lobster=(pub.products||[]).find(p=>p.id==='m031');
+  if(!lobster||lobster.orderable!==true||+lobster.price!==140)throw Error('Grilled Lobster orderability self-test failed: '+JSON.stringify(lobster||null));
+  const invalidFixedPrice=(pub.products||[]).filter(p=>p.id!=='m063'&&+p.price>0&&p.orderable===false);
+  if(invalidFixedPrice.length)throw Error('Fixed-price products incorrectly unavailable: '+invalidFixedPrice.map(p=>p.id).join(','));
   const realPhotos=(pub.products||[]).filter(p=>p.image_source==='OWNER_EXCEL');
   const illustrations=(pub.products||[]).filter(p=>p.image_source==='ILLUSTRATIVE');
   if(realPhotos.length<57)throw Error('HTTP owner Excel photo coverage failed: '+realPhotos.length);
@@ -328,28 +345,28 @@ async function startupHttpSelfTest(){
 
   let home=await fetch(base+'/'),html=await home.text();
   if(!home.ok||!html.includes('value="cod"')||!html.includes('id="googleRating"')||!html.includes('class="hero-visual"')||!html.includes('id="loadError"')||!html.includes('href="/admin"'))throw Error('Homepage self-test failed');
-  let css=await fetch(base+'/styles.css?v=25'),cssText=await css.text();
+  let css=await fetch(base+'/styles.css?v=26'),cssText=await css.text();
   if(!css.ok||!String(css.headers.get('content-type')).includes('text/css')||!cssText.includes('.photo-origin')||!cssText.includes('.mobile-nav'))throw Error('Customer CSS self-test failed');
-  let js=await fetch(base+'/app.js?v=25'),jsText=await js.text();
+  let js=await fetch(base+'/app.js?v=26'),jsText=await js.text();
   if(!js.ok||!jsText.includes('function renderProducts')||!jsText.includes('function photoOrigin')||!jsText.includes('st.heroPhotos')||!jsText.includes('cashOnDelivery'))throw Error('Customer JS self-test failed');
   let admin=await fetch(base+'/admin'),adminHtml=await admin.text();
   if(!admin.ok||!adminHtml.includes('id="loginForm"')||!adminHtml.includes('id="mRealPhotos"')||!adminHtml.includes('id="sCashOnDelivery"')||!adminHtml.includes('id="sMapUrl"')||adminHtml.includes('data:audio/'))throw Error('Admin HTML self-test failed');
   let adminJs=await fetch(base+'/admin.js'),adminJsText=await adminJs.text();
   if(!adminJs.ok||!adminJsText.includes('photoSourcePill')||!adminJsText.includes('todayStatusBreakdown')||!adminJsText.includes('loadSettings')||!adminJsText.includes('/api/admin/session'))throw Error('Admin JS self-test failed');
   x=await getJson('/api/admin/session');if(!x.r.ok||x.j?.authenticated!==false)throw Error('Anonymous admin session probe self-test failed');
-  let sw=await fetch(base+'/sw.js?v=25'),swText=await sw.text();
-  if(!sw.ok||!swText.includes("shrimp-fins-v25")||!swText.includes('/favicon.svg?v=25'))throw Error('PWA service worker self-test failed');
+  let sw=await fetch(base+'/sw.js?v=26'),swText=await sw.text();
+  if(!sw.ok||!swText.includes("shrimp-fins-v26")||!swText.includes('/favicon.svg?v=26'))throw Error('PWA service worker self-test failed');
   let manifest=await fetch(base+'/manifest.webmanifest'),manifestText=await manifest.text();
-  if(!manifest.ok||!manifestText.includes('/favicon.svg?v=25')||!manifestText.includes('"display": "standalone"'))throw Error('PWA manifest self-test failed');
-  let promo=await fetch(base+'/assets/shrimp-fins-promo.webp?v=25'),promoBytes=(await promo.arrayBuffer()).byteLength;
+  if(!manifest.ok||!manifestText.includes('/favicon.svg?v=26')||!manifestText.includes('"display": "standalone"'))throw Error('PWA manifest self-test failed');
+  let promo=await fetch(base+'/assets/shrimp-fins-promo.webp?v=26'),promoBytes=(await promo.arrayBuffer()).byteLength;
   if(!promo.ok||!String(promo.headers.get('content-type')).includes('image/webp')||promoBytes<10000)throw Error('Promo asset HTTP self-test failed');
-  let store=await fetch(base+'/assets/storefront-owner-enhanced-2026-09-27.webp?v=25'),storeBytes=(await store.arrayBuffer()).byteLength;
+  let store=await fetch(base+'/assets/storefront-owner-enhanced-2026-09-27.webp?v=26'),storeBytes=(await store.arrayBuffer()).byteLength;
   if(!store.ok||!String(store.headers.get('content-type')).includes('image/webp')||storeBytes<10000)throw Error('Storefront asset HTTP self-test failed');
   for(const p of realPhotos){const ir=await fetch(base+p.image);if(!ir.ok||!String(ir.headers.get('content-type')).includes('image/webp')||+(ir.headers.get('content-length')||0)===0)throw Error('Owner Excel image asset failed: '+p.image)}
   for(const p of illustrations){const ir=await fetch(base+p.image);if(!ir.ok||!String(ir.headers.get('content-type')).includes('image/webp')||(await ir.arrayBuffer()).byteLength<10000)throw Error('Illustration asset failed: '+p.image)}
   for(const o of (pub.offers||[]).filter(o=>o.image_source==='ILLUSTRATIVE')){const ir=await fetch(base+o.image);if(!ir.ok)throw Error('Illustrated offer asset failed: '+o.image)}
 
-  const prod=(pub.products||[]).find(p=>p.orderable!==false&&+p.price>=Math.max(30,+(st.minimumOrder||0)))||(pub.products||[]).find(p=>p.orderable!==false&&+p.price>0);
+  const prod=(pub.products||[]).find(p=>p.id==='m031'&&p.orderable!==false&&+p.price>0)||(pub.products||[]).find(p=>p.orderable!==false&&+p.price>=Math.max(30,+(st.minimumOrder||0)))||(pub.products||[]).find(p=>p.orderable!==false&&+p.price>0);
   if(!prod)throw Error('No orderable QA product');
   const qty=Math.max(1,Math.ceil((+(st.minimumOrder||0))/(+prod.price||1)));
   const cod=await createOrder({customerName:'QA COD DELIVERY',phone:qaPhone,orderType:'delivery',address:'QA delivery address Riyadh',latitude:24.7136,longitude:46.6753,notes:'AUTO QA - DELETE',paymentMethod:'cod',items:[{productId:prod.id,qty}]},'cod','delivery');
