@@ -11,5 +11,12 @@ for(const file of files){
  ];
  for(const c of checks){const hits=[...s.matchAll(c.re)];if(hits.length){failed=true;console.error(file,c.name,hits.map(x=>x.index))}}
 }
+const adminJs=fs.readFileSync('public/admin.js','utf8');
+if(adminJs.includes('data-order-view')&&!adminJs.includes('dataset.orderView')){
+ failed=true;console.error('public/admin.js admin order-view dataset binding missing dataset.orderView');
+}
+if(/\[data-order-view\][^\n]{0,220}dataset\.order(?:\W|$)/.test(adminJs)){
+ failed=true;console.error('public/admin.js admin order-view is incorrectly bound to dataset.order');
+}
 if(failed)process.exit(1);
 console.log('STATIC_QA_PASS');
