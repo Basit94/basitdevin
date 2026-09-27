@@ -160,9 +160,9 @@ c=+(await pool.query('select count(*) c from admins')).rows[0].c;if(!c){let e=St
   if(configuredEmail&&configuredHash){
     await pool.query(`INSERT INTO admins(email,name,password_hash,active,role)
       VALUES($1,$2,$3,TRUE,'ADMIN')
-      ON CONFLICT(email) DO UPDATE SET password_hash=EXCLUDED.password_hash,active=TRUE,role='ADMIN',name=COALESCE(NULLIF(admins.name,''),EXCLUDED.name),updated_at=NOW()`,
+      ON CONFLICT(email) DO UPDATE SET active=TRUE,role='ADMIN',name=COALESCE(NULLIF(admins.name,''),EXCLUDED.name),updated_at=NOW()`,
       [configuredEmail,process.env.ADMIN_NAME||'Restaurant Admin',configuredHash]);
-    log('info','configured_admin_synced',{email:configuredEmail});
+    log('info','configured_admin_ready',{email:configuredEmail});
   }
 }
 for(const p of products){const d=categoryDescriptions[p[1]]||['محضر طازجاً حسب الطلب.','Freshly prepared to order.'];await pool.query("update products set image=case when coalesce(image,'')='' then $1 else image end,description_ar=case when coalesce(description_ar,'')='' then $2 else description_ar end,description_en=case when coalesce(description_en,'')='' then $3 else description_en end where id=$4",[productImages[p[0]]||'',d[0],d[1],p[0]])}
@@ -375,9 +375,11 @@ async function startupHttpSelfTest(){
   if(!admin.ok||!adminHtml.includes('id="loginForm"')||!adminHtml.includes('id="mRealPhotos"')||!adminHtml.includes('id="sCashOnDelivery"')||!adminHtml.includes('id="sMapUrl"')||adminHtml.includes('data:audio/')||!['dashboard','orders','products','offers','categories','settings','security'].every(tab=>adminHtml.includes('data-tab="'+tab+'"')))throw Error('Admin HTML self-test failed');
   let adminJs=await fetch(base+'/admin.js'),adminJsText=await adminJs.text();
   if(!adminJs.ok||!adminJsText.includes('photoSourcePill')||!adminJsText.includes('todayStatusBreakdown')||!adminJsText.includes('loadSettings')||!adminJsText.includes('/api/admin/session')||!adminJsText.includes("dataset.orderView")||adminJsText.includes("viewOrder(b.dataset.order)"))throw Error('Admin JS self-test failed');
+  const serverSource=fs.readFileSync(path.join(__dirname,'server.js'),'utf8');
+  if(serverSource.includes('ON CONFLICT(email) DO UPDATE SET password_hash=EXCLUDED.password_hash'))throw Error('Admin password persistence self-test failed: startup would overwrite changed password');
   x=await getJson('/api/admin/session');if(!x.r.ok||x.j?.authenticated!==false)throw Error('Anonymous admin session probe self-test failed');
   const configuredAdminRow=(await pool.query('select email,active,role,password_hash from admins where email=$1',[String(process.env.ADMIN_EMAIL||'').trim().toLowerCase()])).rows[0];
-  if(!configuredAdminRow||configuredAdminRow.active!==true||configuredAdminRow.role!=='ADMIN'||configuredAdminRow.password_hash!==String(process.env.ADMIN_PASSWORD_HASH||'').trim())throw Error('Configured admin persistence self-test failed');
+  if(!configuredAdminRow||configuredAdminRow.active!==true||configuredAdminRow.role!=='ADMIN'||!String(configuredAdminRow.password_hash||'').trim())throw Error('Configured admin persistence self-test failed');
   let sw=await fetch(base+'/sw.js?v=28'),swText=await sw.text();
   if(!sw.ok||!swText.includes("shrimp-fins-v28")||!swText.includes('/favicon.svg?v=28'))throw Error('PWA service worker self-test failed');
   let manifest=await fetch(base+'/manifest.webmanifest'),manifestText=await manifest.text();
