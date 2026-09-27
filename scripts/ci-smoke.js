@@ -39,7 +39,7 @@ async function main(){
  check('COD enabled',pub.settings.cashOnDelivery===true,String(pub.settings.cashOnDelivery));
  check('card on delivery enabled',pub.settings.cardOnDelivery===true,String(pub.settings.cardOnDelivery));
  check('Google rating',Number(pub.settings.googleRating)===4.8,String(pub.settings.googleRating));
- check('Maps URL',String(pub.settings.mapUrl||'').includes('google.com/maps'),String(pub.settings.mapUrl||''));
+ check('restaurant-specific directions',String(pub.settings.mapUrl||'').includes('google.com/maps/dir/')&&String(pub.settings.mapUrl||'').includes('0x4261598a86735704'),String(pub.settings.mapUrl||''));
  check('opening hours',pub.settings.openingHoursEn==='Daily 12:00 PM – 12:00 AM',String(pub.settings.openingHoursEn));check('reservations verified',String(pub.settings.reservationsEn||'').includes('Reservations available'),String(pub.settings.reservationsEn||''));check('verified info revision',pub.settings.infoRevision==='google-maps-2026-09-25-v2',String(pub.settings.infoRevision));
 
  x=await call('/api/orders',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({customerName:'X',phone:'1',items:[]})});check('bad order validation',x.r.status===400,String(x.r.status));

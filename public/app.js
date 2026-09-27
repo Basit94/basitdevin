@@ -50,7 +50,7 @@ function heroPhotos(st){
  const configured=Array.isArray(st.heroPhotos)?st.heroPhotos.filter(p=>p&&p.src):[];
  const fallback=[
   {src:st.storefrontImage||'/assets/storefront-maps-enhanced.webp',ar:'واجهة مطعم زعانف الروبيان',en:'Shrimp Fins storefront',source:'MAPS'},
-  {src:st.officialPromoImage||st.heroImage||'/assets/menu-owner-2026-09-27-v2/m032.webp',ar:'صحن زعانف الروبيان',en:'Shrimp Fins platter',source:'OWNER_EXCEL'}
+  {src:st.officialPromoImage||st.heroImage||'/assets/shrimp-fins-promo.webp',ar:'واجهة مطعم زعانف الروبيان',en:'Shrimp Fins storefront',source:'MAPS'}
  ];
  const googlePhoto=st.mapsPhotoUrl?[{src:st.mapsPhotoUrl,ar:'صورة من موقع المطعم',en:'Restaurant location photo',source:'PUBLIC_LISTING'}]:[];
  return[...(configured.length?configured:fallback),...googlePhoto].filter((x,i,a)=>x.src&&a.findIndex(y=>y.src===x.src)===i);
