@@ -376,7 +376,7 @@ async function startupHttpSelfTest(){
   let adminJs=await fetch(base+'/admin.js'),adminJsText=await adminJs.text();
   if(!adminJs.ok||!adminJsText.includes('photoSourcePill')||!adminJsText.includes('todayStatusBreakdown')||!adminJsText.includes('loadSettings')||!adminJsText.includes('/api/admin/session')||!adminJsText.includes("dataset.orderView")||adminJsText.includes("viewOrder(b.dataset.order)"))throw Error('Admin JS self-test failed');
   const serverSource=fs.readFileSync(path.join(__dirname,'server.js'),'utf8');
-  if(serverSource.includes('ON CONFLICT(email) DO UPDATE SET password_hash=EXCLUDED.password_hash'))throw Error('Admin password persistence self-test failed: startup would overwrite changed password');
+  const badAdminSync='ON CONFLICT(email) DO UPDATE SET '+'password_hash=EXCLUDED.password_hash';if(serverSource.includes(badAdminSync))throw Error('Admin password persistence self-test failed: startup would overwrite changed password');
   x=await getJson('/api/admin/session');if(!x.r.ok||x.j?.authenticated!==false)throw Error('Anonymous admin session probe self-test failed');
   const configuredAdminRow=(await pool.query('select email,active,role,password_hash from admins where email=$1',[String(process.env.ADMIN_EMAIL||'').trim().toLowerCase()])).rows[0];
   if(!configuredAdminRow||configuredAdminRow.active!==true||configuredAdminRow.role!=='ADMIN'||!String(configuredAdminRow.password_hash||'').trim())throw Error('Configured admin persistence self-test failed');
